@@ -1,0 +1,19 @@
+{
+    "name": "com.fuzzphyte.placement.editor",
+    "rootNamespace": "",
+    "references": [
+        "com.fuzzphyte.placement",
+        "com.fuzzphyte.utility"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
