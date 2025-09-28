@@ -17,10 +17,10 @@ namespace FuzzPhyte.Placement
         protected Vector2 stackSize = new(0.5f, 0.5f);
         protected Vector3 stackCenterOffset = Vector3.up * 0.5f;
 
-        [MenuItem("FuzzPhyte/Placement/Placement Object Builder")]
+        [MenuItem("FuzzPhyte/Placement/Placement Object Builder", priority = FuzzPhyte.Utility.FP_UtilityData.ORDER_SUBMENU_LVL5)]
         public static void ShowWindow()
         {
-            GetWindow<PlacementObjectBuilderWindow>("Placement Object Builder");
+            GetWindow<PlacementObjectBuilderWindow>("FP Placement Object Builder");
         }
 
         private void OnGUI()
