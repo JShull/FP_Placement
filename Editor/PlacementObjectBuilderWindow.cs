@@ -35,6 +35,9 @@ namespace FuzzPhyte.Placement
         protected int layoutSeed = 12345;
         protected bool layoutOrientOutward = true;
 
+        protected SphereEvenMode sphereEvenMode = SphereEvenMode.Fibonacci;
+        protected int latLonRingCount = 8;
+
         protected float sphereRadius = 1.0f;
         protected Vector2 thetaRangeDeg = new Vector2(0f, 180f);
         protected Vector2 phiRangeDeg = new Vector2(0f, 360f);
@@ -199,7 +202,20 @@ namespace FuzzPhyte.Placement
 
             if (layoutSurface == LayoutSurfaceType.SphereSurface)
             {
+
                 sphereRadius = EditorGUILayout.FloatField("Sphere Radius", sphereRadius);
+                if (layoutDistribution == LayoutDistribution.Even)
+                {
+                    sphereEvenMode = (SphereEvenMode)EditorGUILayout.EnumPopup("Even Mode", sphereEvenMode);
+
+                    if (sphereEvenMode == SphereEvenMode.LatLonRings)
+                    {
+                        latLonRingCount = EditorGUILayout.IntField("Ring Count", latLonRingCount);
+                        latLonRingCount = Mathf.Max(2, latLonRingCount);
+                        EditorGUILayout.Space();
+                    }
+                }
+                
                 thetaRangeDeg = EditorGUILayout.Vector2Field("Theta Range (deg)", thetaRangeDeg);
                 phiRangeDeg = EditorGUILayout.Vector2Field("Phi Range (deg)", phiRangeDeg);
             }
@@ -263,6 +279,9 @@ namespace FuzzPhyte.Placement
 
             placementObj.BoxSize = boxSize;
             placementObj.BoxCenterOffset = boxCenterOffset;
+
+            placementObj.SphereEvenMode = sphereEvenMode;
+            placementObj.LatLonRingCount = latLonRingCount;
 
             // Category default
             placementObj.Categories.Clear();
@@ -344,12 +363,20 @@ namespace FuzzPhyte.Placement
                 if (layoutSurface == LayoutSurfaceType.SphereSurface)
                 {
                     var temp = ScriptableObject.CreateInstance<PlacementObject>();
+                    temp.LayoutSurface = layoutSurface;
                     temp.LayoutDistribution = layoutDistribution;
+                    temp.SphereEvenMode = sphereEvenMode;
+
+                    temp.LatLonRingCount = latLonRingCount;
                     temp.LayoutSeed = layoutSeed;
+                    temp.LayoutOrientOutward = layoutOrientOutward;
+
                     temp.SphereRadius = sphereRadius;
                     temp.ThetaRangeDeg = thetaRangeDeg;
                     temp.PhiRangeDeg = phiRangeDeg;
 
+                   
+                   
                     Vector3 local = temp.GetLayoutPointSphereLocal(i, children.Count);
                     DestroyImmediate(temp);
 

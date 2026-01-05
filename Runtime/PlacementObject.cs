@@ -33,6 +33,11 @@ namespace FuzzPhyte.Placement
         Even,
         Random
     }
+    public enum SphereEvenMode
+    {
+        Fibonacci, 
+        LatLonRings
+    }
 
     [System.Serializable]
     [CreateAssetMenu(fileName = "PlacementObject", menuName = "FuzzPhyte/Placement/Object", order = 11)]
@@ -57,6 +62,10 @@ namespace FuzzPhyte.Placement
         [Header("Layout Settings (3D)")]
         public LayoutSurfaceType LayoutSurface = LayoutSurfaceType.SphereSurface;
         public LayoutDistribution LayoutDistribution = LayoutDistribution.Even;
+        public SphereEvenMode SphereEvenMode = SphereEvenMode.Fibonacci;
+        // NEW (only used for LatLonRings)
+        [Min(2)]
+        public int LatLonRingCount = 8; // number of latitude bands/rings
         public int LayoutSeed = 12345;
         public bool LayoutOrientOutward = true;
 
@@ -123,19 +132,130 @@ namespace FuzzPhyte.Placement
             }
             else
             {
-                // Even-ish distribution:
-                // Use a golden angle progression for phi; use index stratification for theta.
-                float t = (count == 1) ? 0.5f : (index / (float)(count - 1));
-                thetaDeg = Mathf.Lerp(theta0, theta1, t);
-
-                const float goldenAngle = 137.50776405f;
-                phiDeg = phi0 + (index * goldenAngle);
-                // Wrap into [phi0, phi1] if you want a bounded range
-                float span = Mathf.Abs(phi1 - phi0);
-                if (span > 0.0001f)
+                // lat long mode
+                if (SphereEvenMode == SphereEvenMode.LatLonRings)
                 {
-                    float wrapped = Mathf.Repeat(phiDeg - phi0, span);
-                    phiDeg = phi0 + wrapped;
+                    // Latitude rings + longitude steps per ring
+                    int rings = Mathf.Max(2, LatLonRingCount);
+
+                    // Map index -> ring -> slot on ring
+                    // We allocate "capacity" per ring proportional to sin(theta), so equatorial rings get more points.
+                    float thetaSpan = Mathf.Abs(theta1 - theta0);
+                    float phiSpan = Mathf.Abs(phi1 - phi0);
+                    if (phiSpan < 0.0001f) phiSpan = 360f;
+
+                    // Build ring weights and capacities
+                    float[] ringThetaDeg = new float[rings];
+                    float[] ringWeight = new float[rings];
+                    int[] ringCap = new int[rings];
+
+                    float weightSum = 0f;
+                    for (int r = 0; r < rings; r++)
+                    {
+                        float t = (rings == 1) ? 0.5f : r / (float)(rings - 1);
+                        float th = Mathf.Lerp(theta0, theta1, t);
+                        ringThetaDeg[r] = th;
+
+                        // Weight by sin(theta) -> more slots around equator
+                        float w = Mathf.Sin(th * Mathf.Deg2Rad);
+                        w = Mathf.Max(0.0001f, w);
+                        ringWeight[r] = w;
+                        weightSum += w;
+                    }
+
+                    int allocated = 0;
+                    for (int r = 0; r < rings; r++)
+                    {
+                        int cap = Mathf.RoundToInt((ringWeight[r] / weightSum) * count);
+                        cap = Mathf.Max(1, cap);
+                        ringCap[r] = cap;
+                        allocated += cap;
+                    }
+
+                    // Fix allocation to match count exactly
+                    while (allocated > count)
+                    {
+                        // remove from the largest-cap ring (but keep >=1)
+                        int best = -1;
+                        int bestCap = 0;
+                        for (int r = 0; r < rings; r++)
+                        {
+                            if (ringCap[r] > bestCap)
+                            {
+                                bestCap = ringCap[r];
+                                best = r;
+                            }
+                        }
+
+                        if (best >= 0 && ringCap[best] > 1)
+                        {
+                            ringCap[best]--;
+                            allocated--;
+                        }
+                        else break;
+                    }
+
+                    while (allocated < count)
+                    {
+                        // add to the highest-weight ring
+                        int best = 0;
+                        float bestW = ringWeight[0];
+                        for (int r = 1; r < rings; r++)
+                        {
+                            if (ringWeight[r] > bestW)
+                            {
+                                bestW = ringWeight[r];
+                                best = r;
+                            }
+                        }
+
+                        ringCap[best]++;
+                        allocated++;
+                    }
+
+                    // Find which ring this index belongs to
+                    int ringIndex = 0;
+                    int slotIndex = index;
+
+                    for (int r = 0; r < rings; r++)
+                    {
+                        if (slotIndex < ringCap[r])
+                        {
+                            ringIndex = r;
+                            break;
+                        }
+                        slotIndex -= ringCap[r];
+                    }
+
+                    int slotsOnRing = ringCap[ringIndex];
+
+                    thetaDeg = ringThetaDeg[ringIndex];
+
+                    // Longitude within range, evenly spaced by slot
+                    float slotT = (slotsOnRing == 1) ? 0.5f : (slotIndex / (float)slotsOnRing);
+                    phiDeg = phi0 + slotT * phiSpan;
+
+                    // Optional: stagger alternating rings so points don't line up in vertical columns
+                    if ((ringIndex & 1) == 1 && slotsOnRing > 1)
+                    {
+                        phiDeg += (0.5f / slotsOnRing) * phiSpan;
+                    }
+                }
+                else {
+                    // Even-ish distribution:
+                    // Use a golden angle progression for phi; use index stratification for theta.
+                    float t = (count == 1) ? 0.5f : (index / (float)(count - 1));
+                    thetaDeg = Mathf.Lerp(theta0, theta1, t);
+
+                    const float goldenAngle = 137.50776405f;
+                    phiDeg = phi0 + (index * goldenAngle);
+                    // Wrap into [phi0, phi1] if you want a bounded range
+                    float span = Mathf.Abs(phi1 - phi0);
+                    if (span > 0.0001f)
+                    {
+                        float wrapped = Mathf.Repeat(phiDeg - phi0, span);
+                        phiDeg = phi0 + wrapped;
+                    }
                 }
             }
 
