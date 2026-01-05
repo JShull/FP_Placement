@@ -1,10 +1,10 @@
 {
     "name": "com.fuzzphyte.placement",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "displayName": "FP Placement",
-    "description": "FP Placement is a library for placement of dynamic objects in a 3D space using a solver to generate and locate objects of priority in designated areas.",
-    "unity": "6000.1",
-    "unityRelease": "0f1",
+    "description": "FP Placement is a library for placement of dynamic objects in a 3D space.",
+    "unity": "6000.3",
+    "unityRelease": "2f1",
     "documentationUrl": "https://github.com/jshull/FP_Placement/blob/main/README.md",
     "changelogUrl": "https://github.com/JShull/FP_Placement/blob/main/CHANGELOG.md",
     "licensesUrl": "https://github.com/jshull/FP_Placement/blob/main/LICENSE.md",
@@ -12,8 +12,7 @@
       "type": "git",
       "url": "https://github.com/jshull/FP_Placement.git"
     },
-    "dependencies": {
-      "com.fuzzphyte.utility":"https://github.com/jshull/FP_Utility.git"     
+    "dependencies": {  
     },
     "samples": [
       {

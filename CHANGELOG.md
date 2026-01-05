@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-01-04
+
+### 0.2.0 Added
+
+- [@JShull](https://github.com/jshull).
+  - 3D Sphere Layout
+  - 3D Rectangular Layout
+  - 3D Mesh Layout
+    - Random, Even
+    - Within a box collider
+    - Inverted (outside the box collider)
+
 ## [0.1.0] - 2025-06-01
 
 ### 0.1.0 Added
