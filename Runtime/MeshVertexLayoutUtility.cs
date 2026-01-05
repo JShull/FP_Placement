@@ -100,19 +100,17 @@ namespace FuzzPhyte.Placement
             List<Vector3> worldVertices,
             List<Vector3> worldNormals,
             BoxCollider boxCollider,
-            bool includeBoundary = true
+            bool includeBoundary = true,
+            bool invert = false
         )
         {
             if (boxCollider == null) return;
             if (worldVertices == null || worldVertices.Count == 0) return;
 
-            // normals list is optional, but if present we keep it aligned
             bool hasNormals = worldNormals != null && worldNormals.Count == worldVertices.Count;
 
             Transform ct = boxCollider.transform;
 
-            // BoxCollider.size is in local space and is affected by transform scale;
-            // easiest robust method: move points into collider local space and compare to local half extents.
             Vector3 half = boxCollider.size * 0.5f;
             Vector3 center = boxCollider.center;
 
@@ -120,11 +118,7 @@ namespace FuzzPhyte.Placement
             for (int i = 0; i < worldVertices.Count; i++)
             {
                 Vector3 wp = worldVertices[i];
-
-                // Convert world point into collider local space
                 Vector3 lp = ct.InverseTransformPoint(wp);
-
-                // Compare to center/half extents in collider local space
                 Vector3 d = lp - center;
 
                 bool inside =
@@ -132,7 +126,9 @@ namespace FuzzPhyte.Placement
                         ? (Mathf.Abs(d.x) <= half.x && Mathf.Abs(d.y) <= half.y && Mathf.Abs(d.z) <= half.z)
                         : (Mathf.Abs(d.x) < half.x && Mathf.Abs(d.y) < half.y && Mathf.Abs(d.z) < half.z);
 
-                if (!inside) continue;
+                // NEW: invert the selection if requested
+                bool keep = invert ? !inside : inside;
+                if (!keep) continue;
 
                 worldVertices[write] = worldVertices[i];
                 if (hasNormals) worldNormals[write] = worldNormals[i];
@@ -145,6 +141,7 @@ namespace FuzzPhyte.Placement
                 if (hasNormals) worldNormals.RemoveRange(write, worldNormals.Count - write);
             }
         }
+
         private static void AppendWorldVerticesAndNormals(
            Mesh mesh,
            Transform meshTransform,

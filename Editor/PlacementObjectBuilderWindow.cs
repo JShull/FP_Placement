@@ -56,6 +56,8 @@ namespace FuzzPhyte.Placement
 
         protected BoxCollider meshBoundsFilter;
         protected bool meshIncludeBoundary = false;
+        protected bool meshInvertBoundsFilter = false;
+
         #endregion
         #endregion
 
@@ -81,10 +83,10 @@ namespace FuzzPhyte.Placement
             if (layoutSurface != LayoutSurfaceType.MeshSurface) return;
             if (meshBoundsFilter == null) return;
 
-            DrawBoundsFilterGizmo(meshBoundsFilter, meshIncludeBoundary);
+            DrawBoundsFilterGizmo(meshBoundsFilter, meshIncludeBoundary,meshInvertBoundsFilter);
         }
 
-        private static void DrawBoundsFilterGizmo(BoxCollider box, bool includeBoundary)
+        private static void DrawBoundsFilterGizmo(BoxCollider box, bool includeBoundary, bool meshBoundsInvert)
         {
             if (box == null) return;
 
@@ -93,7 +95,15 @@ namespace FuzzPhyte.Placement
                 return;
             }
             // Cyan
-            Handles.color = Color.cyan;
+            if (meshBoundsInvert)
+            {
+                Handles.color = Color.red;
+            }
+            else
+            {
+                Handles.color = Color.cyan;
+            }
+               
 
             // Build matrix that represents the oriented box in world space:
             // Position = collider center in world, Rotation = transform rotation, Scale = transform lossyScale
@@ -111,7 +121,11 @@ namespace FuzzPhyte.Placement
 
             // Optional: label
             Vector3 labelPos = worldCenter + (t.up * (worldSize.y * 0.5f + 0.05f));
-            string label = includeBoundary ? "Bounds Filter (Include Boundary)" : "Bounds Filter";
+            //string label = includeBoundary ? "Bounds Filter (Include Boundary)" : "Bounds Filter";
+            string label = meshBoundsInvert
+    ? (includeBoundary ? "Bounds Filter (Outside, Include Boundary)" : "Bounds Filter (Outside)")
+    : (includeBoundary ? "Bounds Filter (Inside, Include Boundary)" : "Bounds Filter (Inside)");
+
             Handles.Label(labelPos, label);
 
             Handles.matrix = prev;
@@ -313,12 +327,15 @@ namespace FuzzPhyte.Placement
                 meshIncludeBoundary = EditorGUILayout.Toggle("Include Boundary", meshIncludeBoundary);
                 if (meshIncludeBoundary)
                 {
+                    meshInvertBoundsFilter = EditorGUILayout.Toggle("Invert Bounds Filter", meshInvertBoundsFilter);
+
                     meshBoundsFilter = (BoxCollider)EditorGUILayout.ObjectField(
                         "Bounds Filter (BoxCollider)",
                         meshBoundsFilter,
                         typeof(BoxCollider),
                         true
                     );
+
                 }
                 // Pick mode: ties to your "Even/Random" concepts
                 // If you want it to follow layoutDistribution automatically, you can hide this and derive it.
@@ -499,7 +516,8 @@ namespace FuzzPhyte.Placement
                         meshWorldVerts,
                         meshWorldNormals,
                         meshBoundsFilter,
-                        includeBoundary: meshIncludeBoundary
+                        includeBoundary: meshIncludeBoundary,
+                        invert:meshInvertBoundsFilter
                     );
 
                     if (meshWorldVerts.Count == 0)
