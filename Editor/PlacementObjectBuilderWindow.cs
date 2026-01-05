@@ -7,15 +7,41 @@ namespace FuzzPhyte.Placement
     public class PlacementObjectBuilderWindow : EditorWindow
     {
         protected GameObject targetObject;
+        protected Transform layoutParentOverride;
+
         protected string objectName = "NewPlacementObject";
         private PlacementCategory defaultCategory;
+
         protected Vector3 boundsCenter;
         protected Vector3 boundsSize = Vector3.one;
         protected bool autoFitBounds = true;
+
+        protected PlacementBuildMode buildMode = PlacementBuildMode.Stacking;
+
+        #region Stacking
         protected StackSuitability stackSuitability = StackSuitability.Medium;
         protected ShapeType stackShape = ShapeType.Circle;
         protected Vector2 stackSize = new(0.5f, 0.5f);
         protected Vector3 stackCenterOffset = Vector3.up * 0.5f;
+        #endregion
+
+
+        #region Layout
+        protected Transform layoutAnchor;
+        protected bool useSelectionAsFallbackAnchor = true;
+
+        protected LayoutSurfaceType layoutSurface = LayoutSurfaceType.SphereSurface;
+        protected LayoutDistribution layoutDistribution = LayoutDistribution.Even;
+        protected int layoutSeed = 12345;
+        protected bool layoutOrientOutward = true;
+
+        protected float sphereRadius = 1.0f;
+        protected Vector2 thetaRangeDeg = new Vector2(0f, 180f);
+        protected Vector2 phiRangeDeg = new Vector2(0f, 360f);
+
+        protected Vector3 boxSize = Vector3.one;
+        protected Vector3 boxCenterOffset = Vector3.zero;
+        #endregion
 
         [MenuItem("FuzzPhyte/Placement/Placement Object Builder", priority = FuzzPhyte.Utility.FP_UtilityData.ORDER_SUBMENU_LVL5)]
         public static void ShowWindow()
@@ -31,7 +57,32 @@ namespace FuzzPhyte.Placement
             targetObject = (GameObject)EditorGUILayout.ObjectField("Target GameObject", targetObject, typeof(GameObject), true);
             objectName = EditorGUILayout.TextField("PlacementObject Name", objectName);
 
+            buildMode = (PlacementBuildMode)EditorGUILayout.EnumPopup("Build Mode", buildMode);
+
             EditorGUILayout.Space();
+            
+
+            if (buildMode == PlacementBuildMode.Stacking)
+            {
+                
+                DrawStackingUI();
+            }
+            else
+            {
+                DrawLayoutUI();
+            }
+
+            EditorGUILayout.Space();
+            EditorGUILayout.HelpBox("Creates a PlacementObject asset and links it to the Target GameObject via PlacementObjectComponent.", MessageType.Info);
+
+            using (new EditorGUI.DisabledScope(targetObject == null))
+            {
+                if (GUILayout.Button("Create/Save PlacementObject Asset"))
+                {
+                    CreatePlacementObjectAsset();
+                }
+            }
+            /*
             GUILayout.Label("Stacking Settings", EditorStyles.boldLabel);
             stackSuitability = (StackSuitability)EditorGUILayout.EnumPopup("Stack Suitability", stackSuitability);
             stackShape = (ShapeType)EditorGUILayout.EnumPopup("Stack Shape", stackShape);
@@ -56,7 +107,293 @@ namespace FuzzPhyte.Placement
             }
 
             GUI.enabled = true;
+            */
         }
+        private void DrawStackingUI()
+        {
+            GUILayout.Label("Stacking Settings", EditorStyles.boldLabel);
+            EditorGUILayout.Space();
+            autoFitBounds = EditorGUILayout.Toggle("Auto Fit Bounds", autoFitBounds);
+
+            if (autoFitBounds && targetObject != null)
+            {
+                var r = targetObject.GetComponentInChildren<Renderer>();
+                if (r != null)
+                {
+                    boundsCenter = r.bounds.center;
+                    boundsSize = r.bounds.size;
+                }
+                else
+                {
+                    boundsCenter = targetObject.transform.position;
+                    boundsSize = Vector3.one;
+                }
+            }
+            else
+            {
+                boundsCenter = EditorGUILayout.Vector3Field("Bounds Center", boundsCenter);
+                boundsSize = EditorGUILayout.Vector3Field("Bounds Size", boundsSize);
+            }
+
+            EditorGUILayout.Space();
+
+            defaultCategory = (PlacementCategory)EditorGUILayout.ObjectField
+                (
+                    "Default Category",
+                    defaultCategory,
+                    typeof(PlacementCategory),
+                    false
+                );
+
+
+            stackSuitability = (StackSuitability)EditorGUILayout.EnumPopup("Stack Suitability", stackSuitability);
+            stackShape = (ShapeType)EditorGUILayout.EnumPopup("Stack Shape", stackShape);
+
+            stackSize = EditorGUILayout.Vector2Field("Stack Size", stackSize);
+            stackCenterOffset = EditorGUILayout.Vector3Field("Stack Center Offset", stackCenterOffset);
+        }
+
+        private void DrawLayoutUI()
+        {
+            GUILayout.Label("Layout Settings (3D)", EditorStyles.boldLabel);
+            EditorGUILayout.Space();
+            EditorGUILayout.BeginHorizontal();
+            layoutAnchor = (Transform)EditorGUILayout.ObjectField
+                (
+                "Layout Anchor",
+                layoutAnchor,
+                typeof(Transform),
+                true
+                );
+
+
+            GUILayout.Space(10f);
+            EditorGUILayout.LabelField(
+                "Selection as Fallback Anchor",
+                GUILayout.MinWidth(10f) // adjust as needed
+            );
+
+            useSelectionAsFallbackAnchor = EditorGUILayout.Toggle(
+                useSelectionAsFallbackAnchor,
+                GUILayout.Width(20f)
+            );
+
+            EditorGUILayout.EndHorizontal();
+            layoutParentOverride = (Transform)EditorGUILayout.ObjectField
+                (
+                "Layout Parent",
+                layoutParentOverride,
+                typeof(Transform),
+                true
+                );
+
+            layoutSurface = (LayoutSurfaceType)EditorGUILayout.EnumPopup("Layout Surface", layoutSurface);
+            layoutDistribution = (LayoutDistribution)EditorGUILayout.EnumPopup("Distribution", layoutDistribution);
+            if (layoutDistribution == LayoutDistribution.Random)
+            {
+                layoutSeed = EditorGUILayout.IntField("Seed", layoutSeed);
+            }
+            layoutOrientOutward = EditorGUILayout.Toggle("Orient Outward", layoutOrientOutward);
+
+            EditorGUILayout.Space();
+
+            if (layoutSurface == LayoutSurfaceType.SphereSurface)
+            {
+                sphereRadius = EditorGUILayout.FloatField("Sphere Radius", sphereRadius);
+                thetaRangeDeg = EditorGUILayout.Vector2Field("Theta Range (deg)", thetaRangeDeg);
+                phiRangeDeg = EditorGUILayout.Vector2Field("Phi Range (deg)", phiRangeDeg);
+            }
+            else
+            {
+                boxSize = EditorGUILayout.Vector3Field("Box Size", boxSize);
+                boxCenterOffset = EditorGUILayout.Vector3Field("Box Center Offset", boxCenterOffset);
+            }
+
+            EditorGUILayout.Space();
+
+            bool hasAnchor =
+                layoutAnchor != null ||
+                (useSelectionAsFallbackAnchor && Selection.activeTransform != null) ||
+                targetObject != null;
+
+            bool hasParent =
+                layoutParentOverride != null ||
+                targetObject != null ||
+                (useSelectionAsFallbackAnchor && Selection.activeTransform != null);
+
+            using (new EditorGUI.DisabledScope(!(hasAnchor || hasParent)))
+            {
+                if (GUILayout.Button("Apply Layout To Children"))
+                {
+                    ApplyLayoutToChildren();
+                }
+            }
+        }
+
+        private void CreatePlacementObjectAsset()
+        {
+            if (targetObject == null)
+            {
+                Debug.LogError("No target object selected.");
+                return;
+            }
+
+            var placementObj = CreateInstance<PlacementObject>();
+
+            // Common
+            placementObj.BuildMode = buildMode;
+            placementObj.BoundingBox = new Bounds(boundsCenter, boundsSize);
+
+            // Stacking
+            placementObj.StackSuitability = stackSuitability;
+            placementObj.Shape = stackShape;
+            placementObj.StackSize = stackSize;
+            placementObj.StackCenterOffset = stackCenterOffset;
+            placementObj.Stackable = true;
+
+            // Layout
+            placementObj.LayoutSurface = layoutSurface;
+            placementObj.LayoutDistribution = layoutDistribution;
+            placementObj.LayoutSeed = layoutSeed;
+            placementObj.LayoutOrientOutward = layoutOrientOutward;
+
+            placementObj.SphereRadius = sphereRadius;
+            placementObj.ThetaRangeDeg = thetaRangeDeg;
+            placementObj.PhiRangeDeg = phiRangeDeg;
+
+            placementObj.BoxSize = boxSize;
+            placementObj.BoxCenterOffset = boxCenterOffset;
+
+            // Category default
+            placementObj.Categories.Clear();
+            if (defaultCategory != null)
+            {
+                placementObj.Categories.Add(defaultCategory);
+            }
+
+            string path = EditorUtility.SaveFilePanelInProject("Save PlacementObject", objectName, "asset", "Save PlacementObject");
+            if (string.IsNullOrEmpty(path))
+            {
+                DestroyImmediate(placementObj);
+                return;
+            }
+
+            AssetDatabase.CreateAsset(placementObj, path);
+            AssetDatabase.SaveAssets();
+
+            EditorUtility.FocusProjectWindow();
+            Selection.activeObject = placementObj;
+
+            // Attach MonoBehaviour to the targetObject
+            var component = targetObject.GetComponent<PlacementObjectComponent>();
+            if (component == null)
+                component = Undo.AddComponent<PlacementObjectComponent>(targetObject);
+
+            Undo.RecordObject(component, "Assign Placement Data");
+            component.PlacementData = placementObj;
+            EditorUtility.SetDirty(component);
+
+            Debug.Log($"PlacementObject '{objectName}' generated and linked to {targetObject.name}.");
+        }
+
+        private void ApplyLayoutToChildren()
+        {
+            // Resolve parent (the thing whose children we layout)
+            Transform parent =
+                layoutParentOverride != null ? layoutParentOverride :
+                (targetObject != null ? targetObject.transform :
+                (useSelectionAsFallbackAnchor ? Selection.activeTransform : null));
+
+            if (parent == null)
+            {
+                Debug.LogWarning("No Layout Parent found. Assign Layout Parent or select a Transform in the scene.");
+                return;
+            }
+            Transform anchor =
+                layoutAnchor != null ? layoutAnchor :
+                (targetObject != null ? targetObject.transform :
+                (useSelectionAsFallbackAnchor ? Selection.activeTransform : null));
+
+            if (anchor == null)
+            {
+                Debug.LogWarning("No Layout Anchor found. Assign Layout Anchor or select a Transform in the scene.");
+                return;
+            }
+            var children = new System.Collections.Generic.List<Transform>();
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                children.Add(parent.GetChild(i));
+            }
+
+            if (children.Count == 0)
+            {
+                Debug.LogWarning("No child items found to layout.");
+                return;
+            }
+
+            Undo.IncrementCurrentGroup();
+            int group = Undo.GetCurrentGroup();
+
+            Vector3 anchorPos = anchor.position;
+
+            for (int i = 0; i < children.Count; i++)
+            {
+                Transform t = children[i];
+                Undo.RecordObject(t, "Apply Layout To Children");
+
+                if (layoutSurface == LayoutSurfaceType.SphereSurface)
+                {
+                    var temp = ScriptableObject.CreateInstance<PlacementObject>();
+                    temp.LayoutDistribution = layoutDistribution;
+                    temp.LayoutSeed = layoutSeed;
+                    temp.SphereRadius = sphereRadius;
+                    temp.ThetaRangeDeg = thetaRangeDeg;
+                    temp.PhiRangeDeg = phiRangeDeg;
+
+                    Vector3 local = temp.GetLayoutPointSphereLocal(i, children.Count);
+                    DestroyImmediate(temp);
+
+                    Vector3 world = anchorPos + local;
+                    t.position = world;
+
+                    if (layoutOrientOutward)
+                    {
+                        // Look at anchor (inward) then rotate 180 to face outward
+                        t.LookAt(anchorPos);
+                        t.Rotate(0f, 180f, 0f, Space.Self);
+                    }
+                }
+                else
+                {
+                    var temp = ScriptableObject.CreateInstance<PlacementObject>();
+                    temp.LayoutDistribution = layoutDistribution;
+                    temp.LayoutSeed = layoutSeed;
+                    temp.BoxSize = boxSize;
+                    temp.BoxCenterOffset = boxCenterOffset;
+
+                    Vector3 normal;
+                    Vector3 local = temp.GetLayoutPointBoxLocal(i, children.Count, out normal);
+                    DestroyImmediate(temp);
+
+                    Vector3 world = anchorPos + local;
+                    t.position = world;
+
+                    if (layoutOrientOutward)
+                    {
+                        // Face outward along the surface normal
+                        if (normal.sqrMagnitude > 0.0001f)
+                            t.rotation = Quaternion.LookRotation(normal.normalized, Vector3.up);
+                    }
+                }
+
+                EditorUtility.SetDirty(t);
+            }
+
+            Undo.CollapseUndoOperations(group);
+            Debug.Log($"Applied {layoutSurface} layout to {children.Count} children under '{parent.name}'.");
+        }
+
+        #region Older Code
         private void AutoFitBounds()
         {
             if (targetObject == null)
@@ -134,5 +471,6 @@ namespace FuzzPhyte.Placement
                 Debug.Log($"PlacementObject '{objectName}' generated and linked to {targetObject.name}.");
             }
         }
+        #endregion
     }
 }
