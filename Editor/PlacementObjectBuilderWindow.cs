@@ -3,7 +3,7 @@ namespace FuzzPhyte.Placement
     using UnityEditor;
     using UnityEngine;
     using FuzzPhyte.Utility;
-    
+    using System.Collections.Generic;
     public class PlacementObjectBuilderWindow : EditorWindow
     {
         protected GameObject targetObject;
@@ -44,6 +44,14 @@ namespace FuzzPhyte.Placement
 
         protected Vector3 boxSize = Vector3.one;
         protected Vector3 boxCenterOffset = Vector3.zero;
+
+        #region Mesh Surface Layout Parameters
+        protected GameObject meshSurfaceSource;
+        protected bool meshRemoveDuplicateVertices = true;
+        protected float meshDuplicateEpsilon = 0.0001f;
+        protected MeshVertexPickMode meshPickMode = MeshVertexPickMode.EvenInOrder; // uses your renamed enum
+        protected bool meshIncludeSkinned = true;
+        #endregion
         #endregion
 
         [MenuItem("FuzzPhyte/Placement/Placement Object Builder", priority = FuzzPhyte.Utility.FP_UtilityData.ORDER_SUBMENU_LVL5)]
@@ -191,15 +199,14 @@ namespace FuzzPhyte.Placement
                 );
 
             layoutSurface = (LayoutSurfaceType)EditorGUILayout.EnumPopup("Layout Surface", layoutSurface);
+
             layoutDistribution = (LayoutDistribution)EditorGUILayout.EnumPopup("Distribution", layoutDistribution);
             if (layoutDistribution == LayoutDistribution.Random)
             {
                 layoutSeed = EditorGUILayout.IntField("Seed", layoutSeed);
             }
             layoutOrientOutward = EditorGUILayout.Toggle("Orient Outward", layoutOrientOutward);
-
             EditorGUILayout.Space();
-
             if (layoutSurface == LayoutSurfaceType.SphereSurface)
             {
 
@@ -219,13 +226,43 @@ namespace FuzzPhyte.Placement
                 thetaRangeDeg = EditorGUILayout.Vector2Field("Theta Range (deg)", thetaRangeDeg);
                 phiRangeDeg = EditorGUILayout.Vector2Field("Phi Range (deg)", phiRangeDeg);
             }
-            else
+            else if(layoutSurface == LayoutSurfaceType.BoxSurface)
             {
                 boxSize = EditorGUILayout.Vector3Field("Box Size", boxSize);
                 boxCenterOffset = EditorGUILayout.Vector3Field("Box Center Offset", boxCenterOffset);
             }
+            else
+            {
+                GUILayout.Label("Mesh Surface Settings", EditorStyles.boldLabel);
 
-            EditorGUILayout.Space();
+                meshSurfaceSource = (GameObject)EditorGUILayout.ObjectField(
+                    "Mesh Source",
+                    meshSurfaceSource,
+                    typeof(GameObject),
+                    true
+                );
+
+                meshIncludeSkinned = EditorGUILayout.Toggle("Include Skinned", meshIncludeSkinned);
+
+                meshRemoveDuplicateVertices = EditorGUILayout.Toggle("Remove Duplicates", meshRemoveDuplicateVertices);
+                using (new EditorGUI.DisabledScope(!meshRemoveDuplicateVertices))
+                {
+                    meshDuplicateEpsilon = EditorGUILayout.FloatField("Duplicate Epsilon", meshDuplicateEpsilon);
+                    meshDuplicateEpsilon = Mathf.Max(0.0000001f, meshDuplicateEpsilon);
+                }
+
+                // Pick mode: ties to your "Even/Random" concepts
+                // If you want it to follow layoutDistribution automatically, you can hide this and derive it.
+                //meshPickMode = (MeshVertexPickMode)EditorGUILayout.EnumPopup("Pick Mode", meshPickMode);
+
+                // Optional quality-of-life: keep in sync with your Distribution dropdown
+                if (layoutDistribution == LayoutDistribution.Even)
+                    meshPickMode = MeshVertexPickMode.EvenInOrder;
+                else if (layoutDistribution == LayoutDistribution.Random)
+                    meshPickMode = MeshVertexPickMode.Random;
+            }
+
+                EditorGUILayout.Space();
 
             bool hasAnchor =
                 layoutAnchor != null ||
@@ -237,7 +274,9 @@ namespace FuzzPhyte.Placement
                 targetObject != null ||
                 (useSelectionAsFallbackAnchor && Selection.activeTransform != null);
 
-            using (new EditorGUI.DisabledScope(!(hasAnchor || hasParent)))
+            bool hasMeshSource = layoutSurface != LayoutSurfaceType.MeshSurface || meshSurfaceSource != null;
+            
+            using (new EditorGUI.DisabledScope(!(hasAnchor || hasParent || hasMeshSource)))
             {
                 if (GUILayout.Button("Apply Layout To Children"))
                 {
@@ -282,6 +321,29 @@ namespace FuzzPhyte.Placement
 
             placementObj.SphereEvenMode = sphereEvenMode;
             placementObj.LatLonRingCount = latLonRingCount;
+
+            // mesh settings
+            if (meshSurfaceSource != null)
+            {
+                var meshFilter = meshSurfaceSource.GetComponent<MeshFilter>();
+                if(meshFilter != null)
+                {
+                    var mesh = meshFilter.sharedMesh;
+                    placementObj.MeshSurfaceSource = mesh;
+                }
+                else
+                {
+                    var meshSkinnedFilter = meshSurfaceSource.GetComponent<SkinnedMeshRenderer>();
+                    if(meshSkinnedFilter != null)
+                    {
+                        placementObj.MeshSurfaceSource = meshSkinnedFilter.sharedMesh;
+                    }
+                }
+                placementObj.MeshRemoveDuplicateVertices = meshRemoveDuplicateVertices;
+                placementObj.MeshDuplicateEpsilon = meshDuplicateEpsilon;
+                placementObj.MeshPickMode = meshPickMode;
+                placementObj.MeshIncludeSkinned = meshIncludeSkinned;
+            }
 
             // Category default
             placementObj.Categories.Clear();
@@ -338,6 +400,32 @@ namespace FuzzPhyte.Placement
                 Debug.LogWarning("No Layout Anchor found. Assign Layout Anchor or select a Transform in the scene.");
                 return;
             }
+            //mesh mode
+            List<Vector3> meshWorldVerts = null;
+            List<Vector3> meshWorldNormals = null;
+            if (layoutSurface == LayoutSurfaceType.MeshSurface)
+            {
+                
+                if (meshSurfaceSource == null)
+                {
+                    Debug.LogWarning("Mesh Surface selected but no Mesh Source assigned.");
+                    return;
+                }
+
+                if (!MeshVertexLayoutUtility.TryGetWorldVerticesAndNormals(
+                    meshSurfaceSource,
+                    out meshWorldVerts,
+                    out meshWorldNormals,
+                    includeSkinned: meshIncludeSkinned,
+                    removeDuplicates: meshRemoveDuplicateVertices,
+                    duplicateEpsilon: meshDuplicateEpsilon
+                    ) || meshWorldVerts == null || meshWorldVerts.Count == 0)
+                {
+                    Debug.LogWarning($"Mesh Source '{meshSurfaceSource.name}' has no usable vertices.");
+                    return;
+                }
+            }
+
             var children = new System.Collections.Generic.List<Transform>();
             for (int i = 0; i < parent.childCount; i++)
             {
@@ -349,12 +437,39 @@ namespace FuzzPhyte.Placement
                 Debug.LogWarning("No child items found to layout.");
                 return;
             }
-
+            Vector3 anchorPos = anchor.position;
             Undo.IncrementCurrentGroup();
             int group = Undo.GetCurrentGroup();
 
-            Vector3 anchorPos = anchor.position;
+           
+            if (layoutSurface == LayoutSurfaceType.MeshSurface)
+            {
+                // Undo record for all children as a batch (since placer loops internally)
+                foreach (var child in children)
+                {
+                    if (child != null)
+                        Undo.RecordObject(child, "Apply Layout To Children");
+                }
 
+                MeshVertexPlacer.ApplyToTransforms(
+                    children,
+                    meshWorldVerts,
+                    meshPickMode,                 // <-- uses the user's option (derived from Distribution in your UI)
+                    orientToNormal: layoutOrientOutward,
+                    worldNormals: meshWorldNormals,
+                    randomSeed: layoutSeed
+                );
+
+                foreach (var child in children)
+                {
+                    if (child != null)
+                        EditorUtility.SetDirty(child);
+                }
+
+                Undo.CollapseUndoOperations(group);
+                Debug.Log($"Applied {layoutSurface} layout to {children.Count} children under '{parent.name}'.");
+                return;
+            }
             for (int i = 0; i < children.Count; i++)
             {
                 Transform t = children[i];
@@ -375,8 +490,8 @@ namespace FuzzPhyte.Placement
                     temp.ThetaRangeDeg = thetaRangeDeg;
                     temp.PhiRangeDeg = phiRangeDeg;
 
-                   
-                   
+
+
                     Vector3 local = temp.GetLayoutPointSphereLocal(i, children.Count);
                     DestroyImmediate(temp);
 
@@ -390,7 +505,7 @@ namespace FuzzPhyte.Placement
                         t.Rotate(0f, 180f, 0f, Space.Self);
                     }
                 }
-                else
+                else if (layoutSurface == LayoutSurfaceType.BoxSurface)
                 {
                     var temp = ScriptableObject.CreateInstance<PlacementObject>();
                     temp.LayoutDistribution = layoutDistribution;
@@ -415,7 +530,7 @@ namespace FuzzPhyte.Placement
 
                 EditorUtility.SetDirty(t);
             }
-
+            
             Undo.CollapseUndoOperations(group);
             Debug.Log($"Applied {layoutSurface} layout to {children.Count} children under '{parent.name}'.");
         }

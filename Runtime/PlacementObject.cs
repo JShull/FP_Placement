@@ -26,7 +26,8 @@ namespace FuzzPhyte.Placement
     public enum LayoutSurfaceType
     {
         SphereSurface,
-        BoxSurface
+        BoxSurface,
+        MeshSurface
     }
     public enum LayoutDistribution
     {
@@ -80,10 +81,17 @@ namespace FuzzPhyte.Placement
         public Vector3 BoxSize = Vector3.one;
         public Vector3 BoxCenterOffset = Vector3.zero;
 
+        [Header("Layout: Mesh Surface")]
+        public Mesh MeshSurfaceSource;
+        public bool MeshRemoveDuplicateVertices = true;
+        public float MeshDuplicateEpsilon = 0.0001f;
+        public MeshVertexPickMode MeshPickMode = MeshVertexPickMode.EvenInOrder;
+        public bool MeshIncludeSkinned = true;
         [Header("Category Links")]
         public List<PlacementCategory> Categories = new(); // CEFR level, tags, vocab category
         public List<string> VocabularyTags = new(); // Optional tags for vocabulary or thematic grouping
         
+
         public Vector3 GetRandomPointLocal()
         {
             Vector2 local2D = Vector2.zero;
