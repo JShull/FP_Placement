@@ -91,6 +91,60 @@ namespace FuzzPhyte.Placement
 
             return false;
         }
+
+        /// <summary>
+        /// Filters world vertices/normals to only those contained within the given BoxCollider volume.
+        /// Works with rotated colliders by transforming points into collider local space.
+        /// </summary>
+        public static void FilterByBoxColliderInPlace(
+            List<Vector3> worldVertices,
+            List<Vector3> worldNormals,
+            BoxCollider boxCollider,
+            bool includeBoundary = true
+        )
+        {
+            if (boxCollider == null) return;
+            if (worldVertices == null || worldVertices.Count == 0) return;
+
+            // normals list is optional, but if present we keep it aligned
+            bool hasNormals = worldNormals != null && worldNormals.Count == worldVertices.Count;
+
+            Transform ct = boxCollider.transform;
+
+            // BoxCollider.size is in local space and is affected by transform scale;
+            // easiest robust method: move points into collider local space and compare to local half extents.
+            Vector3 half = boxCollider.size * 0.5f;
+            Vector3 center = boxCollider.center;
+
+            int write = 0;
+            for (int i = 0; i < worldVertices.Count; i++)
+            {
+                Vector3 wp = worldVertices[i];
+
+                // Convert world point into collider local space
+                Vector3 lp = ct.InverseTransformPoint(wp);
+
+                // Compare to center/half extents in collider local space
+                Vector3 d = lp - center;
+
+                bool inside =
+                    includeBoundary
+                        ? (Mathf.Abs(d.x) <= half.x && Mathf.Abs(d.y) <= half.y && Mathf.Abs(d.z) <= half.z)
+                        : (Mathf.Abs(d.x) < half.x && Mathf.Abs(d.y) < half.y && Mathf.Abs(d.z) < half.z);
+
+                if (!inside) continue;
+
+                worldVertices[write] = worldVertices[i];
+                if (hasNormals) worldNormals[write] = worldNormals[i];
+                write++;
+            }
+
+            if (write < worldVertices.Count)
+            {
+                worldVertices.RemoveRange(write, worldVertices.Count - write);
+                if (hasNormals) worldNormals.RemoveRange(write, worldNormals.Count - write);
+            }
+        }
         private static void AppendWorldVerticesAndNormals(
            Mesh mesh,
            Transform meshTransform,

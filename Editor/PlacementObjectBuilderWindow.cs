@@ -51,6 +51,11 @@ namespace FuzzPhyte.Placement
         protected float meshDuplicateEpsilon = 0.0001f;
         protected MeshVertexPickMode meshPickMode = MeshVertexPickMode.EvenInOrder; // uses your renamed enum
         protected bool meshIncludeSkinned = true;
+
+        //bounds related
+
+        protected BoxCollider meshBoundsFilter;
+        protected bool meshIncludeBoundary = false;
         #endregion
         #endregion
 
@@ -58,6 +63,61 @@ namespace FuzzPhyte.Placement
         public static void ShowWindow()
         {
             GetWindow<PlacementObjectBuilderWindow>("FP Placement Object Builder");
+        }
+
+        private void OnEnable()
+        {
+            SceneView.duringSceneGui += OnSceneGUI;
+        }
+
+        private void OnDisable()
+        {
+            SceneView.duringSceneGui -= OnSceneGUI;
+        }
+
+        private void OnSceneGUI(SceneView sceneView)
+        {
+            // Only draw when MeshSurface + a bounds filter is assigned
+            if (layoutSurface != LayoutSurfaceType.MeshSurface) return;
+            if (meshBoundsFilter == null) return;
+
+            DrawBoundsFilterGizmo(meshBoundsFilter, meshIncludeBoundary);
+        }
+
+        private static void DrawBoundsFilterGizmo(BoxCollider box, bool includeBoundary)
+        {
+            if (box == null) return;
+
+            if (!includeBoundary)
+            {
+                return;
+            }
+            // Cyan
+            Handles.color = Color.cyan;
+
+            // Build matrix that represents the oriented box in world space:
+            // Position = collider center in world, Rotation = transform rotation, Scale = transform lossyScale
+            Transform t = box.transform;
+
+            Vector3 worldCenter = t.TransformPoint(box.center);
+            Quaternion worldRot = t.rotation;
+            Vector3 worldSize = Vector3.Scale(box.size, t.lossyScale);
+
+            // Draw wire cube with matrix so rotation is correct
+            Matrix4x4 prev = Handles.matrix;
+            Handles.matrix = Matrix4x4.TRS(worldCenter, worldRot, Vector3.one);
+
+            Handles.DrawWireCube(Vector3.zero, worldSize);
+
+            // Optional: label
+            Vector3 labelPos = worldCenter + (t.up * (worldSize.y * 0.5f + 0.05f));
+            string label = includeBoundary ? "Bounds Filter (Include Boundary)" : "Bounds Filter";
+            Handles.Label(labelPos, label);
+
+            Handles.matrix = prev;
+
+            // Force SceneView repaint so it updates even if nothing is selected
+            SceneView.RepaintAll();
         }
 
         private void OnGUI()
@@ -250,7 +310,16 @@ namespace FuzzPhyte.Placement
                     meshDuplicateEpsilon = EditorGUILayout.FloatField("Duplicate Epsilon", meshDuplicateEpsilon);
                     meshDuplicateEpsilon = Mathf.Max(0.0000001f, meshDuplicateEpsilon);
                 }
-
+                meshIncludeBoundary = EditorGUILayout.Toggle("Include Boundary", meshIncludeBoundary);
+                if (meshIncludeBoundary)
+                {
+                    meshBoundsFilter = (BoxCollider)EditorGUILayout.ObjectField(
+                        "Bounds Filter (BoxCollider)",
+                        meshBoundsFilter,
+                        typeof(BoxCollider),
+                        true
+                    );
+                }
                 // Pick mode: ties to your "Even/Random" concepts
                 // If you want it to follow layoutDistribution automatically, you can hide this and derive it.
                 //meshPickMode = (MeshVertexPickMode)EditorGUILayout.EnumPopup("Pick Mode", meshPickMode);
@@ -424,6 +493,22 @@ namespace FuzzPhyte.Placement
                     Debug.LogWarning($"Mesh Source '{meshSurfaceSource.name}' has no usable vertices.");
                     return;
                 }
+                if (meshBoundsFilter != null && meshIncludeBoundary)
+                {
+                    MeshVertexLayoutUtility.FilterByBoxColliderInPlace(
+                        meshWorldVerts,
+                        meshWorldNormals,
+                        meshBoundsFilter,
+                        includeBoundary: meshIncludeBoundary
+                    );
+
+                    if (meshWorldVerts.Count == 0)
+                    {
+                        Debug.LogWarning("Mesh vertices were filtered out completely by the bounds filter.");
+                        return;
+                    }
+                }
+
             }
 
             var children = new System.Collections.Generic.List<Transform>();
@@ -615,4 +700,7 @@ namespace FuzzPhyte.Placement
         }
         #endregion
     }
+
+    
 }
+
