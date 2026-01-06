@@ -15,11 +15,16 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         private FP_OrbitalInput _queuedInput = FP_OrbitalInput.None;
 
         public FP_OrbitalCameraController Controller => _controller;
+        public BoxCollider TargetBounds;
 
         private void Awake()
         {
             if (!_camera) _camera = GetComponentInChildren<Camera>();
             _controller = new FP_OrbitalCameraController(_camera, _settings);
+            if (TargetBounds != null)
+            {
+                _controller.SetTargetBounds(TargetBounds.bounds, null);
+            }
         }
 
         private void LateUpdate()
