@@ -2,7 +2,9 @@
     "name": "com.fuzzphyte.placement",
     "rootNamespace": "FuzzPhyte.Placement",
     "references": [
-        "GUID:b2274f1409ce26f40919f89f9d4f667c"
+        "GUID:b2274f1409ce26f40919f89f9d4f667c",
+        "GUID:98ab427d147ccf9429dda9e793dfa7cc",
+        "GUID:75469ad4d38634e559750d17036d5f7c"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

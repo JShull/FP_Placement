@@ -3,7 +3,8 @@
     "rootNamespace": "",
     "references": [
         "com.fuzzphyte.placement",
-        "com.fuzzphyte.utility"
+        "com.fuzzphyte.utility",
+        "com.fuzzphyte.ray"
     ],
     "includePlatforms": [
         "Editor"
