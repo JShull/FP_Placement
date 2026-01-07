@@ -143,6 +143,11 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             _rotation = _rotationTarget = _camera.transform.rotation;
             _distance = _distanceTarget = 5f;
         }
+        public void ZoomToFitBounds(float newMaxDistance)
+        {
+            _settings.DistanceMax = newMaxDistance;
+            _settings.Clamp();
+        }
 
         public void SetTargetBounds(Bounds worldBounds, Transform optionalFrame = null)
         {

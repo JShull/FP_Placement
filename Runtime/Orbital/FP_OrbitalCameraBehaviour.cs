@@ -21,10 +21,13 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         {
             if (!_camera) _camera = GetComponentInChildren<Camera>();
             _controller = new FP_OrbitalCameraController(_camera, _settings);
+            float checkMaxDistance = 0;
             if (TargetBounds != null)
             {
                 _controller.SetTargetBounds(TargetBounds.bounds, null);
-            }
+                checkMaxDistance = TargetBounds.bounds.size.magnitude*1.1f;
+                _controller.ZoomToFitBounds(checkMaxDistance);
+            } 
         }
 
         private void LateUpdate()
