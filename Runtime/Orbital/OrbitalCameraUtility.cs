@@ -12,12 +12,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         Top=5,
         Bottom=6
     }
-    public enum FP_ProjectionMode
-    {
-        None=0,
-        Perspective=1,
-        Orthographic=2,
-    }
+    
 
     public readonly struct FP_OrbitalInput
     {
@@ -47,6 +42,141 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         public static FP_OrbitalInput None => new FP_OrbitalInput(false, false, default, default, 0f, false);
 
     }
+
+    #region UI Objects
+    public enum FP_ViewCubeHit
+    {
+        // Faces
+        Front,
+        Back,
+        Left,
+        Right,
+        Top,
+        Bottom,
+        // Corners
+        TopFrontRight,
+        TopFrontLeft,
+        TopBackRight,
+        TopBackLeft,
+        BottomFrontRight,
+        BottomFrontLeft,
+        BottomBackRight,
+        BottomBackLeft,
+        // Edges
+        TopFront,
+        TopBack,
+        TopRight,
+        TopLeft,
+        BottomFront,
+        BottomBack,
+        BottomRight,
+        BottomLeft,
+        FrontRight,
+        FrontLeft,
+        BackRight,
+        BackLeft
+    }
+    
+    public enum FP_ProjectionMode
+    {
+        None = 0,
+        Perspective = 1,
+        Orthographic = 2,
+    }
+
+    [Serializable]
+    public struct FP_ViewPose
+    {
+        public Vector3 FromDirection;
+        public Vector3 UpDirection;
+
+        public FP_ViewPose(Vector3 fromDirection, Vector3 upDirection)
+        {
+            FromDirection = fromDirection.normalized;
+            UpDirection = upDirection.normalized;
+        }
+        public void NormalizeDirection()
+        {
+            if (FromDirection.sqrMagnitude > 0f)
+            {
+                FromDirection.Normalize();
+            }
+            if (UpDirection.sqrMagnitude > 0f)
+            {
+                UpDirection.Normalize();
+            }
+        }
+    }
+
+    [Serializable]
+    public readonly struct FP_OrbitalViewState
+    {
+        public readonly Quaternion Rotation;
+        public readonly Vector3 Pivot;
+        public readonly float Distance;
+        public readonly bool IsOrthographic;
+        public readonly float OrthoSize;
+
+        public FP_OrbitalViewState(Quaternion rotation, Vector3 pivot, float distance, bool isOrtho, float orthoSize)
+        {
+            Rotation = rotation;
+            Pivot = pivot;
+            Distance = distance;
+            IsOrthographic = isOrtho;
+            OrthoSize = orthoSize;
+        }
+    }
+    public static class FP_ViewCubePoses
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hit"></param>
+        /// <returns></returns>
+        public static FP_ViewPose Get(FP_ViewCubeHit hit)
+        {
+            Vector3 up = Vector3.up;
+
+            // Faces
+            if (hit == FP_ViewCubeHit.Front) return new FP_ViewPose(new Vector3(0, 0, 1), up);
+            if (hit == FP_ViewCubeHit.Back) return new FP_ViewPose(new Vector3(0, 0, -1), up);
+            if (hit == FP_ViewCubeHit.Right) return new FP_ViewPose(new Vector3(1, 0, 0), up);
+            if (hit == FP_ViewCubeHit.Left) return new FP_ViewPose(new Vector3(-1, 0, 0), up);
+            if (hit == FP_ViewCubeHit.Top) return new FP_ViewPose(new Vector3(0, 1, 0), Vector3.forward); // avoid roll
+            if (hit == FP_ViewCubeHit.Bottom) return new FP_ViewPose(new Vector3(0, -1, 0), Vector3.forward); // avoid roll
+
+            // Corners
+            if (hit == FP_ViewCubeHit.TopFrontRight) return new FP_ViewPose(new Vector3(1, 1, 1), up);
+            if (hit == FP_ViewCubeHit.TopFrontLeft) return new FP_ViewPose(new Vector3(-1, 1, 1), up);
+            if (hit == FP_ViewCubeHit.TopBackRight) return new FP_ViewPose(new Vector3(1, 1, -1), up);
+            if (hit == FP_ViewCubeHit.TopBackLeft) return new FP_ViewPose(new Vector3(-1, 1, -1), up);
+            if (hit == FP_ViewCubeHit.BottomFrontRight) return new FP_ViewPose(new Vector3(1, -1, 1), up);
+            if (hit == FP_ViewCubeHit.BottomFrontLeft) return new FP_ViewPose(new Vector3(-1, -1, 1), up);
+            if (hit == FP_ViewCubeHit.BottomBackRight) return new FP_ViewPose(new Vector3(1, -1, -1), up);
+            if (hit == FP_ViewCubeHit.BottomBackLeft) return new FP_ViewPose(new Vector3(-1, -1, -1), up);
+
+            // Edges
+            if (hit == FP_ViewCubeHit.TopFront) return new FP_ViewPose(new Vector3(0, 1, 1), up);
+            if (hit == FP_ViewCubeHit.TopBack) return new FP_ViewPose(new Vector3(0, 1, -1), up);
+            if (hit == FP_ViewCubeHit.TopRight) return new FP_ViewPose(new Vector3(1, 1, 0), up);
+            if (hit == FP_ViewCubeHit.TopLeft) return new FP_ViewPose(new Vector3(-1, 1, 0), up);
+            if (hit == FP_ViewCubeHit.BottomFront) return new FP_ViewPose(new Vector3(0, -1, 1), up);
+            if (hit == FP_ViewCubeHit.BottomBack) return new FP_ViewPose(new Vector3(0, -1, -1), up);
+            if (hit == FP_ViewCubeHit.BottomRight) return new FP_ViewPose(new Vector3(1, -1, 0), up);
+            if (hit == FP_ViewCubeHit.BottomLeft) return new FP_ViewPose(new Vector3(-1, -1, 0), up);
+            if (hit == FP_ViewCubeHit.FrontRight) return new FP_ViewPose(new Vector3(1, 0, 1), up);
+            if (hit == FP_ViewCubeHit.FrontLeft) return new FP_ViewPose(new Vector3(-1, 0, 1), up);
+            if (hit == FP_ViewCubeHit.BackRight) return new FP_ViewPose(new Vector3(1, 0, -1), up);
+            if (hit == FP_ViewCubeHit.BackLeft) return new FP_ViewPose(new Vector3(-1, 0, -1), up);
+            
+            // Fallback
+            return new FP_ViewPose(Vector3.forward, Vector3.up);
+
+            // Top/Bottom we are just swapping UpDirection for forward to avoid roll
+        }
+    }
+    #endregion
+
     [Serializable]
     public sealed class FP_OrbitalCameraSettings
     {
@@ -63,6 +193,10 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         public float ZoomSensitivity = 0.05f;           // scale on pinch delta
         public float DistanceMin = 0.25f;
         public float DistanceMax = 250f;
+
+        [Header("Ortho Zoom Limits")]
+        public float OrthoSizeMin = 0.05f;
+        public float OrthoSizeMax = 500f;
 
         [Header("Damping")]
         public float PositionLerp = 14f;
@@ -131,6 +265,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
         // Gesture state (optional)
         private bool _isDragging;
+        private FP_ProjectionMode _lastAppliedProjection = FP_ProjectionMode.Perspective;
 
         public FP_OrbitalCameraController(Camera camera, FP_OrbitalCameraSettings settings)
         {
@@ -196,17 +331,60 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             // Fit distance / ortho size to bounds
             FitToBounds(view, projectionMode);
         }
+        /// <summary>
+        /// UI function to set our camera based on external interfaces
+        /// </summary>
+        /// <param name="worldRotation"></param>
+        /// <param name="projectionMode"></param>
+        public void SetRotationTarget(Quaternion worldRotation, FP_ProjectionMode projectionMode, bool fitToBounds=true)
+        {
+            _projectionTarget = projectionMode;
+
+            _rotationTarget = worldRotation;
+
+            // Keep yaw/pitch stable if you rely on orbit angles
+            Vector3 e = _rotationTarget.eulerAngles;
+            _yaw = e.y;
+            _pitch = NormalizePitch(e.x);
+
+            if (fitToBounds)
+            {
+                FitToBounds(projectionMode);
+            }
+            // FitToBounds(...);  // you can pick a conservative fit path here
+        }
+
 
         public void ApplyInput(in FP_OrbitalInput input)
         {
             if (input.IsPressed) _isDragging = true;
             if (input.IsReleased) _isDragging = false;
 
-            // Zoom (pinch)
+            // Zoom (mouse wheel / pinchDelta)
             if (Mathf.Abs(input.PinchDelta) > Mathf.Epsilon)
             {
                 float zoomFactor = 1f - (input.PinchDelta * _settings.ZoomSensitivity);
-                _distanceTarget = Mathf.Clamp(_distanceTarget * zoomFactor, _settings.DistanceMin, _settings.DistanceMax);
+
+                // Prevent negative/zero factor from extreme deltas
+                zoomFactor = Mathf.Clamp(zoomFactor, 0.05f, 20f);
+
+                // Use projection target (not current camera state) to avoid one-frame lag during mode switches
+                bool ortho = (_projectionTarget == FP_ProjectionMode.Orthographic);
+
+                if (ortho)
+                {
+                    // Ortho zoom = change orthographicSize (smaller = zoom in)
+                    _orthoSizeTarget = Mathf.Clamp(_orthoSizeTarget * zoomFactor, _settings.OrthoSizeMin, _settings.OrthoSizeMax);
+
+                    // Optional: keep distance sane for clipping even in ortho
+                    // (doesn't affect scale, but avoids near clip issues)
+                    _distanceTarget = Mathf.Clamp(_distanceTarget, _settings.DistanceMin, _settings.DistanceMax);
+                }
+                else
+                {
+                    // Perspective zoom = change distance
+                    _distanceTarget = Mathf.Clamp(_distanceTarget * zoomFactor, _settings.DistanceMin, _settings.DistanceMax);
+                }
             }
 
             if (!_isDragging) return;
@@ -224,14 +402,42 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
         public void Tick(float deltaTime)
         {
-            // Projection switching
-            if (_projectionTarget == FP_ProjectionMode.Perspective)
+            // Projection switching + transition zoom mapping
+            if (_projectionTarget != _lastAppliedProjection)
             {
-                if (_camera.orthographic) _camera.orthographic = false;
+                // Convert zoom so the view scale stays roughly consistent.
+                // Use the CURRENT smoothed values as the starting point (feels best).
+                if (_projectionTarget == FP_ProjectionMode.Orthographic)
+                {
+                    // Going Perspective -> Ortho: compute ortho size that matches current perspective framing
+                    float orthoSize = ComputeEquivalentOrthoSizeFromPerspective();
+                    _orthoSize = _orthoSizeTarget = Mathf.Clamp(orthoSize, _settings.OrthoSizeMin, _settings.OrthoSizeMax);
+
+                    _camera.orthographic = true;
+                    _camera.orthographicSize = _orthoSize;
+                }
+                else
+                {
+                    // Going Ortho -> Perspective: compute distance that matches current ortho framing
+                    float dist = ComputeEquivalentPerspectiveDistanceFromOrtho();
+                    _distance = _distanceTarget = Mathf.Clamp(dist, _settings.DistanceMin, _settings.DistanceMax);
+
+                    _camera.orthographic = false;
+                }
+
+                _lastAppliedProjection = _projectionTarget;
             }
             else
             {
-                if (!_camera.orthographic) _camera.orthographic = true;
+                // No transition: keep your existing switching logic
+                if (_projectionTarget == FP_ProjectionMode.Perspective)
+                {
+                    if (_camera.orthographic) _camera.orthographic = false;
+                }
+                else
+                {
+                    if (!_camera.orthographic) _camera.orthographic = true;
+                }
             }
 
             // Smooth state toward targets
@@ -251,6 +457,27 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             Vector3 camPos = _pivot + (_rotation * Vector3.back) * _distance;
             _camera.transform.SetPositionAndRotation(camPos, _rotation);
         }
+        private float ComputeEquivalentOrthoSizeFromPerspective()
+        {
+            // Ortho size is half of the vertical size visible at the pivot depth.
+            // For a perspective camera: halfHeight = distance * tan(fov/2)
+            float fovRad = _camera.fieldOfView * Mathf.Deg2Rad;
+            float halfHeight = _distance * Mathf.Tan(fovRad * 0.5f);
+
+            // If you want to respect aspect when your content framing is width-bound,
+            // you can optionally incorporate it, but halfHeight is usually what people expect.
+            return Mathf.Max(_settings.OrthoSizeMin, halfHeight);
+        }
+        private float ComputeEquivalentPerspectiveDistanceFromOrtho()
+        {
+            // Inverse of above: distance = orthoSize / tan(fov/2)
+            float fovRad = _camera.fieldOfView * Mathf.Deg2Rad;
+            float denom = Mathf.Tan(Mathf.Max(0.0001f, fovRad * 0.5f));
+            float dist = _orthoSize / denom;
+
+            return Mathf.Max(_settings.DistanceMin, dist);
+        }
+
 
         private void Orbit(Vector2 dragDelta)
         {
@@ -275,34 +502,33 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
         private void FitToBounds(FP_OrbitalView view, FP_ProjectionMode mode)
         {
+            FitToBounds(mode);
+            
+        }
+        private void FitToBounds(FP_ProjectionMode mode)
+        {
             // Conservative fit using bounds extents projected onto view plane.
             // Works well for axis-aligned bounds; if you need oriented bounds,
             // pass a rotated frame AND provide bounds in that frame (future extension).
-
             Vector3 ext = _targetBounds.extents;
-            float radius = ext.magnitude;
-            radius *= _settings.OrthoPadding;
+            float radius = ext.magnitude * _settings.OrthoPadding;
 
             if (mode == FP_ProjectionMode.Orthographic)
             {
-                // Ortho size is "half-height" in world units.
-                // Use the larger of (height, width) scaled by aspect.
+                // Conservative; orientation-agnostic
                 float halfHeight = Mathf.Max(ext.y, ext.z, ext.x);
                 float halfWidth = halfHeight / Mathf.Max(0.0001f, _camera.aspect);
-                _orthoSizeTarget = Mathf.Max(halfHeight, halfWidth) * _settings.OrthoPadding;
 
-                // Distance still matters for clipping; keep a sane offset.
+                _orthoSizeTarget = Mathf.Max(halfHeight, halfWidth) * _settings.OrthoPadding;
                 _distanceTarget = Mathf.Clamp(radius * 2.0f, _settings.DistanceMin, _settings.DistanceMax);
             }
             else
             {
-                // Fit distance for perspective using fov (approx sphere fit).
                 float fovRad = _camera.fieldOfView * Mathf.Deg2Rad;
                 float dist = radius / Mathf.Sin(Mathf.Max(0.0001f, fovRad * 0.5f));
                 _distanceTarget = Mathf.Clamp(dist, _settings.DistanceMin, _settings.DistanceMax);
             }
         }
-
         private static float NormalizePitch(float pitchEulerX)
         {
             // Unity returns 0..360; convert to -180..180 then clamp.

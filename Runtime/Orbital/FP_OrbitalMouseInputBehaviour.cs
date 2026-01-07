@@ -1,7 +1,11 @@
 namespace FuzzPhyte.Placement.OrbitalCamera
 {
+#if UNITY_EDITOR
+    using UnityEditor;
+#endif
     using UnityEngine;
     using UnityEngine.InputSystem;
+    using FuzzPhyte.Utility;
     //touch
     using UnityEngine.InputSystem.EnhancedTouch;
     using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
@@ -14,7 +18,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
     /// This class does not implement UI or gesture recognition; it simply converts mouse input to FP_OrbitalInput.
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed class FP_OrbitalMouseInputBehaviour : MonoBehaviour
+    public sealed partial class FP_OrbitalMouseInputBehaviour : MonoBehaviour
     {
         [Header("Target Orbital Camera")]
         [SerializeField] private FP_OrbitalCameraBehaviour _orbital;
@@ -52,6 +56,13 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         private Vector2 _lastPos;
         private bool _startedThisFrame;
         private bool _releasedThisFrame;
+
+        [Header("Input Region Gate")]
+        [Tooltip("If true, this input behaviour only responds when the pointer/touch is inside the region.")]
+        [SerializeField] private bool _requireRegion = true;
+
+        [Tooltip("Screen region that accepts orbit/zoom input.")]
+        [SerializeField] private FP_ScreenRegionAsset _inputRegion;
 
         // Scroll is a delta stream; we accumulate and consume once per frame.
         private float _scrollAccumY;
@@ -145,32 +156,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             }
         }
 
-        private void OnPrimaryDown(InputAction.CallbackContext ctx)
-        {
-            if (!CanProcessInput()) return;
-            if (_pointerPosition?.action == null) return;
-
-            _isDown = true;
-            _startedThisFrame = true;
-            _releasedThisFrame = false;
-            _lastPos = _pointerPosition.action.ReadValue<Vector2>();
-        }
-
-        private void OnPrimaryUp(InputAction.CallbackContext ctx)
-        {
-            _isDown = false;
-            _releasedThisFrame = true;
-            _startedThisFrame = false;
-        }
-
-        private void OnScrollPerformed(InputAction.CallbackContext ctx)
-        {
-            if (!CanProcessInput() || _inputLocked) return;
-            // Scroll is Vector2 delta (x horizontal, y vertical)
-            Vector2 scroll = ctx.ReadValue<Vector2>();
-            _scrollAccumY += scroll.y;
-        }
-
         private void Update()
         {
             if (_orbital == null) return;
@@ -203,6 +188,11 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                     var t0 = Touch.activeTouches[0];
                     Vector2 pos = t0.screenPosition;
 
+                    if (!IsInRegion(pos))
+                    {
+                        CancelTouchStateOnly();
+                        return;
+                    }
                     bool pressedThisFrame = (!_wasOneFingerDown && t0.phase == UnityEngine.InputSystem.TouchPhase.Began);
 
                     bool releasedThisFrame = (_wasOneFingerDown &&
@@ -247,6 +237,11 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                     Vector2 center = (p0 + p1) * 0.5f;
                     float dist = Vector2.Distance(p0, p1);
 
+                    if (!IsInRegion(center))
+                    {
+                        CancelTouchStateOnly();
+                        return;
+                    }
                     bool pressedThisFrame = !_wasTwoFingerDown;
 
                     // With EnhancedTouch, "release" is better handled when touches drop to 0,
@@ -304,6 +299,20 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             // --- MOUSE MODE (Input Actions) ---
             Vector2 current = _pointerPosition.action.ReadValue<Vector2>();
+
+            // region gate
+
+            if (!IsInRegion(current))
+            {
+                _scrollAccumY = 0;
+                if (_isDown)
+                {
+                    ForceRelease();
+                }
+                _startedThisFrame = false;
+                _releasedThisFrame = false;
+                return;
+            }
 
             Vector2 delta = Vector2.zero;
             if (_isDown)
@@ -393,12 +402,78 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             #endregion
         }
 
+        private void OnPrimaryDown(InputAction.CallbackContext ctx)
+        {
+            if (!CanProcessInput()) return;
+            if (_pointerPosition?.action == null) return;
+
+            _isDown = true;
+            _startedThisFrame = true;
+            _releasedThisFrame = false;
+            _lastPos = _pointerPosition.action.ReadValue<Vector2>();
+        }
+
+        private void OnPrimaryUp(InputAction.CallbackContext ctx)
+        {
+            _isDown = false;
+            _releasedThisFrame = true;
+            _startedThisFrame = false;
+        }
+
+        private void OnScrollPerformed(InputAction.CallbackContext ctx)
+        {
+            if (!CanProcessInput() || _inputLocked) return;
+            // Scroll is Vector2 delta (x horizontal, y vertical)
+            Vector2 scroll = ctx.ReadValue<Vector2>();
+            _scrollAccumY += scroll.y;
+        }
+
         private bool CanProcessInput()
         {
             if (!_requireApplicationFocus) return true;
             return Application.isFocused;
         }
+        private bool IsInRegion(Vector2 screenPoint)
+        {
+            if (!_requireRegion) return true;
 
+            // Assumes your global FP_ScreenRegion has a method like:
+            // bool ContainsScreenPoint(Vector2 screenPoint, Vector2 screenSize)
+            for(int i = 0; i < _inputRegion.Region.Length; i++)
+            {
+                var region = _inputRegion.Region[i];
+                bool inRegion = region.ContainsScreenPoint(screenPoint, new Vector2(Screen.width, Screen.height));
+                if(inRegion) return true;
+            }
+            return false;
+        }
+        private void CancelTouchStateOnly()
+        {
+            if (_wasOneFingerDown || _wasTwoFingerDown)
+            {
+                _wasOneFingerDown = false;
+                _wasTwoFingerDown = false;
+
+                _orbital.FeedInput(new FP_OrbitalInput(
+                    isPressed: false,
+                    isReleased: true,
+                    pointerPos: Vector2.zero,
+                    dragDelta: Vector2.zero,
+                    pinchDelta: 0f,
+                    isTwoFinger: false
+                ));
+            }
+        }
+        private void CancelAllInputState()
+        {
+            if (_isDown) ForceRelease();
+
+            CancelTouchStateOnly();
+
+            _startedThisFrame = false;
+            _releasedThisFrame = false;
+            _scrollAccumY = 0f;
+        }
         private void ForceRelease()
         {
             _isDown = false;
@@ -421,4 +496,5 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             _releasedThisFrame = false;
         }
     }
+   
 }

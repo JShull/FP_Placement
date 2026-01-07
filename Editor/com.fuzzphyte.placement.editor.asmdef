@@ -1,6 +1,6 @@
 {
     "name": "com.fuzzphyte.placement.editor",
-    "rootNamespace": "",
+    "rootNamespace": "FuzzPhyte.Placement.Editor",
     "references": [
         "com.fuzzphyte.placement",
         "com.fuzzphyte.utility",

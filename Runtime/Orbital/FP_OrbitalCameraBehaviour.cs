@@ -16,6 +16,15 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
         public FP_OrbitalCameraController Controller => _controller;
         public BoxCollider TargetBounds;
+        [Header("Rotation Event Parameters")]
+        [SerializeField] private float _rotationEventThresholdDegrees = 0.05f;
+        /// <summary>
+        /// Fired after the camera transform has been applied (LateUpdate).
+        /// Subscribers can sync UI (e.g., ViewCube) to match the camera view.
+        /// </summary>
+        public event Action<FP_OrbitalViewState> OnCameraRotationApplied;
+
+        private Quaternion _lastRotation;
 
         private void Awake()
         {
@@ -38,6 +47,15 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             _queuedInput = FP_OrbitalInput.None;
 
             _controller.Tick(Time.deltaTime);
+            // Emit only when changed (prevents spam / avoids tiny float jitter if you want).
+            Quaternion current = _camera.transform.rotation;
+            float angle = Quaternion.Angle(_lastRotation, current);
+            if (angle >= _rotationEventThresholdDegrees)
+            {
+                _lastRotation = current;
+                var lastFrame = new FP_OrbitalViewState(_lastRotation, Vector3.zero,0,_camera.orthographic, _camera.orthographicSize);
+                OnCameraRotationApplied?.Invoke(lastFrame);
+            }
         }
 
         public void SetBounds(Bounds b, Transform optionalFrame = null) =>
