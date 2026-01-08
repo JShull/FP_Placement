@@ -6,6 +6,12 @@ namespace FuzzPhyte.Placement.OrbitalCamera
     public class FP_ViewCubeHitProvider : MonoBehaviour
     {
         [SerializeField] private FP_ViewCubeHit _hitType;
+        [SerializeField] private MeshRenderer _meshRenderer;
+        [SerializeField] private Material _hoverMaterial;
+        [SerializeField] private Material _normalMaterial;
+        [SerializeField] private Material _selectedMaterial;
+        [SerializeField] private bool _selectionActive;
+
         public string LabelName;
         public FP_ViewCubeHit HitType => _hitType;
         public Transform LabelLocation;
@@ -30,6 +36,31 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                     _textRef.text = "";
                 }
             }
+        }
+        public void Hover()
+        {
+            if (!_selectionActive)
+            {
+                _meshRenderer.material = _hoverMaterial;
+            }
+        }
+        public void UnHover()
+        {
+            if (!_selectionActive)
+            {
+                _meshRenderer.material = _normalMaterial;
+            }
+        }
+        public void Select()
+        {
+            _selectionActive = true;
+            _meshRenderer.material = _selectedMaterial;
+            
+        }
+        public void UnSelect()
+        {
+            _selectionActive = false;
+            UnHover();
         }
     }
 }

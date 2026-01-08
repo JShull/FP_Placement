@@ -44,6 +44,11 @@ namespace FuzzPhyte.Placement.OrbitalCamera
     }
 
     #region UI Objects
+    public enum FP_ViewHomeHit
+    {
+        NA,
+        CameraFrustrum
+    }
     public enum FP_ViewCubeHit
     {
         // Faces
@@ -74,7 +79,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         FrontRight,
         FrontLeft,
         BackRight,
-        BackLeft
+        BackLeft,
     }
     
     public enum FP_ProjectionMode
@@ -354,7 +359,10 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             // FitToBounds(...);  // you can pick a conservative fit path here
         }
 
-
+        public void ChangeCameraPerspective(FP_ProjectionMode newProjection)
+        {
+            _projectionTarget = newProjection;
+        }
         public void ApplyInput(in FP_OrbitalInput input)
         {
             if (input.IsPressed) _isDragging = true;
@@ -477,8 +485,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             return Mathf.Max(_settings.DistanceMin, dist);
         }
-
-
         private void Orbit(Vector2 dragDelta)
         {
             _yaw += dragDelta.x * _settings.OrbitSensitivity;
@@ -499,7 +505,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             Vector3 deltaWorld = (-right * dragDelta.x + -up * dragDelta.y) * scale;
             _pivotTarget += deltaWorld;
         }
-
         private void FitToBounds(FP_OrbitalView view, FP_ProjectionMode mode)
         {
             FitToBounds(mode);

@@ -16,6 +16,11 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         [Header("Behaviour")]
         [SerializeField] private FP_ProjectionMode _snapProjection = FP_ProjectionMode.Orthographic;
 
+        public FP_ProjectionMode SnapProjection
+        {
+            get { return _snapProjection; }
+            set { _snapProjection = value; }
+        }
         private void OnEnable()
         {
             if (_orbital != null)
@@ -57,6 +62,10 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             SyncViewCube(targetRotation);
         }
 
+        public void CameraProjectionCheck(FP_ProjectionMode projection)
+        {
+            _orbital.Controller.ChangeCameraPerspective(projection);
+        }
         private static Quaternion BuildWorldRotation(FP_ViewPose pose, Transform frame)
         {
             // Convert “FromDirection” into a camera rotation that LOOKS toward pivot:
