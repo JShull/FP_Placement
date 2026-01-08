@@ -12,7 +12,17 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         Top=5,
         Bottom=6
     }
-    
+    public enum FP_ToolbarAction
+    {
+        None,
+        ResetModelPose,
+        PrevModel,
+        NextModel,
+        ToggleVertices,
+        ToggleWireframe,
+        ToggleBounds,
+
+    }
 
     public readonly struct FP_OrbitalInput
     {

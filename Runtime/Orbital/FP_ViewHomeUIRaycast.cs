@@ -5,8 +5,29 @@ namespace FuzzPhyte.Placement.OrbitalCamera
     using FuzzPhyte.Utility;
     using UnityEngine.InputSystem;
     [DisallowMultipleComponent]
-    public class FP_ViewHomeUIRaycast : MonoBehaviour
+    public class FP_ViewHomeUIRaycast : FP_UIRegionRaycasterBase<FP_ViewHomeHitProvider>
     {
+        public event Action<FP_ViewHomeHitProvider, FP_ProjectionMode> OnHomeSelect;
+
+        [Header("Main Camera (for current projection mode)")]
+        [SerializeField] private Camera _mainCamera;
+
+        protected override string GetDebugTag() => "FP_ViewHomeUIRaycaster";
+
+        protected override void OnSelect(FP_ViewHomeHitProvider provider, RaycastHit hit)
+        {
+            FP_ProjectionMode curProjection =
+                (_mainCamera != null && _mainCamera.orthographic)
+                    ? FP_ProjectionMode.Orthographic
+                    : FP_ProjectionMode.Perspective;
+
+            // Optional: drive provider UI events immediately
+            if (curProjection == FP_ProjectionMode.Orthographic) provider.OrthoUIActive();
+            else provider.PerspectiveUIActive();
+
+            OnHomeSelect?.Invoke(provider, curProjection);
+        }
+        /*
         public event Action<FP_ViewHomeHitProvider,FP_ProjectionMode> OnHomeSelect;
         
 
@@ -233,6 +254,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             return true;
         }
+        */
 
     }
 }
