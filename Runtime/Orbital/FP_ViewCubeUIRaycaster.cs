@@ -18,8 +18,50 @@ namespace FuzzPhyte.Placement.OrbitalCamera
     /// - Your ViewCube colliders should be on a dedicated Layer for clean filtering.
     /// </summary>
     [DisallowMultipleComponent]
-    public partial class FP_ViewCubeUIRaycaster : MonoBehaviour
+    public sealed class FP_ViewCubeUIRaycaster : FP_UIRegionRaycasterBase<FP_ViewCubeHitProvider>
     {
+        public event Action<FP_ViewCubeHitProvider, RaycastHit> OnCubeSelect;
+        public event Action<FP_ViewCubeHitProvider> OnViewCubeHover;
+        public event Action<FP_ViewCubeHitProvider> OnViewCubeUnHover;
+
+        private void Start()
+        {
+            if (_lastSelectedProvider != null)
+            {
+                _lastSelectedProvider.Select();
+            }
+        }
+        protected override string GetDebugTag() => "FP_ViewCubeUIRaycaster";
+
+        protected override void OnSelect(FP_ViewCubeHitProvider provider, RaycastHit hit)
+        {
+            // selection visuals
+            if (_lastSelectedProvider != null && _lastSelectedProvider != provider)
+                _lastSelectedProvider.UnSelect();
+
+            provider.Select();
+            _lastSelectedProvider = provider;
+
+            OnCubeSelect?.Invoke(provider, hit);
+        }
+
+        protected override void OnHover(FP_ViewCubeHitProvider provider, RaycastHit hit)
+        {
+            provider.Hover();
+            OnViewCubeHover?.Invoke(provider);
+        }
+
+        protected override void OnUnHover(FP_ViewCubeHitProvider provider)
+        {
+            provider.UnHover();
+            OnViewCubeUnHover?.Invoke(provider);
+        }
+
+        protected override void OnUnSelect(FP_ViewCubeHitProvider provider)
+        {
+            provider.UnSelect();
+        }
+        /*
         public event Action<FP_ViewCubeHitProvider,RaycastHit> OnCubeSelect;
         public event Action<FP_ViewCubeHitProvider> OnViewCubeHover;
         public event Action<FP_ViewCubeHitProvider> OnViewCubeUnHover;
@@ -179,40 +221,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                     _lastSelected = maybeSelection;
                 }
             }
-            //OLD
-            /*
-            Ray ray = _uiOrthoCamera.ScreenPointToRay(_lastPointerPos);
-
-            if (Physics.Raycast(ray, out RaycastHit hit, _maxDistance, _viewCubeLayerMask, QueryTriggerInteraction.Ignore))
-            {
-                var provider = hit.collider.GetComponent<FP_ViewCubeHitProvider>();
-                if (provider == null)
-                {
-                    // Optionally allow parent lookup if colliders are on children
-                    provider = hit.collider.GetComponentInParent<FP_ViewCubeHitProvider>();
-                }
-
-                if (provider != null)
-                {
-                    if (_debugLogs)
-                    {
-                        string regionName = inRegion ? _regions.Region[regionIndex].Name : "(no region)";
-                        Debug.Log($"[FP_ViewCubeUIRaycaster] Hit '{provider.HitType}' collider='{hit.collider.name}' region='{regionName}'");
-                    }
-
-                    OnViewCubeHit?.Invoke(provider.HitType, hit);
-                }
-                else if (_debugLogs)
-                {
-                    Debug.Log($"[FP_ViewCubeUIRaycaster] Ray hit collider='{hit.collider.name}' but no FP_ViewCubeHitProvider found.");
-                }
-            }
-            else if (_debugLogs)
-            {
-                if (_requireRegion && inRegion)
-                    Debug.Log("[FP_ViewCubeUIRaycaster] Click in region but raycast did not hit ViewCube.");
-            }
-            */
+            
         }
 
         /// <summary>
@@ -293,6 +302,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             return true;
         }
-    
+    */
+
     }
 }

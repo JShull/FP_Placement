@@ -64,6 +64,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
         public void CameraProjectionCheck(FP_ProjectionMode projection)
         {
+            _snapProjection = projection;
             _orbital.Controller.ChangeCameraPerspective(projection);
         }
         private static Quaternion BuildWorldRotation(FP_ViewPose pose, Transform frame)
