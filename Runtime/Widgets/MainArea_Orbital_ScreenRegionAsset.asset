@@ -17,7 +17,7 @@ MonoBehaviour:
   - NormalizedRect:
       serializedVersion: 2
       x: 0
-      y: 0
-      width: 0.8
-      height: 1
+      y: 0.12
+      width: 0.85
+      height: 0.88
     Name: Main Area
