@@ -18,6 +18,9 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         [Tooltip("Size in local space.")]
         public Vector3 LocalBoundsSize = Vector3.one;
 
+        [Header("Optional Padding")]
+        [Min(1f)] public float BoundsPadding = 1.0f;
+
         [Header("Placement")]
         [Tooltip("Optional local offset applied when placing at the display pivot.")]
         public Vector3 LocalPivotOffset;
@@ -32,13 +35,15 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         [Tooltip("If true, when this model becomes active, the orbital system should fit bounds.")]
         public bool FitOnActivate = true;
 
-        [Tooltip("Preferred projection when activated (optional).")]
-        public bool OverrideProjectionOnActivate;
-
-        public FP_ProjectionMode ProjectionOnActivate = FP_ProjectionMode.Perspective;
-
         [Header("Feature Flags")]
         public bool SupportsVertices;
         public bool SupportsWireframe;
+
+        public Bounds GetLocalBounds()
+        {
+            var b = new Bounds(LocalBoundsCenter, LocalBoundsSize);
+            b.extents *= BoundsPadding;
+            return b;
+        }
     }
 }

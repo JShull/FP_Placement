@@ -23,24 +23,23 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         {
             if (_orbital == null || binding == null) return;
 
-            Bounds wb = binding.GetWorldBounds();
-
-            // You’ll need this method on your controller/behaviour if you don't already have it:
-            // - SetBounds(bounds)
-            // - optionally FitToBounds based on binding.Data.FitOnActivate
+            Bounds wb = new Bounds();
+            if (binding.Data.UseLocalBoundsOverride)
+            {
+                wb = binding.GetLocalBounds();
+            }
+            else
+            {
+                wb = binding.GetWorldBounds();
+            }
+                
+            // call SetBounds syncs controller and data
             _orbital.SetBounds(wb);
+            //set my debug "box collider"
+            _orbital.TargetBounds.size = wb.size;
+            //JOHN --> still need to now resize my camera based on this information (max/min zoom relative)
+            _orbital.ResetCameraMaxDistance();
 
-            if (binding.Data != null && binding.Data.OverrideProjectionOnActivate)
-            {
-                // this isn't correct - we need to resize the bounds
-               // _orbital.Controller.SetProjection(binding.Data.ProjectionOnActivate);
-            }
-
-            if (binding.Data == null || binding.Data.FitOnActivate)
-            {
-                // Fit for current projection target
-                _orbital.Controller.FitToBoundsForCurrentProjection();
-            }
         }
     }
 }

@@ -30,13 +30,23 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         {
             if (!_camera) _camera = GetComponentInChildren<Camera>();
             _controller = new FP_OrbitalCameraController(_camera, _settings);
-            float checkMaxDistance = 0;
+            
             if (TargetBounds != null)
             {
+                float checkMaxDistance = 0;
                 _controller.SetTargetBounds(TargetBounds.bounds, null);
                 checkMaxDistance = TargetBounds.bounds.size.magnitude*1.1f;
                 _controller.ZoomToFitBounds(checkMaxDistance);
             } 
+        }
+        /// <summary>
+        /// Call after you reset/set TargetBounds if you want the camera to recenter
+        /// </summary>
+        public void ResetCameraMaxDistance()
+        {
+            float checkMaxDistance = 0;
+            checkMaxDistance = TargetBounds.bounds.size.magnitude * 1.1f;
+            _controller.ZoomToFitBounds(checkMaxDistance);
         }
 
         private void LateUpdate()

@@ -35,7 +35,15 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             return wb;
         }
-
+        public Bounds GetLocalBounds()
+        {
+            Bounds wb = new Bounds();
+            if (_data != null && _data.UseLocalBoundsOverride)
+            {
+                wb= _data.GetLocalBounds();
+            }
+            return wb;
+        }
         public void ApplyPresentationDefaults(Transform displayPivot)
         {
             if (_data == null) return;
