@@ -534,7 +534,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9e13813d7c1246a6bb993eb45e6da5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.OrbitalCamera.FP_ModelDisplayBinding
-  _data: {fileID: 11400000, guid: 6968be48785ba4c57bc224e94aa04bb6, type: 2}
+  _data: {fileID: 11400000, guid: 7478c57aca63942a4b0462caa600e827, type: 2}
 --- !u!1 &995259364048857765
 GameObject:
   m_ObjectHideFlags: 0
