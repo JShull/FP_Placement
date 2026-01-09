@@ -307,7 +307,19 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             _pivotTarget = worldBounds.center;
             if (_pivot == Vector3.zero) _pivot = _pivotTarget;
         }
+        public void SetProjection(FP_ProjectionMode newProjection)
+        {
+            _projectionTarget = newProjection;
+        }
 
+        /// <summary>
+        /// Fits camera zoom (distance or ortho size) to the current target bounds,
+        /// using the controller's current projection target.
+        /// </summary>
+        public void FitToBoundsForCurrentProjection()
+        {
+            FitToBounds(_projectionTarget);
+        }
         /// <summary>
         /// Rotates and positions the camera to observe the target bounds from a canonical direction.
         /// This method never modifies the target, bounds, or world transforms.

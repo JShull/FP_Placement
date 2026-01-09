@@ -1,12 +1,12 @@
-namespace FuzzPhyte.Placement
+namespace FuzzPhyte.Placement.OrbitalCamera
 {
     using System;
     using UnityEngine;
     [DisallowMultipleComponent]
     public sealed class FP_ModelCycleController : MonoBehaviour
     {
-        [Header("Model Set (pre-placed references)")]
-        [SerializeField] private GameObject[] _models;
+        [Header("Model Set (bindings)")]
+        [SerializeField] private FP_ModelDisplayBinding[] _models;
 
         [Header("Placement")]
         [Tooltip("Where the active model should be positioned (center of bounds).")]
@@ -23,16 +23,16 @@ namespace FuzzPhyte.Placement
 
         public int ActiveIndex => _activeIndex;
         public int Count => _models?.Length ?? 0;
-        public GameObject ActiveModel => (Count > 0 && _activeIndex >= 0 && _activeIndex < Count) ? _models[_activeIndex] : null;
+        public FP_ModelDisplayBinding ActiveModel => (Count > 0 && _activeIndex >= 0 && _activeIndex < Count) ? _models[_activeIndex] : null;
 
-        public event Action<int, GameObject> OnActiveModelChanged;
+        public event Action<int, FP_ModelDisplayBinding> OnActiveModelChanged;
 
         private void Awake()
         {
             ApplyActiveModel(force: true);
         }
 
-        public void SetModels(GameObject[] models, int startIndex = 0)
+        public void SetModels(FP_ModelDisplayBinding[] models, int startIndex = 0)
         {
             _models = models;
             _activeIndex = Mathf.Clamp(startIndex, 0, Mathf.Max(0, Count - 1));
@@ -68,7 +68,7 @@ namespace FuzzPhyte.Placement
             if (_models == null) return;
             for (int i = 0; i < _models.Length; i++)
             {
-                if (_models[i] != null) _models[i].SetActive(false);
+                if (_models[i] != null) _models[i].gameObject.SetActive(false);
             }
         }
 
@@ -87,8 +87,8 @@ namespace FuzzPhyte.Placement
                 if (go == null) continue;
 
                 bool shouldShow = (i == _activeIndex);
-                if (force || go.activeSelf != shouldShow)
-                    go.SetActive(shouldShow);
+                if (force || go.gameObject.activeSelf != shouldShow)
+                    go.gameObject.SetActive(shouldShow);
             }
 
             var active = _models[_activeIndex];
