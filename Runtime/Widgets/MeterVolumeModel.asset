@@ -15,7 +15,7 @@ MonoBehaviour:
   DisplayName: Unity Basic
   UseLocalBoundsOverride: 1
   LocalBoundsCenter: {x: 0, y: 0, z: 0}
-  LocalBoundsSize: {x: 1, y: 1, z: 1}
+  LocalBoundsSize: {x: 5, y: 5, z: 5}
   BoundsPadding: 1
   LocalPivotOffset: {x: 0, y: 0, z: 0}
   DefaultLocalEuler: {x: 0, y: 0, z: 0}
