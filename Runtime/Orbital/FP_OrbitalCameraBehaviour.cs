@@ -47,6 +47,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             float checkMaxDistance = 0;
             checkMaxDistance = TargetBounds.bounds.size.magnitude * 1.1f;
             _controller.ZoomToFitBounds(checkMaxDistance);
+            _controller.FitToBoundsForCurrentProjection();
         }
 
         private void LateUpdate()
