@@ -31,6 +31,81 @@ Transform:
   m_Children: []
   m_Father: {fileID: 6753597218487368102}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 90}
+--- !u!1 &409836345304163854
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7569941068795358933}
+  - component: {fileID: 9059634725316773415}
+  - component: {fileID: 6551865857081027654}
+  m_Layer: 0
+  m_Name: 3DUIToolbar
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7569941068795358933
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 409836345304163854}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8866661455259304970}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &9059634725316773415
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 409836345304163854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05467b14d8a34e346a5cc48012e4de70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.OrbitalCamera.FP_ToolbarUIRaycaster
+  _uiOrthoCamera: {fileID: 5179599039150016822}
+  _regions: {fileID: 11400000, guid: efcecdb561d9140a5a51895bd96a382d, type: 2}
+  _pointerPosition: {fileID: 0}
+  _clickOrTap: {fileID: 0}
+  _layerMask:
+    serializedVersion: 2
+    m_Bits: 32
+  _maxDistance: 5
+  _requireApplicationFocus: 1
+  _requireRegion: 1
+  _enableHover: 1
+  _debugLogs: 0
+  _lastSelectedProvider: {fileID: 0}
+--- !u!114 &6551865857081027654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 409836345304163854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb4e6cbb36609314ca0d9ce9c9042519, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.fuzzphyte.utility::FuzzPhyte.Utility.FP_ScreenRegionGameViewDebug
+  _draw: 1
+  _regionAsset: {fileID: 11400000, guid: efcecdb561d9140a5a51895bd96a382d, type: 2}
+  _fill: {r: 0, g: 1, b: 1, a: 0.15}
+  _outline: {r: 0, g: 1, b: 1, a: 0.9}
+  _outlineThickness: 2
 --- !u!1 &591438349778913675
 GameObject:
   m_ObjectHideFlags: 0
@@ -3594,7 +3669,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 7296880450402775653}
   m_Father: {fileID: 8866661455259304970}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &3694461290399966446
@@ -4229,7 +4305,6 @@ GameObject:
   - component: {fileID: 391738072361856216}
   - component: {fileID: 7051283866183597734}
   - component: {fileID: 6816879716752176603}
-  - component: {fileID: 1260400970353451334}
   - component: {fileID: 4409561963567458734}
   m_Layer: 0
   m_Name: OrbitalCamSystem
@@ -4310,21 +4385,6 @@ MonoBehaviour:
   _isDown: 0
   _requireRegion: 1
   _inputRegion: {fileID: 11400000, guid: fee5935ff2e345d479aa74cf757a3953, type: 2}
---- !u!114 &1260400970353451334
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6694241768960038851}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 40055c5d30e2fe2498d5d98aee91165f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.OrbitalCamera.FP_ViewCubeRaycastBinder
-  _raycaster: {fileID: 1648574261988591059}
-  _viewCubeInterface: {fileID: 7706338914324130424}
-  _ViewHomeUIRaycast: {fileID: 9148524353215835937}
 --- !u!114 &4409561963567458734
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5284,6 +5344,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8866661455259304970}
+  - component: {fileID: 5772647505920416849}
+  - component: {fileID: 7158550059974168746}
+  - component: {fileID: 7461773353933085669}
   m_Layer: 0
   m_Name: FPOrbitalCameraSystem
   m_TagString: Untagged
@@ -5307,5 +5370,84 @@ Transform:
   - {fileID: 4635634418792012197}
   - {fileID: 391738072361856216}
   - {fileID: 2104236131112006487}
+  - {fileID: 7569941068795358933}
   m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5772647505920416849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9161421422389638854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6960534a4a40834ea844ee27acd18c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_ModelCycleController
+  _models: []
+  _displayPivot: {fileID: 7296880450402775653}
+  _snapToPivot: 1
+  _resetRotationOnShow: 1
+  _activeIndex: 0
+--- !u!114 &7158550059974168746
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9161421422389638854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40055c5d30e2fe2498d5d98aee91165f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.OrbitalCamera.FP_ViewCubeRaycastBinder
+  _raycaster: {fileID: 1648574261988591059}
+  _viewCubeInterface: {fileID: 7706338914324130424}
+  _ViewHomeUIRaycast: {fileID: 9148524353215835937}
+--- !u!114 &7461773353933085669
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9161421422389638854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2bb8731d31bf81543b6f140d932d6322, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.OrbitalCamera.FP_ToolbarBinder
+  _raycaster: {fileID: 9059634725316773415}
+  _modelCycle: {fileID: 5772647505920416849}
+  _verticesSystem: {fileID: 0}
+--- !u!1 &9188078548682754999
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7296880450402775653}
+  m_Layer: 2
+  m_Name: ModelPivot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7296880450402775653
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9188078548682754999}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4635634418792012197}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
