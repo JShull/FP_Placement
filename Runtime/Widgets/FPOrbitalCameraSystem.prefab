@@ -4920,6 +4920,7 @@ GameObject:
   - component: {fileID: 6336095022771585637}
   - component: {fileID: 3942657847450954412}
   - component: {fileID: 5134068375005536445}
+  - component: {fileID: 3241430682986325730}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: Untagged
@@ -5012,6 +5013,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.OrbitalCamera.FP_ModelDisplayBinding
   _data: {fileID: 11400000, guid: f737c9518a3d78d40bfcc403e1f9bc57, type: 2}
+--- !u!114 &3241430682986325730
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5543685476734366059}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 313d78164619af94f8039ad37f879d41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.fuzzphyte.utility::FuzzPhyte.Utility.FPRuntimeMeshViewer
+  mode: 2
+  targetRenderers:
+  - {fileID: 3942657847450954412}
+  wireframeMat: {fileID: 2100000, guid: 34d651daedd4d384f89efbeff75b274f, type: 2}
+  vertexMat: {fileID: 0}
+  normalsMat: {fileID: 0}
+  surfaceDebugMat: {fileID: 0}
 --- !u!1 &5792588036116837100
 GameObject:
   m_ObjectHideFlags: 0
