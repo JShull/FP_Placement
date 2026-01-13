@@ -282,8 +282,9 @@ GameObject:
   - component: {fileID: 7569941068795358933}
   - component: {fileID: 9059634725316773415}
   - component: {fileID: 6551865857081027654}
+  - component: {fileID: 7469534876868495003}
   m_Layer: 0
-  m_Name: 3DUIToolbar
+  m_Name: 3DUIToolbar_RenderDebug
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -346,6 +347,27 @@ MonoBehaviour:
   _fill: {r: 0, g: 1, b: 1, a: 0.15}
   _outline: {r: 0, g: 1, b: 1, a: 0.9}
   _outlineThickness: 2
+--- !u!114 &7469534876868495003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 409836345304163854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 313d78164619af94f8039ad37f879d41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.fuzzphyte.utility::FuzzPhyte.Utility.FPRuntimeMeshViewer
+  mode: 2
+  targetRenderers:
+  - {fileID: 7466457036099370313}
+  - {fileID: 3942657847450954412}
+  - {fileID: 2854665601886132717}
+  wireframeMat: {fileID: 2100000, guid: 34d651daedd4d384f89efbeff75b274f, type: 2}
+  vertexMat: {fileID: 0}
+  normalsMat: {fileID: 0}
+  surfaceDebugMat: {fileID: 0}
 --- !u!1 &591438349778913675
 GameObject:
   m_ObjectHideFlags: 0
@@ -4920,7 +4942,6 @@ GameObject:
   - component: {fileID: 6336095022771585637}
   - component: {fileID: 3942657847450954412}
   - component: {fileID: 5134068375005536445}
-  - component: {fileID: 3241430682986325730}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: Untagged
@@ -5013,25 +5034,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.OrbitalCamera.FP_ModelDisplayBinding
   _data: {fileID: 11400000, guid: f737c9518a3d78d40bfcc403e1f9bc57, type: 2}
---- !u!114 &3241430682986325730
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5543685476734366059}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 313d78164619af94f8039ad37f879d41, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: com.fuzzphyte.utility::FuzzPhyte.Utility.FPRuntimeMeshViewer
-  mode: 2
-  targetRenderers:
-  - {fileID: 3942657847450954412}
-  wireframeMat: {fileID: 2100000, guid: 34d651daedd4d384f89efbeff75b274f, type: 2}
-  vertexMat: {fileID: 0}
-  normalsMat: {fileID: 0}
-  surfaceDebugMat: {fileID: 0}
 --- !u!1 &5792588036116837100
 GameObject:
   m_ObjectHideFlags: 0
@@ -6929,6 +6931,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8866661455259304970}
   - component: {fileID: 5772647505920416849}
+  - component: {fileID: 5596804083706613350}
   - component: {fileID: 7158550059974168746}
   - component: {fileID: 7461773353933085669}
   - component: {fileID: 4590836163152797990}
@@ -6979,6 +6982,23 @@ MonoBehaviour:
   _snapToPivot: 1
   _resetRotationOnShow: 1
   _activeIndex: 0
+--- !u!114 &5596804083706613350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9161421422389638854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e73dbbb8d746a40f9a4e9106d23cce2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.OrbitalCamera.FP_ModelCycleMeshDebugSync
+  _cycle: {fileID: 5772647505920416849}
+  _meshViewer: {fileID: 7469534876868495003}
+  _includeInactiveChildren: 0
+  _includeSkinnedMeshRenderers: 1
+  _includeMeshRenderers: 1
 --- !u!114 &7158550059974168746
 MonoBehaviour:
   m_ObjectHideFlags: 0
