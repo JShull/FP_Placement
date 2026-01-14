@@ -5,9 +5,9 @@ namespace FuzzPhyte.Placement.OrbitalCamera
     {
         [SerializeField] private FP_ToolbarUIRaycaster _raycaster;
         [SerializeField] private FP_ModelCycleController _modelCycle;
-
+        
         // Optional: hooks to other systems (vertices, wireframe, etc.)
-        [SerializeField] private MonoBehaviour _verticesSystem; // replace with your concrete type
+        //[SerializeField] private MonoBehaviour _verticesSystem; // replace with your concrete type
 
         private void OnEnable()
         {
@@ -33,9 +33,12 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                     _modelCycle?.Prev();
                     break;
 
-                case FP_ToolbarAction.ToggleVertices:
-                    if (_verticesSystem != null)
-                        _verticesSystem.enabled = !_verticesSystem.enabled;
+                case FP_ToolbarAction.ToggleVerticesOn:
+                    if (_modelCycle != null)
+                    {
+                        _modelCycle.SetIndex(_modelCycle.ActiveIndex);
+                    }
+                        
                     break;
 
                 // Extend:

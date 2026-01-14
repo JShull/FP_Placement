@@ -20,12 +20,15 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
         [Header("State")]
         [SerializeField] private int _activeIndex;
+        [SerializeField] private FP_ToolbarAction _activeVisualAction;
 
         public int ActiveIndex => _activeIndex;
+        public FP_ToolbarAction ActiveVisualAction => _activeVisualAction;
         public int Count => _models?.Length ?? 0;
         public FP_ModelDisplayBinding ActiveModel => (Count > 0 && _activeIndex >= 0 && _activeIndex < Count) ? _models[_activeIndex] : null;
 
         public event Action<int, FP_ModelDisplayBinding> OnActiveModelChanged;
+        public event Action<int, FP_ModelDisplayBinding, FP_ToolbarAction> OnActiveVisualActionChanged;
 
         private void Awake()
         {
@@ -52,7 +55,11 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             _activeIndex = (_activeIndex - 1 + Count) % Count;
             ApplyActiveModel(force: false);
         }
-
+        public void SetVisualInformation(FP_ToolbarAction action)
+        {
+            _activeVisualAction = action;
+            OnActiveVisualActionChanged?.Invoke(_activeIndex, ActiveModel, _activeVisualAction);
+        }
         public void SetIndex(int index)
         {
             if (Count == 0) return;

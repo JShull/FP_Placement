@@ -10,13 +10,21 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         private void OnEnable()
         {
             if (_cycle != null)
+            {
                 _cycle.OnActiveModelChanged += HandleModelChanged;
+                _cycle.OnActiveVisualActionChanged += HandleModelVisualsChanged;
+            }
+                
         }
 
         private void OnDisable()
         {
             if (_cycle != null)
+            {
                 _cycle.OnActiveModelChanged -= HandleModelChanged;
+                _cycle.OnActiveVisualActionChanged -= HandleModelVisualsChanged;
+            }
+                
         }
 
         private void HandleModelChanged(int index, FP_ModelDisplayBinding binding)
@@ -39,7 +47,12 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             _orbital.TargetBounds.size = wb.size;
             //JOHN --> still need to now resize my camera based on this information (max/min zoom relative)
             _orbital.ResetCameraMaxDistance();
+            //JOHN --> Check if we set the Visual Information here or..
 
+        }
+        private void HandleModelVisualsChanged(int index, FP_ModelDisplayBinding binding, FP_ToolbarAction action)
+        {
+            // Optional: react to visual changes if needed
         }
     }
 }

@@ -18,9 +18,12 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         ResetModelPose,
         PrevModel,
         NextModel,
-        ToggleVertices,
-        ToggleWireframe,
-        ToggleBounds,
+        ToggleVerticesOn,
+        ToggleVerticesOff,
+        ToggleWireframeOn,
+        ToggleWireframeOff,
+        ToggleBoundsOn,
+        ToggleBoundsOff
 
     }
 

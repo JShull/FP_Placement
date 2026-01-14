@@ -13,7 +13,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         {
             // optional visuals
             provider.Select();
-
             OnToolbarAction?.Invoke(provider.Action, provider, hit);
         }
 
