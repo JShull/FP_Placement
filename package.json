@@ -12,13 +12,21 @@
       "type": "git",
       "url": "https://github.com/jshull/FP_Placement.git"
     },
-    "dependencies": {  
+    "dependencies": {
+      "com.unity.textmeshpro": "3.0.9",
+      "com.unity.ugui": "2.0.0",
+      "com.unity.inputsystem": "1.17.0"
     },
     "samples": [
       {
         "displayName": "Placement Samples",
         "description": "Includes an example scene on how to use the placement system",
         "path": "Samples~/SamplesURP"
+      },
+      {
+        "displayName": "Orbital Camera",
+        "description": "Includes an example scene and all data objects for Orbital Camera functionality",
+        "path": "Samples~/OrbitalCamera"
       }
     ],
     "keywords": [
