@@ -1,5 +1,6 @@
 namespace FuzzPhyte.Placement.OrbitalCamera
 {
+    using FuzzPhyte.Utility;
     using System;
     using UnityEngine;
     [DisallowMultipleComponent]
@@ -20,19 +21,26 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
         [Header("State")]
         [SerializeField] private int _activeIndex;
-        [SerializeField] private FP_ToolbarAction _activeVisualAction;
-
+        //[SerializeField] private FP_ToolbarAction _activeVisualAction;
+        [SerializeField] private FPMeshViewStatus _activeMeshViewStatus;
+        public FPMeshViewStatus ActiveMeshViewStatus => _activeMeshViewStatus;
         public int ActiveIndex => _activeIndex;
-        public FP_ToolbarAction ActiveVisualAction => _activeVisualAction;
+        //public FP_ToolbarAction ActiveVisualAction => _activeVisualAction;
         public int Count => _models?.Length ?? 0;
         public FP_ModelDisplayBinding ActiveModel => (Count > 0 && _activeIndex >= 0 && _activeIndex < Count) ? _models[_activeIndex] : null;
 
         public event Action<int, FP_ModelDisplayBinding> OnActiveModelChanged;
-        public event Action<int, FP_ModelDisplayBinding, FP_ToolbarAction> OnActiveVisualActionChanged;
+        public event Action<int, FP_ModelDisplayBinding, FPMeshViewStatus> OnActiveVisualActionChanged;
 
         private void Awake()
         {
             ApplyActiveModel(force: true);
+            _activeMeshViewStatus = new FPMeshViewStatus()
+            {
+                Flags = FPMeshViewFlags.Renderer,
+                SurfaceMode = MeshSurfaceDebugMode.None,
+                ShowRenderer = true
+            };
         }
 
         public void SetModels(FP_ModelDisplayBinding[] models, int startIndex = 0)
@@ -57,8 +65,36 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         }
         public void SetVisualInformation(FP_ToolbarAction action)
         {
-            _activeVisualAction = action;
-            OnActiveVisualActionChanged?.Invoke(_activeIndex, ActiveModel, _activeVisualAction);
+            switch (action)
+            {
+                case FP_ToolbarAction.ToggleVerticesOn:
+                    _activeMeshViewStatus.Flags |= FPMeshViewFlags.Vertices;
+                    break;
+                case FP_ToolbarAction.ToggleVerticesOff:
+                    _activeMeshViewStatus.Flags &= ~FPMeshViewFlags.Vertices;
+                    break;
+                case FP_ToolbarAction.ToggleWireframeOn:
+                    _activeMeshViewStatus.Flags |= FPMeshViewFlags.Wireframe;
+                    break;
+                case FP_ToolbarAction.ToggleWireframeOff:
+                    _activeMeshViewStatus.Flags &= ~FPMeshViewFlags.Wireframe;
+                    break;
+                case FP_ToolbarAction.ToggleBoundsOn:
+                    _activeMeshViewStatus.Flags |= FPMeshViewFlags.Bounds;
+                    break;
+                case FP_ToolbarAction.ToggleBoundsOff:
+                    _activeMeshViewStatus.Flags &= ~FPMeshViewFlags.Bounds;
+                    break;
+                case FP_ToolbarAction.ToggleRendererOn:
+                    _activeMeshViewStatus.Flags |= FPMeshViewFlags.Renderer;
+                    _activeMeshViewStatus.ShowRenderer = true;
+                    break;
+                case FP_ToolbarAction.ToggleRendererOff:
+                    _activeMeshViewStatus.Flags &= ~FPMeshViewFlags.Renderer;
+                    _activeMeshViewStatus.ShowRenderer = false;
+                    break;
+            }
+            OnActiveVisualActionChanged?.Invoke(_activeIndex, ActiveModel, _activeMeshViewStatus);
         }
         public void SetIndex(int index)
         {

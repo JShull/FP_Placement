@@ -32,7 +32,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             // Initial sync
             HandleActiveModelChanged(_cycle.ActiveIndex, _cycle.ActiveModel);
-            HandleMeshVisualChanges(_cycle.ActiveIndex, _cycle.ActiveModel, _cycle.ActiveVisualAction);
+            HandleMeshVisualChanges(_cycle.ActiveIndex, _cycle.ActiveModel, _cycle.ActiveMeshViewStatus);
         }
 
         private void OnDisable()
@@ -56,13 +56,14 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             // Collect renderers from ONLY the active model root
            
-            var renderers = GetRenderersFromActiveModel(active);
-            _meshViewer.SetTargets(renderers);
+            var renderers = GetRenderersFromActiveModel(active,_cycle.ActiveMeshViewStatus.ShowRenderer);
+            _meshViewer.SetTargets(renderers,_cycle.ActiveMeshViewStatus.ShowRenderer);
         }
-        private Renderer[] GetRenderersFromActiveModel(FP_ModelDisplayBinding active)
+        
+        private Renderer[] GetRenderersFromActiveModel(FP_ModelDisplayBinding active,bool renderMainItem=true)
         {
-            var renderers = active.GetComponentsInChildren<Renderer>(_includeInactiveChildren);
-
+            //var renderers = active.GetComponentsInChildren<Renderer>(_includeInactiveChildren);
+            var renderers = active.AllRenderers.ToArray();
             // Optional filtering by type
             if (!_includeSkinnedMeshRenderers || !_includeMeshRenderers)
             {
@@ -73,14 +74,16 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
                     if (!_includeSkinnedMeshRenderers && r is SkinnedMeshRenderer) continue;
                     if (!_includeMeshRenderers && r is MeshRenderer) continue;
-
                     tmp.Add(r);
                 }
                 renderers = tmp.ToArray();
             }
+            // turn off/on main item renderer
+            active.SetRendererOnOff(renderMainItem);
             return renderers;
         }
-        private void HandleMeshVisualChanges(int index, FP_ModelDisplayBinding active, FP_ToolbarAction action)
+        
+        private void HandleMeshVisualChanges(int index, FP_ModelDisplayBinding active, FPMeshViewStatus action)
         {
             if (_meshViewer == null)
                 return;
@@ -90,22 +93,49 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 _meshViewer.SetTargets(System.Array.Empty<Renderer>());
                 return;
             }
-            switch (action)
+            MeshViewMode mode = ToMeshViewMode(action);
+            _meshViewer.SetMeshModeType(mode, GetRenderersFromActiveModel(active, _cycle.ActiveMeshViewStatus.ShowRenderer));
+        }
+
+        #region Mesh View Status Extension Work
+        public static MeshViewMode ToMeshViewMode(in FPMeshViewStatus status)
+        {
+            // 1) Surface debug overrides (these are mutually exclusive by design)
+            switch (status.SurfaceMode)
             {
-                case FP_ToolbarAction.ToggleVerticesOn:
-                    _meshViewer.SetMeshModeType(MeshViewMode.Vertices, GetRenderersFromActiveModel(active));
-                    break;
-                case FP_ToolbarAction.ToggleWireframeOn:
-                    _meshViewer.SetMeshModeType(MeshViewMode.Wireframe, GetRenderersFromActiveModel(active));
-                    break;
-                case FP_ToolbarAction.ToggleVerticesOff:
-                case FP_ToolbarAction.ToggleWireframeOff:
-                    _meshViewer.SetMeshModeType(MeshViewMode.Default);
-                    break;
-                // Extend with more cases as needed for wireframe, bounds, etc.
+                case MeshSurfaceDebugMode.WorldNormals:
+                    return MeshViewMode.SurfaceWorldNormals;
+                case MeshSurfaceDebugMode.UV0:
+                    return MeshViewMode.SurfaceUV0;
+                case MeshSurfaceDebugMode.VertexColors:
+                    return MeshViewMode.SurfaceVertexColor;
+                case MeshSurfaceDebugMode.None:
                 default:
                     break;
             }
+
+            // 2) Normals overlay (if you want this to combine with wireframe/vertices later,
+            // you can extend MeshViewMode or split into multiple passes)
+            if (status.Flags.HasFlag(FPMeshViewFlags.Normals))
+                return MeshViewMode.Normals;
+
+            // 3) Topology overlays
+            bool showVerts = status.Flags.HasFlag(FPMeshViewFlags.Vertices);
+            bool showWire = status.Flags.HasFlag(FPMeshViewFlags.Wireframe);
+
+            if (showVerts && showWire) return MeshViewMode.WireframeAndVertices;
+            if (showWire) return MeshViewMode.Wireframe;
+            if (showVerts) return MeshViewMode.Vertices;
+
+            // 4) Nothing selected
+            return MeshViewMode.Default;
         }
+
+        public static bool ShouldShowRenderer(in FPMeshViewStatus status)
+            => status.Flags.HasFlag(FPMeshViewFlags.Renderer);
+
+        public static bool ShouldShowBounds(in FPMeshViewStatus status)
+            => status.Flags.HasFlag(FPMeshViewFlags.Bounds);
+        #endregion
     }
 }

@@ -36,25 +36,59 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 case FP_ToolbarAction.ToggleVerticesOn:
                     if (_modelCycle != null)
                     {
-                        // keep the same model index but change visual info
                         _modelCycle.SetIndex(_modelCycle.ActiveIndex);
                         _modelCycle.SetVisualInformation(FP_ToolbarAction.ToggleVerticesOn);
                     }
 
                     break;
                 case FP_ToolbarAction.ToggleVerticesOff:
-                if(_modelCycle != null)
-                    {
-                        // keep the same model index but change visual info
-                        _modelCycle.SetIndex(_modelCycle.ActiveIndex);
-                        _modelCycle.SetVisualInformation(FP_ToolbarAction.ToggleVerticesOff);
-                    }  
+                    if(_modelCycle != null)
+                        {
+                            _modelCycle.SetIndex(_modelCycle.ActiveIndex);
+                            _modelCycle.SetVisualInformation(FP_ToolbarAction.ToggleVerticesOff);
+                        }  
                     break;
-
-                // Extend:
-                // ToggleWireframe, ToggleBounds, ResetModelPose, etc.
-
-                default:
+                case FP_ToolbarAction.ToggleBoundsOn:
+                    if (_modelCycle != null)
+                    {
+                        _modelCycle.SetIndex(_modelCycle.ActiveIndex);
+                        _modelCycle.SetVisualInformation(FP_ToolbarAction.ToggleBoundsOn);
+                    }
+                    break;
+                case FP_ToolbarAction.ToggleBoundsOff:
+                    if (_modelCycle != null)
+                    {
+                        _modelCycle.SetIndex(_modelCycle.ActiveIndex);
+                        _modelCycle.SetVisualInformation(FP_ToolbarAction.ToggleBoundsOff);
+                    }
+                    break;
+                case FP_ToolbarAction.ToggleWireframeOn:
+                    if (_modelCycle != null)
+                    {
+                        _modelCycle.SetIndex(_modelCycle.ActiveIndex);
+                        _modelCycle.SetVisualInformation(FP_ToolbarAction.ToggleWireframeOn);
+                    }
+                    break;
+                case FP_ToolbarAction.ToggleWireframeOff:
+                    if (_modelCycle != null)
+                    {
+                        _modelCycle.SetIndex(_modelCycle.ActiveIndex);
+                        _modelCycle.SetVisualInformation(FP_ToolbarAction.ToggleWireframeOff);
+                    }
+                    break;
+                case FP_ToolbarAction.ToggleRendererOn:
+                    if (_modelCycle != null)
+                    {
+                        _modelCycle.SetIndex(_modelCycle.ActiveIndex);
+                        _modelCycle.SetVisualInformation(FP_ToolbarAction.ToggleRendererOn);
+                    }
+                    break;
+                case FP_ToolbarAction.ToggleRendererOff:
+                    if (_modelCycle != null)
+                    {
+                        _modelCycle.SetIndex(_modelCycle.ActiveIndex);
+                        _modelCycle.SetVisualInformation(FP_ToolbarAction.ToggleRendererOff);
+                    }
                     break;
             }
         }

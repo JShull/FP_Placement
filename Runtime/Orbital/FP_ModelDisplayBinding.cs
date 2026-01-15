@@ -1,5 +1,6 @@
 namespace FuzzPhyte.Placement.OrbitalCamera
 {
+    using System.Collections.Generic;
     using UnityEngine;
 
     [DisallowMultipleComponent]
@@ -8,6 +9,8 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         [SerializeField] private FP_ModelDisplayData _data;
 
         public FP_ModelDisplayData Data => _data;
+        // cache of all renderers under this model root
+        public List<Renderer> AllRenderers = new List<Renderer>();
 
         /// <summary>
         /// Returns world-space bounds that should be used by the orbital camera system.
@@ -63,6 +66,21 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             transform.localScale = Vector3.one * Mathf.Max(0.0001f, _data.DefaultUniformScale);
         }
 
+        public void SetRendererOnOff(bool rendered)
+        {
+            foreach(var r in AllRenderers)
+            {
+                if (r is MeshRenderer mr)
+                {
+                    mr.enabled = rendered;
+                }
+                if (r is SkinnedMeshRenderer smr)
+                {
+                    smr.enabled = rendered;
+                }
+            }
+            
+        }
         private static Bounds TransformLocalBoundsToWorld(Bounds localBounds, Transform root)
         {
             // Conservative: transform the 8 corners and encapsulate

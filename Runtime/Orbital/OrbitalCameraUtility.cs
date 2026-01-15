@@ -23,9 +23,40 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         ToggleWireframeOn,
         ToggleWireframeOff,
         ToggleBoundsOn,
-        ToggleBoundsOff
-
+        ToggleBoundsOff,
+        ToggleRendererOn,
+        ToggleRendererOff
     }
+    [Serializable]
+    [System.Flags]
+    public enum FPMeshViewFlags
+    {
+        None = 0,
+        Vertices = 1 << 0,
+        Wireframe = 1 << 1,
+        Renderer = 1 << 2,
+        Bounds = 1 << 3,
+        Normals = 1 << 4,
+        // Surface modes are better as a separate enum, not flags
+    }
+    [Serializable]
+    public enum MeshSurfaceDebugMode
+    {
+        None,
+        WorldNormals,
+        UV0,
+        VertexColors
+    }
+    /// <summary>
+    /// Struct to keep track of mesh view status for runtime mesh viewer
+    /// </summary>
+    [Serializable]
+    public struct FPMeshViewStatus
+    {
+        public bool ShowRenderer;
+        public FPMeshViewFlags Flags;
+        public MeshSurfaceDebugMode SurfaceMode;
+    } 
 
     public readonly struct FP_OrbitalInput
     {
