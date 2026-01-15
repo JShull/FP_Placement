@@ -36,9 +36,19 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 case FP_ToolbarAction.ToggleVerticesOn:
                     if (_modelCycle != null)
                     {
+                        // keep the same model index but change visual info
                         _modelCycle.SetIndex(_modelCycle.ActiveIndex);
+                        _modelCycle.SetVisualInformation(FP_ToolbarAction.ToggleVerticesOn);
                     }
-                        
+
+                    break;
+                case FP_ToolbarAction.ToggleVerticesOff:
+                if(_modelCycle != null)
+                    {
+                        // keep the same model index but change visual info
+                        _modelCycle.SetIndex(_modelCycle.ActiveIndex);
+                        _modelCycle.SetVisualInformation(FP_ToolbarAction.ToggleVerticesOff);
+                    }  
                     break;
 
                 // Extend:

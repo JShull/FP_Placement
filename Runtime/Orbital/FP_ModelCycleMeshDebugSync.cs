@@ -3,6 +3,9 @@ namespace FuzzPhyte.Placement.OrbitalCamera
     using UnityEngine;
     using FuzzPhyte.Utility;
 
+    // Syncs the active model from FP_ModelCycleController to a FPRuntimeMeshViewer for debugging.
+    // Also sets our mesh visuals for Runtime Mesh Viewer Options based on toolbar actions and starting conditions
+
     [DisallowMultipleComponent]
     public sealed class FP_ModelCycleMeshDebugSync : MonoBehaviour
     {
@@ -25,15 +28,19 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             if (_cycle == null || _meshViewer == null) return;
 
             _cycle.OnActiveModelChanged += HandleActiveModelChanged;
+            _cycle.OnActiveVisualActionChanged += HandleMeshVisualChanges;
 
-            // Force-sync once at enable
+            // Initial sync
             HandleActiveModelChanged(_cycle.ActiveIndex, _cycle.ActiveModel);
+            HandleMeshVisualChanges(_cycle.ActiveIndex, _cycle.ActiveModel, _cycle.ActiveVisualAction);
         }
 
         private void OnDisable()
         {
-            if (_cycle != null)
-                _cycle.OnActiveModelChanged -= HandleActiveModelChanged;
+            if (_cycle == null) return;
+            
+            _cycle.OnActiveModelChanged -= HandleActiveModelChanged;
+            _cycle.OnActiveVisualActionChanged -= HandleMeshVisualChanges;
         }
 
         private void HandleActiveModelChanged(int index, FP_ModelDisplayBinding active)
@@ -48,7 +55,12 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             }
 
             // Collect renderers from ONLY the active model root
-            // (This matches your "show one model at a time" logic.) :contentReference[oaicite:2]{index=2}
+           
+            var renderers = GetRenderersFromActiveModel(active);
+            _meshViewer.SetTargets(renderers);
+        }
+        private Renderer[] GetRenderersFromActiveModel(FP_ModelDisplayBinding active)
+        {
             var renderers = active.GetComponentsInChildren<Renderer>(_includeInactiveChildren);
 
             // Optional filtering by type
@@ -66,8 +78,34 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 }
                 renderers = tmp.ToArray();
             }
+            return renderers;
+        }
+        private void HandleMeshVisualChanges(int index, FP_ModelDisplayBinding active, FP_ToolbarAction action)
+        {
+            if (_meshViewer == null)
+                return;
 
-            _meshViewer.SetTargets(renderers);
+            if (active == null)
+            {
+                _meshViewer.SetTargets(System.Array.Empty<Renderer>());
+                return;
+            }
+            switch (action)
+            {
+                case FP_ToolbarAction.ToggleVerticesOn:
+                    _meshViewer.SetMeshModeType(MeshViewMode.Vertices, GetRenderersFromActiveModel(active));
+                    break;
+                case FP_ToolbarAction.ToggleWireframeOn:
+                    _meshViewer.SetMeshModeType(MeshViewMode.Wireframe, GetRenderersFromActiveModel(active));
+                    break;
+                case FP_ToolbarAction.ToggleVerticesOff:
+                case FP_ToolbarAction.ToggleWireframeOff:
+                    _meshViewer.SetMeshModeType(MeshViewMode.Default);
+                    break;
+                // Extend with more cases as needed for wireframe, bounds, etc.
+                default:
+                    break;
+            }
         }
     }
 }

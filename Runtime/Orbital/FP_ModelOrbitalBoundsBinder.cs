@@ -12,7 +12,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             if (_cycle != null)
             {
                 _cycle.OnActiveModelChanged += HandleModelChanged;
-                _cycle.OnActiveVisualActionChanged += HandleModelVisualsChanged;
             }
                 
         }
@@ -22,7 +21,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             if (_cycle != null)
             {
                 _cycle.OnActiveModelChanged -= HandleModelChanged;
-                _cycle.OnActiveVisualActionChanged -= HandleModelVisualsChanged;
             }
                 
         }
@@ -49,10 +47,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             _orbital.ResetCameraMaxDistance();
             //JOHN --> Check if we set the Visual Information here or..
 
-        }
-        private void HandleModelVisualsChanged(int index, FP_ModelDisplayBinding binding, FP_ToolbarAction action)
-        {
-            // Optional: react to visual changes if needed
         }
     }
 }
