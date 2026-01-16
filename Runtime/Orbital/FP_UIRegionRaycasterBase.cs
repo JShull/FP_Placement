@@ -18,7 +18,8 @@ namespace FuzzPhyte.Placement.OrbitalCamera
     public abstract class FP_UIRegionRaycasterBase<TProvider> : MonoBehaviour where TProvider:Component
     {
         [Header("UI Ortho Camera")]
-        [SerializeField] protected Camera _uiOrthoCamera;
+        [SerializeField] protected Camera _uiOverlayCamera;
+        public Camera RaycastCamera => _uiOverlayCamera;
 
         [Header("Regions (screen space)")]
         [SerializeField] protected FP_ScreenRegionAsset _regions;
@@ -41,7 +42,8 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         [SerializeField] protected bool _debugLogs;
 
         // cached
-        protected Vector2 _lastPointerPos;
+        [SerializeField]protected Vector2 _lastPointerPos;
+        public Vector2 LastPointerPos => _lastPointerPos;
         protected TProvider _lastHoverProvider;
         [SerializeField]protected TProvider _lastSelectedProvider;
 
@@ -87,7 +89,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         protected virtual void OnPointerMove(InputAction.CallbackContext ctx)
         {
             if (!CanProcessInput()) return;
-            if (_uiOrthoCamera == null) return;
+            if (_uiOverlayCamera == null) return;
 
             _lastPointerPos = ctx.ReadValue<Vector2>();
 
@@ -118,11 +120,10 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         protected virtual void OnClickPerformed(InputAction.CallbackContext ctx)
         {
             if (!CanProcessInput()) return;
-            if (_uiOrthoCamera == null) return;
+            if (_uiOverlayCamera == null) return;
 
-            // Fall back to reading directly (your cube raycaster already does this pattern)
-            if (_pointerPosition?.action != null)
-                _lastPointerPos = _pointerPosition.action.ReadValue<Vector2>();
+            //context in this case is a button action and we need the other vector2 location action from _pointerPosition
+            _lastPointerPos = _pointerPosition.action.ReadValue<Vector2>();
 
             bool inRegion = IsPointerInAnyRegion(_lastPointerPos, out int regionIndex);
             if (_requireRegion && !inRegion) return;
@@ -152,7 +153,11 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             provider = null;
             hit = default;
 
-            Ray ray = _uiOrthoCamera.ScreenPointToRay(screenPos);
+            Ray ray = _uiOverlayCamera.ScreenPointToRay(screenPos);
+            if (_debugLogs)
+            {
+                Debug.DrawRay(ray.origin, ray.direction * _maxDistance, Color.cyan, 3f, false);
+            }
             if (!Physics.Raycast(ray, out hit, _maxDistance, _layerMask, QueryTriggerInteraction.Collide))
             {
                 return false;

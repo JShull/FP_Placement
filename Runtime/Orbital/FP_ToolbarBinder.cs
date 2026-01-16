@@ -1,13 +1,16 @@
 namespace FuzzPhyte.Placement.OrbitalCamera
 {
+    using System;
     using UnityEngine;
     public class FP_ToolbarBinder : MonoBehaviour
     {
         [SerializeField] private FP_ToolbarUIRaycaster _raycaster;
         [SerializeField] private FP_ModelCycleController _modelCycle;
         
-        // Optional: hooks to other systems (vertices, wireframe, etc.)
-        //[SerializeField] private MonoBehaviour _verticesSystem; // replace with your concrete type
+        //Other UI controllable items - maybe move these out
+        public event Action OnMeasureToolActivated;
+        public event Action OnMeasureToolDeactivated;
+        public event Action OnMeasureToolReset;
 
         private void OnEnable()
         {
@@ -89,6 +92,15 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                         _modelCycle.SetIndex(_modelCycle.ActiveIndex);
                         _modelCycle.SetVisualInformation(FP_ToolbarAction.ToggleRendererOff);
                     }
+                    break;
+                case FP_ToolbarAction.ToggleMeasurementOn:
+                    OnMeasureToolActivated?.Invoke();
+                    break;
+                case FP_ToolbarAction.ToggleMeasurementOff:
+                    OnMeasureToolDeactivated?.Invoke();
+                    break;
+                case FP_ToolbarAction.ToolMeasureReset:
+                    OnMeasureToolReset?.Invoke();
                     break;
             }
         }

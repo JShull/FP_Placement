@@ -25,7 +25,10 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         ToggleBoundsOn,
         ToggleBoundsOff,
         ToggleRendererOn,
-        ToggleRendererOff
+        ToggleRendererOff,
+        ToggleMeasurementOn,
+        ToggleMeasurementOff,
+        ToolMeasureReset,
     }
     [Serializable]
     [System.Flags]
@@ -38,6 +41,21 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         Bounds = 1 << 3,
         Normals = 1 << 4,
         // Surface modes are better as a separate enum, not flags
+    }
+    [Serializable]
+    public enum FPMeasureState
+    {
+        None,
+        WaitingForA,
+        WaitingForB,
+        Completed
+    }
+    [Serializable]
+    public enum FPMeasureMode
+    {
+        None,
+        Perspective,
+        OrthoPlane
     }
     [Serializable]
     public enum MeshSurfaceDebugMode

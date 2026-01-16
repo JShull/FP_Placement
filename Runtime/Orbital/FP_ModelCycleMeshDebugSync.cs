@@ -13,7 +13,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         [SerializeField] private FPRuntimeMeshViewer _meshViewer;
 
         [Header("Renderer Collection")]
-        [SerializeField] private bool _includeInactiveChildren = false;
         [SerializeField] private bool _includeSkinnedMeshRenderers = true;
         [SerializeField] private bool _includeMeshRenderers = true;
 
