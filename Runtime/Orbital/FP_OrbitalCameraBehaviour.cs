@@ -39,16 +39,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 _controller.ZoomToFitBounds(checkMaxDistance);
             } 
         }
-        /// <summary>
-        /// Call after you reset/set TargetBounds if you want the camera to recenter
-        /// </summary>
-        public void ResetCameraMaxDistance()
-        {
-            float checkMaxDistance = 0;
-            checkMaxDistance = TargetBounds.bounds.size.magnitude * 1.1f;
-            _controller.ZoomToFitBounds(checkMaxDistance);
-            _controller.FitToBoundsForCurrentProjection();
-        }
+        
 
         private void LateUpdate()
         {
@@ -69,6 +60,24 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             }
         }
 
+        #region Public Methods
+        public void RecenterToTargetBounds(bool fit = true)
+        {
+            if (_controller == null) return;
+            if (TargetBounds == null) return;
+            _controller.SetTargetBounds(TargetBounds.bounds, null); // sets pivotTarget = bounds.center
+            if (fit) _controller.FitToBoundsForCurrentProjection();
+        }
+        /// <summary>
+        /// Call after you reset/set TargetBounds if you want the camera to recenter
+        /// </summary>
+        public void ResetCameraMaxDistance()
+        {
+            float checkMaxDistance = 0;
+            checkMaxDistance = TargetBounds.bounds.size.magnitude * 1.1f;
+            _controller.ZoomToFitBounds(checkMaxDistance);
+            _controller.FitToBoundsForCurrentProjection();
+        }
         public void SetBounds(Bounds b, Transform optionalFrame = null) =>
             _controller.SetTargetBounds(b, optionalFrame);
 
@@ -77,5 +86,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
         /// <summary>Called by your app layer (touch, mouse, etc.).</summary>
         public void FeedInput(in FP_OrbitalInput input) => _queuedInput = input;
+        #endregion
     }
 }

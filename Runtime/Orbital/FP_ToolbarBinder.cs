@@ -121,6 +121,12 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                     }
                     OnPanModeActivated?.Invoke();
                     break;
+                case FP_ToolbarAction.ResetModelPose:
+                    if (_orbitalMouseInputBehaviour != null)
+                    {
+                        _orbitalMouseInputBehaviour.RecenterBounds();
+                    }
+                    break;
             }
         }
     }

@@ -121,6 +121,10 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             CancelAllInputState();
         }
+        public void RecenterBounds()
+        {
+            _orbital.RecenterToTargetBounds(false);
+        }
         #endregion
         private void Reset()
         {
@@ -210,7 +214,93 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 _panStartedThisFrame = false;
                 return;
             }
+            // NEW Zoom Touch
 
+            // ------------------------------------------------------------
+            // 2-FINGER TOUCH ONLY: pinch zoom (special case)
+            // ------------------------------------------------------------
+            int touchCount = Touch.activeTouches.Count;
+
+            if (touchCount >= 2)
+            {
+                // During pinch, prevent any one-pointer gesture from sticking.
+                if (_isDown) ForceRelease();
+                if (_isPanDown) ForcePanRelease();
+
+                // Read the first two touches
+                var t0 = Touch.activeTouches[0];
+                var t1 = Touch.activeTouches[1];
+
+                Vector2 p0 = t0.screenPosition;
+                Vector2 p1 = t1.screenPosition;
+
+                Vector2 center = (p0 + p1) * 0.5f;
+                float dist = Vector2.Distance(p0, p1);
+
+                // Region gate: use pinch center
+                if (!IsInRegion(center))
+                {
+                    CancelTouchStateOnly();
+                    _scrollAccumY = 0f;
+                    return;
+                }
+
+                bool pressedThisFrame = !_wasTwoFingerDown;
+
+                bool anyEnded =
+                    t0.phase == UnityEngine.InputSystem.TouchPhase.Ended || t0.phase == UnityEngine.InputSystem.TouchPhase.Canceled ||
+                    t1.phase == UnityEngine.InputSystem.TouchPhase.Ended || t1.phase == UnityEngine.InputSystem.TouchPhase.Canceled;
+
+                bool releasedThisFrame = _wasTwoFingerDown && anyEnded;
+
+                float pinchDelta = 0f;
+                if (_wasTwoFingerDown)
+                {
+                    float deltaDist = dist - _lastTwoFingerDistance; // + = fingers moving apart
+                    float signed = deltaDist * _pinchToZoomScale;
+                    pinchDelta = _invertPinch ? -signed : signed;
+                }
+
+                _lastTwoFingerDistance = dist;
+                _lastTwoFingerCenter = center;
+
+                _wasTwoFingerDown = !anyEnded;
+                _wasOneFingerDown = false;
+
+                // Feed zoom-only (no pan on pinch)
+                _orbital.FeedInput(new FP_OrbitalInput(
+                    isPressed: pressedThisFrame,
+                    isReleased: releasedThisFrame,
+                    pointerPos: center,
+                    dragDelta: Vector2.zero,
+                    pinchDelta: pinchDelta,
+                    isTwoFinger: true
+                ));
+
+                _scrollAccumY = 0f;
+                return;
+            }
+            else
+            {
+                // If we just left a pinch gesture, send a release once.
+                if (_wasTwoFingerDown)
+                {
+                    _wasTwoFingerDown = false;
+
+                    _orbital.FeedInput(new FP_OrbitalInput(
+                        isPressed: false,
+                        isReleased: true,
+                        pointerPos: Vector2.zero,
+                        dragDelta: Vector2.zero,
+                        pinchDelta: 0f,
+                        isTwoFinger: false
+                    ));
+                }
+            }
+
+            // End Zoom Touch
+            // OLD
+            /*
             // --- TOUCH MODE (EnhancedTouch) ---
             int count = Touch.activeTouches.Count;
 
@@ -220,7 +310,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 // Prevent mouse drag from "sticking" if a touch begins
                 if (_isDown) ForceRelease();
                 _scrollAccumY = 0f;
-
                 // 1 finger orbit
                 if (count == 1)
                 {
@@ -336,6 +425,9 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 }
             }
 
+
+            // END OLD
+            */
             // --- MOUSE MODE (Input Actions) ---
             Vector2 current = _pointerPosition.action.ReadValue<Vector2>();
 
