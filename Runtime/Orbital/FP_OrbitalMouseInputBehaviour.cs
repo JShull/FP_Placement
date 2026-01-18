@@ -1,8 +1,5 @@
 namespace FuzzPhyte.Placement.OrbitalCamera
 {
-#if UNITY_EDITOR
-    using UnityEditor;
-#endif
     using UnityEngine;
     using UnityEngine.InputSystem;
     using FuzzPhyte.Utility;
@@ -23,6 +20,10 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         [Header("Target Orbital Camera")]
         [SerializeField] private FP_OrbitalCameraBehaviour _orbital;
 
+        [Header("Mouse Mode")]
+        [Tooltip("System starts in Orbit Mode")]
+        [SerializeField] private FP_OrbitalMouseMode _mode = FP_OrbitalMouseMode.Orbit;
+
         [Header("Input Actions (New Input System)")]
         [Tooltip("Value/Vector2 - typically bound to <Pointer>/position")]
         [SerializeField] private InputActionReference _pointerPosition;
@@ -33,6 +34,13 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         [Tooltip("Value/Vector2 - typically bound to <Mouse>/scroll")]
         [SerializeField] private InputActionReference _scrollWheel;
 
+        [Header("Pan Options")]
+        [Tooltip("Button - typically bound to <Mouse>/MiddleButton")]
+        [SerializeField] private InputActionReference _middleMouse;
+        private bool _isPanDown;
+        private bool _panStartedThisFrame;
+        private bool _panReleasedThisFrame;
+        private Vector2 _lastPanPos;
         [Header("Scroll Options")]
         [Tooltip("Scales <Mouse>/scroll to a usable zoom delta. Tune to taste.")]
         [SerializeField] private float _scrollToZoomScale = 0.02f;
@@ -101,13 +109,23 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             {
                 ForceRelease();
             }
+            if(_inputLocked && _isPanDown)
+            {
+                ForcePanRelease();
+            }
+        }
+        public void SetMode(FP_OrbitalMouseMode mode)
+        {
+            if (mode == _mode) return;
+            _mode = mode;
+
+            CancelAllInputState();
         }
         #endregion
         private void Reset()
         {
             _orbital = GetComponent<FP_OrbitalCameraBehaviour>();
         }
-
         private void Awake()
         {
             if (_orbital == null)
@@ -129,9 +147,14 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 _scrollWheel.action.performed += OnScrollPerformed;
                 _scrollWheel.action.canceled += OnScrollPerformed; // some devices emit cancel; safe to listen
             }
+            if (_middleMouse?.action != null)
+            {
+                _middleMouse.action.Enable();
+                _middleMouse.action.performed += OnMiddleDown;
+                _middleMouse.action.canceled += OnMiddleUp;
+            }
             EnhancedTouchSupport.Enable();
         }
-
         private void OnDisable()
         {
             if (_primaryClick?.action != null)
@@ -146,6 +169,12 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 _scrollWheel.action.canceled -= OnScrollPerformed;
                 _scrollWheel.action.Disable();
             }
+            if (_middleMouse?.action != null)
+            {
+                _middleMouse.action.performed -= OnMiddleDown;
+                _middleMouse.action.canceled -= OnMiddleUp;
+                _middleMouse.action.Disable();
+            }
             if (_pointerPosition?.action != null) _pointerPosition.action.Disable();
             EnhancedTouchSupport.Disable();
             _wasOneFingerDown = false;
@@ -153,6 +182,10 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             if (_isDown)
             {
                  ForceRelease();
+            }
+            if (_isPanDown)
+            {
+                ForcePanRelease();
             }
         }
 
@@ -171,11 +204,17 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 _startedThisFrame = false;
                 _releasedThisFrame = false;
                 _scrollAccumY = 0f;
+
+                if (_isPanDown) ForcePanRelease();
+                _panReleasedThisFrame = false;
+                _panStartedThisFrame = false;
                 return;
             }
 
             // --- TOUCH MODE (EnhancedTouch) ---
             int count = Touch.activeTouches.Count;
+
+            // JOHN Need to consider Orbit vs pan and get the right functions in order... aka release
             if (count > 0)
             {
                 // Prevent mouse drag from "sticking" if a touch begins
@@ -305,22 +344,19 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             if (!IsInRegion(current))
             {
                 _scrollAccumY = 0;
-                if (_isDown)
-                {
-                    ForceRelease();
-                }
+                // primary mouse orbit input parameters
+                if (_isDown) ForceRelease();
                 _startedThisFrame = false;
                 _releasedThisFrame = false;
+
+                // middle mouse pan input parameters
+                if (_isPanDown) ForceRelease();
+                _panStartedThisFrame = false;
+                _panReleasedThisFrame = false;
                 return;
             }
 
-            Vector2 delta = Vector2.zero;
-            if (_isDown)
-            {
-                delta = current - _lastPos;
-                _lastPos = current;
-            }
-
+            // zoom related
             float pinchDeltaMouse = 0f;
             if (Mathf.Abs(_scrollAccumY) > Mathf.Epsilon)
             {
@@ -328,80 +364,49 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 pinchDeltaMouse = _invertScroll ? -signed : signed;
             }
 
-            _orbital.FeedInput(new FP_OrbitalInput(
-                isPressed: _startedThisFrame,
-                isReleased: _releasedThisFrame,
-                pointerPos: current,
-                dragDelta: delta,
-                pinchDelta: pinchDeltaMouse,
-                isTwoFinger: false
-            ));
-
-            _startedThisFrame = false;
-            _releasedThisFrame = false;
-            _scrollAccumY = 0f;
-            #region Old Update Logic Before Touch
-            /*
-            if (_orbital == null) return;
-            if (!CanProcessInput()) return;
-            if (_pointerPosition?.action == null) return;
-
-            // If locked: do nothing (but ensure our internal flags don’t accumulate)
-            if (_inputLocked)
+            // orbit or pan?
+            if(_mode == FP_OrbitalMouseMode.Orbit)
             {
+                Vector2 delta = Vector2.zero;
+                if (_isDown)
+                {
+                    delta = current - _lastPos;
+                    _lastPos = current;
+                }
+                _orbital.FeedInput(new FP_OrbitalInput(
+                    isPressed: _startedThisFrame,
+                    isReleased: _releasedThisFrame,
+                    pointerPos: current,
+                    dragDelta: delta,
+                    pinchDelta: pinchDeltaMouse,
+                    isTwoFinger: false
+                ));
                 _startedThisFrame = false;
                 _releasedThisFrame = false;
-                 _scrollAccumY = 0f;
-                return;
-            }
-            // process touch here?
-            int count = Touch.activeTouches.Count;
-
-
-            Vector2 current = _pointerPosition.action.ReadValue<Vector2>();
-
-            // Orbit drag delta (pixels)
-            Vector2 delta = Vector2.zero;
-            if (_isDown)
+            }else if(_mode == FP_OrbitalMouseMode.Pan)
             {
-                delta = current - _lastPos;
-                _lastPos = current;
-            }
-            // Scroll zoom -> pinchDelta
-            // <Mouse>/scroll is typically "lines" (often +/-120-ish per notch on Windows), but varies by device.
-            // We scale it down to something stable.
-            float pinchDelta = 0f;
-            if (Mathf.Abs(_scrollAccumY) > Mathf.Epsilon)
-            {
-                float signed = _scrollAccumY * _scrollToZoomScale;
-                pinchDelta = _invertScroll ? -signed : signed;
-                
-            }
+                Vector2 panDelta = Vector2.zero;
+                if (_isPanDown)
+                {
+                    panDelta = current - _lastPanPos;
+                    _lastPanPos = current;
+                }
 
-            // Build the packet:
-            // - IsPressed only true on the first frame of down.
-            // - IsReleased only true on the first frame of up.
-            // - DragDelta only meaningful while held.
-            var input = new FP_OrbitalInput(
-                isPressed: _startedThisFrame,
-                isReleased: _releasedThisFrame,
-                pointerPos: current,
-                dragDelta: delta,
-                pinchDelta: pinchDelta,
-                isTwoFinger: false
-            );
-            // Consume scroll for this frame
-            
-            _orbital.FeedInput(input);
+                // IMPORTANT: set isTwoFinger=true so controller routes drag to Pan()
+                _orbital.FeedInput(new FP_OrbitalInput(
+                    isPressed: _panStartedThisFrame,
+                    isReleased: _panReleasedThisFrame,
+                    pointerPos: current,
+                    dragDelta: panDelta,
+                    pinchDelta: pinchDeltaMouse,  // you can keep zoom active while panning if you want
+                    isTwoFinger: true
+                ));
 
-            // Clear one-frame flags.
-            _startedThisFrame = false;
-            _releasedThisFrame = false;
+                _panStartedThisFrame = false;
+                _panReleasedThisFrame = false;
+            }
             _scrollAccumY = 0f;
-            */
-            #endregion
         }
-
         private void OnPrimaryDown(InputAction.CallbackContext ctx)
         {
             if (!CanProcessInput()) return;
@@ -411,15 +416,16 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             _startedThisFrame = true;
             _releasedThisFrame = false;
             _lastPos = _pointerPosition.action.ReadValue<Vector2>();
-        }
 
+            //Ensure pan isn't active
+            if (_isPanDown) ForcePanRelease();
+        }
         private void OnPrimaryUp(InputAction.CallbackContext ctx)
         {
             _isDown = false;
             _releasedThisFrame = true;
             _startedThisFrame = false;
         }
-
         private void OnScrollPerformed(InputAction.CallbackContext ctx)
         {
             if (!CanProcessInput() || _inputLocked) return;
@@ -427,7 +433,31 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             Vector2 scroll = ctx.ReadValue<Vector2>();
             _scrollAccumY += scroll.y;
         }
+        private void OnMiddleDown(InputAction.CallbackContext ctx)
+        {
+            if (!CanProcessInput()) return;
+            if (_pointerPosition?.action == null) return;
+            if (_inputLocked) return;
 
+            // Only start pan if we're in Pan mode
+            if (_mode != FP_OrbitalMouseMode.Pan) return;
+
+            _isPanDown = true;
+            _panStartedThisFrame = true;
+            _panReleasedThisFrame = false;
+            _lastPanPos = _pointerPosition.action.ReadValue<Vector2>();
+
+            // Ensure orbit isn't active
+            if (_isDown) ForceRelease();
+        }
+        private void OnMiddleUp(InputAction.CallbackContext ctx)
+        {
+            if (_mode != FP_OrbitalMouseMode.Pan) return;
+
+            _isPanDown = false;
+            _panReleasedThisFrame = true;
+            _panStartedThisFrame = false;
+        }
         private bool CanProcessInput()
         {
             if (!_requireApplicationFocus) return true;
@@ -467,11 +497,14 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         private void CancelAllInputState()
         {
             if (_isDown) ForceRelease();
+            if (_isPanDown) ForcePanRelease();
 
             CancelTouchStateOnly();
 
             _startedThisFrame = false;
             _releasedThisFrame = false;
+            _panReleasedThisFrame = false;
+            _panStartedThisFrame = false;
             _scrollAccumY = 0f;
         }
         private void ForceRelease()
@@ -494,6 +527,27 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             }
 
             _releasedThisFrame = false;
+        }
+        private void ForcePanRelease()
+        {
+            _isPanDown = false;
+            _panStartedThisFrame = false;
+            _panReleasedThisFrame = true;
+
+            if (_orbital != null && _pointerPosition?.action != null)
+            {
+                Vector2 current = _pointerPosition.action.ReadValue<Vector2>();
+                _orbital.FeedInput(new FP_OrbitalInput(
+                    isPressed: false,
+                    isReleased: true,
+                    pointerPos: current,
+                    dragDelta: Vector2.zero,
+                    pinchDelta: 0f,
+                    isTwoFinger: true
+                ));
+            }
+
+            _panReleasedThisFrame = false;
         }
     }
    

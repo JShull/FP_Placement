@@ -6,11 +6,16 @@ namespace FuzzPhyte.Placement.OrbitalCamera
     {
         [SerializeField] private FP_ToolbarUIRaycaster _raycaster;
         [SerializeField] private FP_ModelCycleController _modelCycle;
+        [SerializeField] private FP_OrbitalMouseInputBehaviour _orbitalMouseInputBehaviour;
         
         //Other UI controllable items - maybe move these out
         public event Action OnMeasureToolActivated;
         public event Action OnMeasureToolDeactivated;
         public event Action OnMeasureToolReset;
+
+        //orbit & Pan
+        public event Action OnOrbitModeActivated;
+        public event Action OnPanModeActivated;
 
         private void OnEnable()
         {
@@ -101,6 +106,20 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                     break;
                 case FP_ToolbarAction.ToolMeasureReset:
                     OnMeasureToolReset?.Invoke();
+                    break;
+                case FP_ToolbarAction.OrbitMode:
+                    if (_orbitalMouseInputBehaviour != null)
+                    {
+                        _orbitalMouseInputBehaviour.SetMode(FP_OrbitalMouseMode.Orbit);
+                    }
+                    OnOrbitModeActivated?.Invoke();
+                    break;
+                case FP_ToolbarAction.PanMode:
+                    if (_orbitalMouseInputBehaviour != null)
+                    {
+                        _orbitalMouseInputBehaviour.SetMode(FP_OrbitalMouseMode.Pan);
+                    }
+                    OnPanModeActivated?.Invoke();
                     break;
             }
         }

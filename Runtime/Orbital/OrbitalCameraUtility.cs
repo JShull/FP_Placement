@@ -2,6 +2,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 {
     using UnityEngine;
     using System;
+    [Serializable]
     public enum FP_OrbitalView
     {
         None = 0,
@@ -12,6 +13,14 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         Top=5,
         Bottom=6
     }
+    [Serializable]
+    public enum FP_OrbitalMouseMode
+    {
+        None,
+        Orbit,
+        Pan
+    }
+    [Serializable]
     public enum FP_ToolbarAction
     {
         None,
@@ -29,6 +38,8 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         ToggleMeasurementOn,
         ToggleMeasurementOff,
         ToolMeasureReset,
+        OrbitMode,
+        PanMode
     }
     [Serializable]
     [System.Flags]
@@ -57,6 +68,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         Perspective,
         OrthoPlane
     }
+    
     [Serializable]
     public enum MeshSurfaceDebugMode
     {
@@ -432,7 +444,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             }
             // FitToBounds(...);  // you can pick a conservative fit path here
         }
-
         public void ChangeCameraPerspective(FP_ProjectionMode newProjection)
         {
             _projectionTarget = newProjection;
@@ -481,7 +492,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 Orbit(input.DragDelta);
             }
         }
-
         public void Tick(float deltaTime)
         {
             // Projection switching + transition zoom mapping
@@ -567,7 +577,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             _rotationTarget = Quaternion.Euler(_pitch, _yaw, 0f);
         }
-
         private void Pan(Vector2 dragDelta)
         {
             // Scale pan by distance so it feels stable at different zoom levels.

@@ -119,6 +119,20 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!114 &25006023
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc1515ab76e54f068e2f2207940fab32, type: 3}
+  m_Name: OrbitalCam/PanPress
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.InputActionReference
+  m_Asset: {fileID: -944628639613478452, guid: 0b9ea9a8cdb0e4e44a2a394fa00c08f4, type: 3}
+  m_ActionId: dd7ee07e-3fa3-4414-9ab1-234d9d3511a4
 --- !u!114 &98461578
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -299,6 +313,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2036420432}
     - target: {fileID: 6816879716752176603, guid: 3a68566c3a7df8a489900d8238b1159e, type: 3}
+      propertyPath: _middleMouse
+      value: 
+      objectReference: {fileID: 25006023}
+    - target: {fileID: 6816879716752176603, guid: 3a68566c3a7df8a489900d8238b1159e, type: 3}
       propertyPath: _scrollWheel
       value: 
       objectReference: {fileID: 2124696480}
@@ -386,6 +404,12 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 0}
     - targetCorrespondingSourceObject: {fileID: 2786027097591411059, guid: 3a68566c3a7df8a489900d8238b1159e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+    - targetCorrespondingSourceObject: {fileID: 4794002356263382360, guid: 3a68566c3a7df8a489900d8238b1159e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+    - targetCorrespondingSourceObject: {fileID: 6475508810209954370, guid: 3a68566c3a7df8a489900d8238b1159e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 0}
     - targetCorrespondingSourceObject: {fileID: 4479996317501893025, guid: 3a68566c3a7df8a489900d8238b1159e, type: 3}
