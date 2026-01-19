@@ -89,7 +89,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             if (_tool.State == FPMeasureState.WaitingForA)
             {
                 // First point MUST be a world hit on a measurable provider
-                _tool.OnFirstPoint(hit.point);
+                _tool.OnFirstPoint(hit.point,provider);
                 return;
             }
 
@@ -98,7 +98,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 // Perspective: second point uses world hit
                 if (_tool.Mode == FPMeasureMode.Perspective)
                 {
-                    _tool.OnSecondPoint(hit.point);
+                    _tool.OnSecondPoint(hit.point, provider);
                     return;
                 }
 
@@ -111,7 +111,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                     Ray r = _raycaster.RaycastCamera.ScreenPointToRay(_raycaster.LastPointerPos);
 
                     if (_tool.TryGetOrthoPlaneIntersection(r, out Vector3 p))
-                        _tool.OnSecondPoint(p);
+                        _tool.OnSecondPoint(p, provider);
 
                     return;
                 }

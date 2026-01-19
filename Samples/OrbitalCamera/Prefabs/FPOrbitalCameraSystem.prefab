@@ -1344,6 +1344,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.OrbitalCamera.FP_MeasurementHitProvider
   DisplayName: Capsule
   AllowMeasurement: 1
+  ModelUnits: 10
 --- !u!1 &884338989171733243
 GameObject:
   m_ObjectHideFlags: 0
@@ -8753,6 +8754,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.OrbitalCamera.FP_MeasurementHitProvider
   DisplayName: Cube
   AllowMeasurement: 1
+  ModelUnits: 10
 --- !u!1 &4794002356263382360
 GameObject:
   m_ObjectHideFlags: 0
@@ -9776,6 +9778,7 @@ MonoBehaviour:
   _line: {fileID: 0}
   _label: {fileID: 0}
   _isActive: 0
+  hitProvider: {fileID: 0}
 --- !u!114 &4740323446309449328
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9790,6 +9793,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: com.fuzzphyte.utility::FuzzPhyte.Utility.FPRuntimeMeasurementOverlay
   pointMat: {fileID: 2100000, guid: 2128682593ab4ab45ab8f3e6c0f003d7, type: 2}
   lineMat: {fileID: 2100000, guid: d36ed15767f0a0146afa728f0f8ffbc5, type: 2}
+  _units: 0
   PointSize: 0.05
   PointOpacity: 1
   PointColor: {r: 1, g: 0.21543354, b: 0, a: 1}
@@ -9920,7 +9924,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6961035067006050027}
-  - {fileID: 7577802736932763989}
   m_Father: {fileID: 391738072361856216}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &7597608924568588359
@@ -10409,6 +10412,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.OrbitalCamera.FP_MeasurementHitProvider
   DisplayName: Sphere
   AllowMeasurement: 1
+  ModelUnits: 10
 --- !u!1 &5776593030439537308
 GameObject:
   m_ObjectHideFlags: 0
@@ -13865,7 +13869,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4902889993884029244}
-  m_Father: {fileID: 397968846401001929}
+  m_Father: {fileID: 8866661455259304970}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -13881,8 +13885,8 @@ Canvas:
   m_GameObject: {fileID: 7391562035876511764}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 1
-  m_Camera: {fileID: 5179599039150016822}
+  m_RenderMode: 0
+  m_Camera: {fileID: 7597608924568588359}
   m_PlaneDistance: 0.1
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
@@ -13936,6 +13940,7 @@ MonoBehaviour:
   _screenOffset: {x: 0, y: 18}
   _clampToScreen: 1
   _screenPadding: {x: 8, y: 8}
+  canvasRect: {fileID: 7577802736932763989}
 --- !u!1 &7391619566153635606
 GameObject:
   m_ObjectHideFlags: 0
@@ -15984,6 +15989,7 @@ Transform:
   - {fileID: 4635634418792012197}
   - {fileID: 391738072361856216}
   - {fileID: 2104236131112006487}
+  - {fileID: 7577802736932763989}
   - {fileID: 7569941068795358933}
   - {fileID: 4727972618858575868}
   - {fileID: 5575350235033053050}

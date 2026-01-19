@@ -14,6 +14,9 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         [SerializeField] private LineRenderer _line;
         [SerializeField] private TMPro.TextMeshPro _label;
         [SerializeField] private bool _isActive;
+
+        [Header("Data")]
+        [SerializeField] private FP_MeasurementHitProvider hitProvider;
         public bool IsActive => _isActive;
         public FPMeasureState State { get; private set; } = FPMeasureState.None;
         public FPMeasureMode Mode { get; private set; } = FPMeasureMode.None;
@@ -69,12 +72,12 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         }
         #endregion
         // Call this from your raycast/binder when user clicks a valid hit
-        public void OnFirstPoint(Vector3 worldPoint)
+        public void OnFirstPoint(Vector3 worldPoint, FP_MeasurementHitProvider itemDetails)
         {
             if (!IsActive || State != FPMeasureState.WaitingForA) return;
 
             _a = worldPoint;
-
+            hitProvider = itemDetails;
             bool ortho = _camera != null && _camera.orthographic;
             Mode = ortho ? FPMeasureMode.OrthoPlane : FPMeasureMode.Perspective;
 
@@ -85,18 +88,37 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             }
 
             State = FPMeasureState.WaitingForB;
-            UpdateVisual(_a, _a);
+            if (itemDetails != null)
+            {
+                UpdateVisual(_a, _a,itemDetails.ModelUnits);
+            }
+            else
+            {
+                UpdateVisual(_a, _a, UnitOfMeasure.Meter);
+            }
         }
 
         // Perspective: binder should pass a world-hit point.
         // OrthoPlane: binder can pass the screen ray and we intersect it here.
-        public void OnSecondPoint(Vector3 worldPoint)
+        public void OnSecondPoint(Vector3 worldPoint, FP_MeasurementHitProvider itemDetails)
         {
             if (!IsActive || State != FPMeasureState.WaitingForB) return;
 
+            
+            if (itemDetails != hitProvider)
+            {
+                Debug.LogWarning($"Second point came from another object - assuming the same scale here!!");
+            }
             _b = worldPoint;
             State = FPMeasureState.Completed;
-            UpdateVisual(_a, _b);
+            if (itemDetails != null)
+            {
+                UpdateVisual(_a, _b, itemDetails.ModelUnits);
+            }
+            else
+            {
+                UpdateVisual(_a, _b,UnitOfMeasure.Meter);
+            }
         }
 
         public bool TryGetOrthoPlaneIntersection(Ray ray, out Vector3 hit)
@@ -112,11 +134,11 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             return false;
         }
 
-        private void UpdateVisual(Vector3 a, Vector3 b)
+        private void UpdateVisual(Vector3 a, Vector3 b, UnitOfMeasure units)
         {
             if (_overlay != null)
             {
-                _overlay.SetMeasurement(a, b, true);
+                _overlay.SetMeasurement(a, b, true, units);
             }
 
             if (_line != null)
@@ -131,7 +153,16 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             if (_label != null)
             {
-                _label.text = $"{d:0.###} m";
+                (bool gotValue, float distance)=FP_UtilityData.ConvertValue(d, UnitOfMeasure.Meter, units);
+                if (gotValue)
+                {
+                    var unitAbb = FP_UtilityData.GetUnitAbbreviation(units);
+                    _label.text = $"{distance:0.##} {unitAbb}";
+                }
+                else
+                {
+                    _label.text = $"{d:0.###} m";
+                }
                 _label.transform.position = (a + b) * 0.5f;
                 _label.gameObject.SetActive(true);
             }
@@ -141,7 +172,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         {
             if (_line != null) _line.enabled = false;
             if (_label != null) _label.gameObject.SetActive(false);
-            if (_overlay != null) _overlay.SetMeasurement(Vector3.zero, Vector3.zero, false);
+            if (_overlay != null) _overlay.SetMeasurement(Vector3.zero, Vector3.zero, false, UnitOfMeasure.Meter);
         }
     }
 }

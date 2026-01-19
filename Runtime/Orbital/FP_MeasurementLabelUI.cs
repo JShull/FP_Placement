@@ -3,6 +3,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
     using UnityEngine;
     using TMPro;
     using FuzzPhyte.Utility;
+    using Codice.Client.BaseCommands;
 
     /// <summary>
     /// Always-on-top measurement label (Screen Space Overlay).
@@ -26,12 +27,19 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         [Tooltip("Padding (pixels) used when clamping to screen.")]
         [SerializeField] private Vector2 _screenPadding = new Vector2(8f, 8f);
 
-        private RectTransform _rect;
+        [SerializeField] private RectTransform canvasRect;
 
         private void Awake()
         {
-            _rect = transform as RectTransform;
-
+            //_rect = transform as RectTransform;
+            if (_label == null)
+            {
+                Debug.LogError("Missing a label!");
+                return;
+            }
+                
+            if (canvasRect == null)
+                canvasRect = _label.canvas.transform as RectTransform;
             if (_overlay == null)
                 _overlay = FPRuntimeMeasurementOverlay.Active;
 
@@ -54,9 +62,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             }
 
             if (_worldCamera == null)
-                _worldCamera = Camera.main;
-
-            if (_worldCamera == null)
             {
                 if (_label.gameObject.activeSelf) _label.gameObject.SetActive(false);
                 return;
@@ -77,27 +82,34 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             // Update text
             float d = Vector3.Distance(a, b);
-            _label.text = $"{d:0.###} m";
+            // update units
+            (bool gotValue, float distance) = FP_UtilityData.ConvertValue(d, UnitOfMeasure.Meter, _overlay.Units);
+            if (gotValue)
+            {
+                var unitAbb = FP_UtilityData.GetUnitAbbreviation(_overlay.Units);
+                _label.text = $"{distance:0.##} {unitAbb}";
+            }
+            else
+            {
+                _label.text = $"{d:0.###} m";
+            }
 
             // Position in screen space
             Vector2 pos = new Vector2(sp.x, sp.y) + _screenOffset;
-
+            
             if (_clampToScreen)
             {
-                float w = Screen.width;
-                float h = Screen.height;
-
-                pos.x = Mathf.Clamp(pos.x, _screenPadding.x, w - _screenPadding.x);
-                pos.y = Mathf.Clamp(pos.y, _screenPadding.y, h - _screenPadding.y);
+                // Clamp in CANVAS space (not Screen.width/height)
+                Rect r = canvasRect.rect;
+                pos.x = Mathf.Clamp(pos.x, r.xMin + _screenPadding.x, r.xMax - _screenPadding.x);
+                pos.y = Mathf.Clamp(pos.y, r.yMin + _screenPadding.y, r.yMax - _screenPadding.y);
             }
 
             if (!_label.gameObject.activeSelf) _label.gameObject.SetActive(true);
 
-            // IMPORTANT: Screen Space Overlay canvas expects pixel coords here.
-            if (_rect != null)
-                _rect.position = pos;
-            else
-                transform.position = pos;
+            //RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect,pos,null,out Vector2 localPoint);
+            canvasRect.anchoredPosition = pos;
+
         }
     }
 }
