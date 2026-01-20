@@ -27,6 +27,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         [SerializeField] private FPRuntimeGridPlane _gridPlaneXZ;
         [SerializeField] private FPRuntimeGridPlane _gridPlaneXY;
         [SerializeField] private FP_MeasurementToolController _measurementController;
+        [SerializeField] private FPRuntimeMeshViewer _meshViewer;
         public FPMeshViewStatus ActiveMeshViewStatus => _activeMeshViewStatus;
         public int ActiveIndex => _activeIndex;
         //public FP_ToolbarAction ActiveVisualAction => _activeVisualAction;
@@ -190,6 +191,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 {
                     UpdateGridPattern(_gridPlaneXY, measureDetails);
                 }
+                
                 // get label UI ref
                 var measurementLabelUI = _measurementController.gameObject.GetComponent<FP_MeasurementLabelUI>();
                 //set/update measurement tool if we have one
@@ -204,21 +206,37 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                                 measureOverlayDetails.LineWidthWorld = 0.0025f;
                                 measureOverlayDetails.PointSize = 0.005f;
                                 measurementLabelUI.UpdateOffsetDetails(0.0254f, 0.0254f, UnitOfMeasure.Centimeter);
+                                if (_meshViewer != null)
+                                {
+                                    _meshViewer.UpdateVertexSizing(0.001f);
+                                }
                                 break;
                             case UnitOfMeasure.Meter:
                                 measureOverlayDetails.LineWidthWorld = 0.01f;
                                 measureOverlayDetails.PointSize = 0.05f;
                                 measurementLabelUI.UpdateOffsetDetails(0.3f,0.2f, UnitOfMeasure.Meter);
+                                if (_meshViewer != null)
+                                {
+                                    _meshViewer.UpdateVertexSizing(0.015f);
+                                }
                                 break;
                             case UnitOfMeasure.Centimeter:
                                 measureOverlayDetails.LineWidthWorld = 0.001f;
                                 measureOverlayDetails.PointSize = 0.005f;
                                 measurementLabelUI.UpdateOffsetDetails(0.03f, 0.02f, UnitOfMeasure.Centimeter);
+                                if (_meshViewer != null)
+                                {
+                                    _meshViewer.UpdateVertexSizing(0.0025f);
+                                }
                                 break;
                             case UnitOfMeasure.Feet:
                                 measureOverlayDetails.LineWidthWorld = 0.025f;
                                 measureOverlayDetails.PointSize = 0.05f;
                                 measurementLabelUI.UpdateOffsetDetails(0.1f, 0.066f, UnitOfMeasure.Centimeter);
+                                if (_meshViewer != null)
+                                {
+                                    _meshViewer.UpdateVertexSizing(0.0083f);
+                                }
                                 break;
                         }
                         measureOverlayDetails.ClearMeasurement();

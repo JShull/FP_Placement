@@ -3,7 +3,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
     using UnityEngine;
     using TMPro;
     using FuzzPhyte.Utility;
-    using Codice.Client.BaseCommands;
 
     /// <summary>
     /// Always-on-top measurement label (Screen Space Overlay).
