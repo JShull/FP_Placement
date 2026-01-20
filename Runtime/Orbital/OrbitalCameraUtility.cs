@@ -39,7 +39,11 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         ToggleMeasurementOff,
         ToolMeasureReset,
         OrbitMode,
-        PanMode
+        PanMode,
+        GridXZOn,
+        GridXZOff,
+        GridXYOn,
+        GridXYOff,
     }
     [Serializable]
     [System.Flags]

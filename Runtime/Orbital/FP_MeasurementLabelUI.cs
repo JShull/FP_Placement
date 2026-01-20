@@ -216,5 +216,29 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             if (t == null) return;
             if (t.gameObject.activeSelf != on) t.gameObject.SetActive(on);
         }
+        public void UpdateOffsetDetails(float cameraFromMid, float worldupFromMid, UnitOfMeasure newUnits)
+        {
+            _towardCameraFromMid = cameraFromMid;
+            _worldUpFromMid = worldupFromMid;
+            if (_worldLabel != null)
+            {
+                switch (newUnits)
+                {
+                    case UnitOfMeasure.Millimeter:
+                        _worldLabel.rectTransform.localScale = new Vector3(0.001f, 0.001f, 0.001f);
+                        break;
+                    case UnitOfMeasure.Centimeter:
+                        _worldLabel.rectTransform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
+                        break;
+                    case UnitOfMeasure.Meter:
+                        _worldLabel.rectTransform.localScale = new Vector3(0.1f, 0.1f,0.1f);
+                        break;
+                    case UnitOfMeasure.Inch:
+                        _worldLabel.rectTransform.localScale = new Vector3(0.0254f, 0.0254f, 0.0254f);
+                        break;
+                }
+            }
+            
+        }
     }
 }

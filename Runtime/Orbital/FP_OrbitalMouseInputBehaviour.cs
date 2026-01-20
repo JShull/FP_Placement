@@ -298,136 +298,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 }
             }
 
-            // End Zoom Touch
-            // OLD
-            /*
-            // --- TOUCH MODE (EnhancedTouch) ---
-            int count = Touch.activeTouches.Count;
-
-            // JOHN Need to consider Orbit vs pan and get the right functions in order... aka release
-            if (count > 0)
-            {
-                // Prevent mouse drag from "sticking" if a touch begins
-                if (_isDown) ForceRelease();
-                _scrollAccumY = 0f;
-                // 1 finger orbit
-                if (count == 1)
-                {
-                    var t0 = Touch.activeTouches[0];
-                    Vector2 pos = t0.screenPosition;
-
-                    if (!IsInRegion(pos))
-                    {
-                        CancelTouchStateOnly();
-                        return;
-                    }
-                    bool pressedThisFrame = (!_wasOneFingerDown && t0.phase == UnityEngine.InputSystem.TouchPhase.Began);
-
-                    bool releasedThisFrame = (_wasOneFingerDown &&
-                                                (t0.phase == UnityEngine.InputSystem.TouchPhase.Ended ||
-                                                t0.phase == UnityEngine.InputSystem.TouchPhase.Canceled));
-
-                    Vector2 dragDelta = Vector2.zero;
-                    if (_wasOneFingerDown &&
-                        (t0.phase == UnityEngine.InputSystem.TouchPhase.Moved ||
-                            t0.phase == UnityEngine.InputSystem.TouchPhase.Stationary))
-                    {
-                        dragDelta = pos - _lastOnePos;
-                    }
-
-                    _lastOnePos = pos;
-                    _wasOneFingerDown = !(t0.phase == UnityEngine.InputSystem.TouchPhase.Ended ||
-                                            t0.phase == UnityEngine.InputSystem.TouchPhase.Canceled);
-
-                    // Dropping from 2 fingers to 1 finger resets pinch state
-                    _wasTwoFingerDown = false;
-
-                    _orbital.FeedInput(new FP_OrbitalInput(
-                        isPressed: pressedThisFrame,
-                        isReleased: releasedThisFrame,
-                        pointerPos: pos,
-                        dragDelta: dragDelta,
-                        pinchDelta: 0f,
-                        isTwoFinger: false
-                    ));
-
-                    return;
-                }
-
-                // 2+ fingers: pinch zoom (and optionally pan if you later decide)
-                {
-                    var t0 = Touch.activeTouches[0];
-                    var t1 = Touch.activeTouches[1];
-
-                    Vector2 p0 = t0.screenPosition;
-                    Vector2 p1 = t1.screenPosition;
-
-                    Vector2 center = (p0 + p1) * 0.5f;
-                    float dist = Vector2.Distance(p0, p1);
-
-                    if (!IsInRegion(center))
-                    {
-                        CancelTouchStateOnly();
-                        return;
-                    }
-                    bool pressedThisFrame = !_wasTwoFingerDown;
-
-                    // With EnhancedTouch, "release" is better handled when touches drop to 0,
-                    // but we still allow a release when one of the two touches ends.
-                    bool anyEnded =
-                        t0.phase == UnityEngine.InputSystem.TouchPhase.Ended || t0.phase == UnityEngine.InputSystem.TouchPhase.Canceled ||
-                        t1.phase == UnityEngine.InputSystem.TouchPhase.Ended || t1.phase == UnityEngine.InputSystem.TouchPhase.Canceled;
-
-                    bool releasedThisFrame = _wasTwoFingerDown && anyEnded;
-
-                    float pinchDelta = 0f;
-                    if (_wasTwoFingerDown)
-                    {
-                        float deltaDist = dist - _lastTwoFingerDistance; // + = fingers moving apart
-                        float signed = deltaDist * _pinchToZoomScale;
-                        pinchDelta = _invertPinch ? -signed : signed;
-                    }
-
-                    _lastTwoFingerDistance = dist;
-                    _lastTwoFingerCenter = center;
-
-                    _wasTwoFingerDown = !anyEnded;
-                    _wasOneFingerDown = false;
-
-                    _orbital.FeedInput(new FP_OrbitalInput(
-                        isPressed: pressedThisFrame,
-                        isReleased: releasedThisFrame,
-                        pointerPos: center,
-                        dragDelta: Vector2.zero,      // (optional later: set to center - _lastTwoFingerCenter for pan)
-                        pinchDelta: pinchDelta,
-                        isTwoFinger: true
-                    ));
-
-                    return;
-                }
-            }
-            else
-            {
-                // No touches: if we previously had touches, send a release once so the camera stops cleanly.
-                if (_wasOneFingerDown || _wasTwoFingerDown)
-                {
-                    _wasOneFingerDown = false;
-                    _wasTwoFingerDown = false;
-
-                    _orbital.FeedInput(new FP_OrbitalInput(
-                        isPressed: false,
-                        isReleased: true,
-                        pointerPos: Vector2.zero,
-                        dragDelta: Vector2.zero,
-                        pinchDelta: 0f,
-                        isTwoFinger: false
-                    ));
-                }
-            }
-
-
-            // END OLD
-            */
+            
             // --- MOUSE MODE (Input Actions) ---
             Vector2 current = _pointerPosition.action.ReadValue<Vector2>();
 
@@ -442,7 +313,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 _releasedThisFrame = false;
 
                 // middle mouse pan input parameters
-                if (_isPanDown) ForceRelease();
+                if (_isPanDown) ForcePanRelease();
                 _panStartedThisFrame = false;
                 _panReleasedThisFrame = false;
                 return;
@@ -456,7 +327,58 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 pinchDeltaMouse = _invertScroll ? -signed : signed;
             }
 
+            // New hybrid mode: determine effective mode
+            FP_OrbitalMouseMode effectiveMode = _mode;
+
+            // Momentary overrides: middle pan wins over left orbit
+            if (_isPanDown) effectiveMode = FP_OrbitalMouseMode.Pan;
+            else if (_isDown) effectiveMode = FP_OrbitalMouseMode.Orbit;
+
+            if (effectiveMode == FP_OrbitalMouseMode.Orbit)
+            {
+                Vector2 delta = Vector2.zero;
+                if (_isDown)
+                {
+                    delta = current - _lastPos;
+                    _lastPos = current;
+                }
+
+                _orbital.FeedInput(new FP_OrbitalInput(
+                    isPressed: _startedThisFrame,
+                    isReleased: _releasedThisFrame,
+                    pointerPos: current,
+                    dragDelta: delta,
+                    pinchDelta: pinchDeltaMouse,
+                    isTwoFinger: false
+                ));
+
+                _startedThisFrame = false;
+                _releasedThisFrame = false;
+            }
+            else // Pan
+            {
+                Vector2 panDelta = Vector2.zero;
+                if (_isPanDown)
+                {
+                    panDelta = current - _lastPanPos;
+                    _lastPanPos = current;
+                }
+
+                _orbital.FeedInput(new FP_OrbitalInput(
+                    isPressed: _panStartedThisFrame,
+                    isReleased: _panReleasedThisFrame,
+                    pointerPos: current,
+                    dragDelta: panDelta,
+                    pinchDelta: pinchDeltaMouse,
+                    isTwoFinger: true
+                ));
+
+                _panStartedThisFrame = false;
+                _panReleasedThisFrame = false;
+            }
             // orbit or pan?
+            //OLD singluar mode
+            /*
             if(_mode == FP_OrbitalMouseMode.Orbit)
             {
                 Vector2 delta = Vector2.zero;
@@ -497,10 +419,27 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 _panStartedThisFrame = false;
                 _panReleasedThisFrame = false;
             }
+
+            
+            //END OLD SINGULAR MODE
+            */
             _scrollAccumY = 0f;
         }
         private void OnPrimaryDown(InputAction.CallbackContext ctx)
         {
+            if (!CanProcessInput()) return;
+            if (_pointerPosition?.action == null) return;
+            if (_inputLocked) return;
+
+            // Ensure pan isn't active (LMB takes over)
+            if (_isPanDown) ForcePanRelease();
+
+            _isDown = true;
+            _startedThisFrame = true;
+            _releasedThisFrame = false;
+            _lastPos = _pointerPosition.action.ReadValue<Vector2>();
+            //OLD Primary Down
+            /*
             if (!CanProcessInput()) return;
             if (_pointerPosition?.action == null) return;
 
@@ -511,6 +450,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             //Ensure pan isn't active
             if (_isPanDown) ForcePanRelease();
+            */
         }
         private void OnPrimaryUp(InputAction.CallbackContext ctx)
         {
@@ -531,6 +471,19 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             if (_pointerPosition?.action == null) return;
             if (_inputLocked) return;
 
+            _isPanDown = true;
+            _panStartedThisFrame = true;
+            _panReleasedThisFrame = false;
+            _lastPanPos = _pointerPosition.action.ReadValue<Vector2>();
+
+            // If orbit was active, stop orbit immediately (MMB takes over)
+            if (_isDown) ForceRelease();
+            //OLD Middle Down
+            /*
+            if (!CanProcessInput()) return;
+            if (_pointerPosition?.action == null) return;
+            if (_inputLocked) return;
+
             // Only start pan if we're in Pan mode
             if (_mode != FP_OrbitalMouseMode.Pan) return;
 
@@ -541,14 +494,23 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             // Ensure orbit isn't active
             if (_isDown) ForceRelease();
+            */
         }
         private void OnMiddleUp(InputAction.CallbackContext ctx)
         {
+            if (_inputLocked) return;
+
+            _isPanDown = false;
+            _panReleasedThisFrame = true;
+            _panStartedThisFrame = false;
+            // OLD Middle UP
+            /*
             if (_mode != FP_OrbitalMouseMode.Pan) return;
 
             _isPanDown = false;
             _panReleasedThisFrame = true;
             _panStartedThisFrame = false;
+            */
         }
         private bool CanProcessInput()
         {

@@ -127,6 +127,18 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                         _orbitalMouseInputBehaviour.RecenterBounds();
                     }
                     break;
+                case FP_ToolbarAction.GridXZOn:
+                    if (_modelCycle != null) _modelCycle.TurnOnGridXZ();
+                    break;
+                case FP_ToolbarAction.GridXZOff:
+                    if (_modelCycle != null) _modelCycle.TurnOffGridXZ();
+                    break;
+                case FP_ToolbarAction.GridXYOn:
+                    if (_modelCycle != null) _modelCycle.TurnOnGridXY();
+                    break;
+                    case FP_ToolbarAction.GridXYOff:
+                    if (_modelCycle != null) _modelCycle.TurnOffGridXY();
+                    break;
             }
         }
     }

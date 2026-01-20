@@ -10,6 +10,8 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         public bool AllowMeasurement = true;
         [Tooltip("Make sure your model is in accurate scale in meters")]
         public UnitOfMeasure ModelUnits = UnitOfMeasure.Inch;
+        [Tooltip("Where you want the grid to align to")]
+        public Transform GridWorldPivot;
         //[Tooltip("Adjust this as needed - but if already in true scale should be 1")]
         //public float ScaleAdjustment = 1.0f;
     }

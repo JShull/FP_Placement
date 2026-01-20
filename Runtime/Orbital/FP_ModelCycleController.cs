@@ -24,7 +24,9 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         //[SerializeField] private FP_ToolbarAction _activeVisualAction;
         [SerializeField] private FPMeshViewStatus _activeMeshViewStatus;
         [Tooltip("If you want to scale your grid based on the model...")]
-        [SerializeField] private FPRuntimeGridPlane _gridPlane;
+        [SerializeField] private FPRuntimeGridPlane _gridPlaneXZ;
+        [SerializeField] private FPRuntimeGridPlane _gridPlaneXY;
+        [SerializeField] private FP_MeasurementToolController _measurementController;
         public FPMeshViewStatus ActiveMeshViewStatus => _activeMeshViewStatus;
         public int ActiveIndex => _activeIndex;
         //public FP_ToolbarAction ActiveVisualAction => _activeVisualAction;
@@ -65,6 +67,36 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             _activeIndex = (_activeIndex - 1 + Count) % Count;
             ApplyActiveModel(force: false);
         }
+        #region Grid Related public Functions
+        public void TurnOnGridXZ()
+        {
+            if (_gridPlaneXZ != null)
+            {
+                _gridPlaneXZ.gameObject.SetActive(true);
+            }
+        }
+        public void TurnOffGridXZ()
+        {
+            if (_gridPlaneXZ != null)
+            {
+                _gridPlaneXZ.gameObject.SetActive(false);
+            }
+        }
+        public void TurnOnGridXY()
+        {
+            if (_gridPlaneXY != null)
+            {
+                _gridPlaneXY.gameObject.SetActive(true);
+            }
+        }
+        public void TurnOffGridXY()
+        {
+            if (_gridPlaneXY != null)
+            {
+                _gridPlaneXY.gameObject.SetActive(false);
+            }
+        }
+        #endregion
         public void SetVisualInformation(FP_ToolbarAction action)
         {
             switch (action)
@@ -133,7 +165,9 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
                 bool shouldShow = (i == _activeIndex);
                 if (force || go.gameObject.activeSelf != shouldShow)
+                {
                     go.gameObject.SetActive(shouldShow);
+                }  
             }
 
             var active = _models[_activeIndex];
@@ -145,33 +179,90 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 if (_resetRotationOnShow)
                     active.transform.rotation = Quaternion.identity;
 
-                if (_gridPlane != null)
+                // set/update grid if we have one
+                var measureDetails = active.gameObject.GetComponent<FP_MeasurementHitProvider>();
+                
+                if (_gridPlaneXZ != null&& measureDetails!=null)
                 {
-                    var measureDetails = active.gameObject.GetComponent<FP_MeasurementHitProvider>();
-                    if (measureDetails != null)
+                    UpdateGridPattern(_gridPlaneXZ, measureDetails);
+                }
+                if(_gridPlaneXY!=null && measureDetails!=null)
+                {
+                    UpdateGridPattern(_gridPlaneXY, measureDetails);
+                }
+                // get label UI ref
+                var measurementLabelUI = _measurementController.gameObject.GetComponent<FP_MeasurementLabelUI>();
+                //set/update measurement tool if we have one
+                if (_measurementController != null && measureDetails!=null&& measurementLabelUI!=null)
+                {
+                    var measureOverlayDetails = _measurementController.Overlay;
+                    if (measureOverlayDetails != null)
                     {
-                        _gridPlane.Units = measureDetails.ModelUnits;
-                        switch (measureDetails.ModelUnits) 
+                        switch (measureDetails.ModelUnits)
                         {
                             case UnitOfMeasure.Inch:
-                                _gridPlane.MajorSpacingInUnits = 12;
+                                measureOverlayDetails.LineWidthWorld = 0.0025f;
+                                measureOverlayDetails.PointSize = 0.005f;
+                                measurementLabelUI.UpdateOffsetDetails(0.0254f, 0.0254f, UnitOfMeasure.Centimeter);
                                 break;
                             case UnitOfMeasure.Meter:
-                                _gridPlane.MajorSpacingInUnits = 1;
+                                measureOverlayDetails.LineWidthWorld = 0.01f;
+                                measureOverlayDetails.PointSize = 0.05f;
+                                measurementLabelUI.UpdateOffsetDetails(0.3f,0.2f, UnitOfMeasure.Meter);
                                 break;
                             case UnitOfMeasure.Centimeter:
-                                _gridPlane.MajorSpacingInUnits = 100;
+                                measureOverlayDetails.LineWidthWorld = 0.001f;
+                                measureOverlayDetails.PointSize = 0.005f;
+                                measurementLabelUI.UpdateOffsetDetails(0.03f, 0.02f, UnitOfMeasure.Centimeter);
                                 break;
                             case UnitOfMeasure.Feet:
-                                _gridPlane.MajorSpacingInUnits = 10;
+                                measureOverlayDetails.LineWidthWorld = 0.025f;
+                                measureOverlayDetails.PointSize = 0.05f;
+                                measurementLabelUI.UpdateOffsetDetails(0.1f, 0.066f, UnitOfMeasure.Centimeter);
                                 break;
                         }
+                        measureOverlayDetails.ClearMeasurement();
                     }
                 }
             }
 
-            
+
             OnActiveModelChanged?.Invoke(_activeIndex, active);
+        }
+        private void UpdateGridPattern(FPRuntimeGridPlane gridPlane,FP_MeasurementHitProvider hitProvider)
+        {
+            if (gridPlane != null)
+            {
+                var units = hitProvider.ModelUnits;
+                switch (units)
+                {
+                    case UnitOfMeasure.Inch:
+                        gridPlane.Units = UnitOfMeasure.Inch;
+                        gridPlane.MajorSpacingInUnits = 12;
+                       
+                        break;
+                    case UnitOfMeasure.Meter:
+                        gridPlane.Units = UnitOfMeasure.Meter;
+                        gridPlane.MajorSpacingInUnits = 1;
+                        break;
+                    case UnitOfMeasure.Centimeter:
+                        gridPlane.Units = UnitOfMeasure.Centimeter;
+                        gridPlane.MajorSpacingInUnits = 100;
+                        break;
+                    case UnitOfMeasure.Feet:
+                        gridPlane.Units = UnitOfMeasure.Feet;
+                        gridPlane.MajorSpacingInUnits = 10;
+                        break;
+                }
+            }
+            gridPlane.RecalculateWorldSpacing();
+            if (hitProvider.GridWorldPivot != null)
+            {
+                gridPlane.transform.position = hitProvider.GridWorldPivot.position;
+            }
+           
+           
+           
         }
     }
 }

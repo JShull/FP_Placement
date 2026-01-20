@@ -9,6 +9,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         [SerializeField] private FP_OrbitalCameraToolLock _camLock;
         [SerializeField] private Camera _camera;
         [SerializeField] private FPRuntimeMeasurementOverlay _overlay;
+        public FPRuntimeMeasurementOverlay Overlay => _overlay;
 
         [Header("Visuals")]
         [SerializeField] private LineRenderer _line;
