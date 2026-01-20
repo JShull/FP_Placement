@@ -23,6 +23,8 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         [SerializeField] private int _activeIndex;
         //[SerializeField] private FP_ToolbarAction _activeVisualAction;
         [SerializeField] private FPMeshViewStatus _activeMeshViewStatus;
+        [Tooltip("If you want to scale your grid based on the model...")]
+        [SerializeField] private FPRuntimeGridPlane _gridPlane;
         public FPMeshViewStatus ActiveMeshViewStatus => _activeMeshViewStatus;
         public int ActiveIndex => _activeIndex;
         //public FP_ToolbarAction ActiveVisualAction => _activeVisualAction;
@@ -142,8 +144,33 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
                 if (_resetRotationOnShow)
                     active.transform.rotation = Quaternion.identity;
+
+                if (_gridPlane != null)
+                {
+                    var measureDetails = active.gameObject.GetComponent<FP_MeasurementHitProvider>();
+                    if (measureDetails != null)
+                    {
+                        _gridPlane.Units = measureDetails.ModelUnits;
+                        switch (measureDetails.ModelUnits) 
+                        {
+                            case UnitOfMeasure.Inch:
+                                _gridPlane.MajorSpacingInUnits = 12;
+                                break;
+                            case UnitOfMeasure.Meter:
+                                _gridPlane.MajorSpacingInUnits = 1;
+                                break;
+                            case UnitOfMeasure.Centimeter:
+                                _gridPlane.MajorSpacingInUnits = 100;
+                                break;
+                            case UnitOfMeasure.Feet:
+                                _gridPlane.MajorSpacingInUnits = 10;
+                                break;
+                        }
+                    }
+                }
             }
 
+            
             OnActiveModelChanged?.Invoke(_activeIndex, active);
         }
     }

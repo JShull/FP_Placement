@@ -93,8 +93,8 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 112000000, guid: e9b1e5094e8c09f489fe3d7e907496e9, type: 2}
-  m_LightingSettings: {fileID: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: f865b4e540dd2c148872e25d6fc4139a, type: 2}
+  m_LightingSettings: {fileID: 4890085278179872738, guid: 48f19084e170da545b2deda641ee6c77, type: 2}
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -282,6 +282,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.InputActionReference
   m_Asset: {fileID: -944628639613478452, guid: 0b9ea9a8cdb0e4e44a2a394fa00c08f4, type: 3}
   m_ActionId: fbd3f90a-df50-4c82-a923-dcead96070de
+--- !u!4 &1105346671 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4816075010597403755, guid: 57d35d7407ff1f442b80204fcd0f1c9e, type: 3}
+  m_PrefabInstance: {fileID: 1942287262}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &1268094513
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -324,6 +329,64 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.InputActionReference
   m_Asset: {fileID: -944628639613478452, guid: 0b9ea9a8cdb0e4e44a2a394fa00c08f4, type: 3}
   m_ActionId: 876802d3-7a2d-4df1-a6df-66d4d6e5acb7
+--- !u!1 &1686226763
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1686226764}
+  - component: {fileID: 1686226765}
+  m_Layer: 0
+  m_Name: GridRenderVert
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &1686226764
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1686226763}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -0.38205, y: 0.0008, z: -0.0001}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1105346671}
+  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
+--- !u!114 &1686226765
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1686226763}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3b160d98fc13a94b8fac9352264cbd0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.fuzzphyte.utility::FuzzPhyte.Utility.FPRuntimeGridPlane
+  MinorColor: {r: 0.7, g: 0.7, b: 0.7, a: 0.39215687}
+  MajorColor: {r: 0.4, g: 0.4, b: 0.4, a: 0.47058824}
+  Opacity: 0.5
+  Units: 10
+  SpacingInUnits: 1
+  MajorSpacingInUnits: 12
+  UseMajorSpacing: 1
+  CustomMetersPerUnit: 1
+  _spacingWorldMeters: 0.025400052
+  _majorSpacingWorldMeters: 0.30480063
+  MinorThicknessPx: 1
+  MajorThicknessPx: 1.8
+  ExtentsWorld: {x: 50, y: 50}
+  IsEnabled: 1
 --- !u!114 &1826183529
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -360,10 +423,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 381571212770581502, guid: 57d35d7407ff1f442b80204fcd0f1c9e, type: 3}
-      propertyPath: _clampToScreen
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 3403171727067626930, guid: 57d35d7407ff1f442b80204fcd0f1c9e, type: 3}
       propertyPath: _clickOrTap
       value: 
@@ -456,10 +515,24 @@ PrefabInstance:
       propertyPath: _pointerPosition
       value: 
       objectReference: {fileID: 1838323663}
+    - target: {fileID: 8652422200232564241, guid: 57d35d7407ff1f442b80204fcd0f1c9e, type: 3}
+      propertyPath: PointSize
+      value: 0.005
+      objectReference: {fileID: 0}
+    - target: {fileID: 8652422200232564241, guid: 57d35d7407ff1f442b80204fcd0f1c9e, type: 3}
+      propertyPath: LineWidthWorld
+      value: 0.0025
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 4816075010597403755, guid: 57d35d7407ff1f442b80204fcd0f1c9e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1686226764}
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8960013058561352749, guid: 57d35d7407ff1f442b80204fcd0f1c9e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
     - targetCorrespondingSourceObject: {fileID: 8194515986224348067, guid: 57d35d7407ff1f442b80204fcd0f1c9e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 0}
@@ -488,6 +561,9 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 0}
     - targetCorrespondingSourceObject: {fileID: 7429795727368734527, guid: 57d35d7407ff1f442b80204fcd0f1c9e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+    - targetCorrespondingSourceObject: {fileID: 5572533714649132787, guid: 57d35d7407ff1f442b80204fcd0f1c9e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: 57d35d7407ff1f442b80204fcd0f1c9e, type: 3}
