@@ -2,6 +2,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 {
     using FuzzPhyte.Utility;
     using System;
+    using System.Collections;
     using UnityEngine;
     [DisallowMultipleComponent]
     public sealed class FP_ModelCycleController : MonoBehaviour
@@ -39,6 +40,12 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
         private void Awake()
         {
+            StartCoroutine(DelayAwakeReset());
+        }
+
+        IEnumerator DelayAwakeReset()
+        {
+            yield return new WaitForEndOfFrame();
             ApplyActiveModel(force: true);
             _activeMeshViewStatus = new FPMeshViewStatus()
             {
