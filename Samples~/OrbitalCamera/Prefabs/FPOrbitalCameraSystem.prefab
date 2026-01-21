@@ -523,6 +523,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.utility::FuzzPhyte.Utility.FPRuntimeMeshViewer
   mode: 0
+  MaxTriangleCap: 500000
   targetRenderers:
   - {fileID: 7466457036099370313}
   - {fileID: 3942657847450954412}
@@ -1403,6 +1404,7 @@ MonoBehaviour:
   DisplayName: Capsule
   AllowMeasurement: 1
   ModelUnits: 10
+  GridWorldPivot: {fileID: 0}
 --- !u!1 &884338989171733243
 GameObject:
   m_ObjectHideFlags: 0
@@ -8813,6 +8815,7 @@ MonoBehaviour:
   DisplayName: Cube
   AllowMeasurement: 1
   ModelUnits: 10
+  GridWorldPivot: {fileID: 0}
 --- !u!1 &4794002356263382360
 GameObject:
   m_ObjectHideFlags: 0
@@ -9564,9 +9567,9 @@ Transform:
   m_Children:
   - {fileID: 4602486624425405734}
   - {fileID: 819960342142701895}
+  - {fileID: 7471229196589523344}
   - {fileID: 1640049717975528439}
   - {fileID: 8467500083531565921}
-  - {fileID: 7471229196589523344}
   - {fileID: 8695197267387747143}
   - {fileID: 2913212874874862468}
   - {fileID: 8609305194970790874}
@@ -9838,6 +9841,8 @@ MonoBehaviour:
   _label: {fileID: 0}
   _isActive: 0
   hitProvider: {fileID: 0}
+  _useAngleIncrement: 0
+  _angleIncrementDegrees: 15
 --- !u!114 &4740323446309449328
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10503,6 +10508,7 @@ MonoBehaviour:
   DisplayName: Sphere
   AllowMeasurement: 1
   ModelUnits: 10
+  GridWorldPivot: {fileID: 0}
 --- !u!1 &5776593030439537308
 GameObject:
   m_ObjectHideFlags: 0
@@ -16272,7 +16278,10 @@ MonoBehaviour:
     ShowRenderer: 1
     Flags: 4
     SurfaceMode: 0
-  _gridPlane: {fileID: 5316762425785064198}
+  _gridPlaneXZ: {fileID: 0}
+  _gridPlaneXY: {fileID: 0}
+  _measurementController: {fileID: 0}
+  _meshViewer: {fileID: 0}
 --- !u!114 &5596804083706613350
 MonoBehaviour:
   m_ObjectHideFlags: 0
