@@ -30,6 +30,8 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 _toolbarBinder.OnMeasureToolActivated += ActivateMeasurement;
                 _toolbarBinder.OnMeasureToolDeactivated += DeactivateMeasurement;
                 _toolbarBinder.OnMeasureToolReset += ResetMeasurement;
+                _toolbarBinder.OnMeasureAngleIncrementActivated += ActivateAngleIncrement;
+                _toolbarBinder.OnMeasureAngleIncrementDeactivated += DeactivateAngleIncrement;
             }
         }
 
@@ -44,6 +46,8 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 _toolbarBinder.OnMeasureToolActivated -= ActivateMeasurement;
                 _toolbarBinder.OnMeasureToolDeactivated -= DeactivateMeasurement;
                 _toolbarBinder.OnMeasureToolReset -= ResetMeasurement;
+                _toolbarBinder.OnMeasureAngleIncrementActivated -= ActivateAngleIncrement;
+                _toolbarBinder.OnMeasureAngleIncrementDeactivated -= DeactivateAngleIncrement;
             }
         }
 
@@ -69,6 +73,17 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             if (_tool == null) return;
 
             _tool.ResetMeasure(); // returns to WaitingForA :contentReference[oaicite:5]{index=5}
+        }
+        public void ActivateAngleIncrement()
+        {
+            if (_tool == null) return;
+
+            _tool.SetAngleIncrementEnabled(true);
+        }
+        public void DeactivateAngleIncrement()
+        {
+            if (_tool == null) return;
+            _tool.SetAngleIncrementEnabled(false);
         }
         #endregion
 

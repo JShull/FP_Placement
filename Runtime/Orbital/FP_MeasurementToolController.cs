@@ -22,6 +22,13 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         public FPMeasureState State { get; private set; } = FPMeasureState.None;
         public FPMeasureMode Mode { get; private set; } = FPMeasureMode.None;
 
+        [Header("Increment Snap")]
+        [SerializeField] private bool _useAngleIncrement = false;
+        [SerializeField, Range(1f, 45f)] private float _angleIncrementDegrees = 15f;
+
+        public void SetAngleIncrementEnabled(bool enabled) => _useAngleIncrement = enabled;
+        public void SetAngleIncrementDegrees(float degrees) => _angleIncrementDegrees = Mathf.Max(0.1f, degrees);
+
         private Vector3 _a;
         private Vector3 _b;
         private Plane _orthoPlane;
@@ -101,6 +108,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
         // Perspective: binder should pass a world-hit point.
         // OrthoPlane: binder can pass the screen ray and we intersect it here.
+        // Snap/incremental will update accordingly based on Ortho/perspective
         public void OnSecondPoint(Vector3 worldPoint, FP_MeasurementHitProvider itemDetails)
         {
             if (!IsActive || State != FPMeasureState.WaitingForB) return;
@@ -110,7 +118,12 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             {
                 Debug.LogWarning($"Second point came from another object - assuming the same scale here!!");
             }
-            _b = worldPoint;
+            Vector3 bCandidate = worldPoint;
+            if (_useAngleIncrement)
+            {
+                bCandidate = GetAngleSnappedPoint(_a, bCandidate);
+            }
+            _b = bCandidate;
             State = FPMeasureState.Completed;
             if (itemDetails != null)
             {
@@ -120,6 +133,51 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             {
                 UpdateVisual(_a, _b,UnitOfMeasure.Meter);
             }
+        }
+        private Vector3 GetAngleSnappedPoint(Vector3 a, Vector3 b)
+        {
+            Vector3 d = b - a;
+            if (d.sqrMagnitude < 1e-10f) return b;
+
+            // Pick plane normal:
+            // - Ortho mode: use the ortho plane normal so snapping stays in the same plane
+            // - Perspective: use camera forward for a stable user experience
+            Vector3 n;
+            if (Mode == FPMeasureMode.OrthoPlane)
+                n = _orthoPlane.normal;
+            else if (_camera != null)
+                n = _camera.transform.forward;
+            else
+                n = Vector3.forward;
+
+            // Build a stable 2D basis on the plane
+            Vector3 xAxis = Vector3.ProjectOnPlane((_camera != null ? _camera.transform.right : Vector3.right), n).normalized;
+            if (xAxis.sqrMagnitude < 1e-6f)
+                xAxis = Vector3.ProjectOnPlane(Vector3.right, n).normalized;
+
+            Vector3 yAxis = Vector3.Cross(n, xAxis).normalized;
+
+            float x = Vector3.Dot(d, xAxis);
+            float y = Vector3.Dot(d, yAxis);
+
+            float len = Mathf.Sqrt(x * x + y * y);
+            if (len < 1e-6f) return b;
+
+            float stepRad = Mathf.Deg2Rad * Mathf.Max(0.1f, _angleIncrementDegrees);
+            float ang = Mathf.Atan2(y, x);
+            float snapped = Mathf.Round(ang / stepRad) * stepRad;
+
+            float sx = Mathf.Cos(snapped) * len;
+            float sy = Mathf.Sin(snapped) * len;
+
+            Vector3 snappedD = xAxis * sx + yAxis * sy;
+
+            // Preserve any component along the normal (for perspective hits that might not lie on plane)
+            // For OrthoPlane, this should already be ~0.
+            float nComp = Vector3.Dot(d, n);
+            snappedD += n * nComp;
+
+            return a + snappedD;
         }
 
         public bool TryGetOrthoPlaneIntersection(Ray ray, out Vector3 hit)

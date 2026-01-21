@@ -23,8 +23,8 @@ MonoBehaviour:
     Name: Bottom Tool Bar
   - NormalizedRect:
       serializedVersion: 2
-      x: 0
-      y: 0.12
-      width: 0.08
+      x: 0.025
+      y: 0.145
+      width: 0.09
       height: 0.8
     Name: Left Tool Bar

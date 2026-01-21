@@ -3,6 +3,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
     using UnityEngine;
     using TMPro;
     using FuzzPhyte.Utility;
+    using System;
 
     /// <summary>
     /// Always-on-top measurement label (Screen Space Overlay).
@@ -52,6 +53,17 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         [Tooltip("How far in front of the occluder the label should sit.")]
         [SerializeField] private float _occlusionEpsilon = 0.02f;
 
+        private Vector3 _lastA;
+        private Vector3 _lastB;
+        private UnitOfMeasure _lastUnit;
+        private bool _hadMeasureLastFrame;
+        private string _cachedText = string.Empty;
+        private float _cachedDistanceInUnits = 0f;
+        private float _valueEpsilonMeters = 0.0005f;
+        #region Actions - Events
+        public event Action<TMP_Text,float, UnitOfMeasure> MeasurementChanged;
+        #endregion
+
         private void Awake()
         {
             //_rect = transform as RectTransform;
@@ -86,6 +98,8 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             {
                 SetActiveSafe(_label, false);
                 SetActiveSafe(_worldLabel, false);
+                _hadMeasureLastFrame = false;
+                _cachedText = string.Empty;
                 return;
             }
 
@@ -95,7 +109,8 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             Vector3 sp = _worldCamera.WorldToScreenPoint(mid);
             // text first
-            // Prepare the text once
+            // Prepare the text once OLD
+            /*
             float dMeters = Vector3.Distance(a, b);
 
             (bool gotValue, float distance) = FP_UtilityData.ConvertValue(dMeters, UnitOfMeasure.Meter, _overlay.Units);
@@ -109,6 +124,8 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             {
                 text = $"{dMeters:0.###} m";
             }
+            */
+            RefreshMeasurementTextIfNeeded(a, b, _overlay.Units);
             if (_useWorldLabel)
             {
                 // WORLD LABEL MODE
@@ -116,10 +133,11 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 {
                     // If user toggles world mode but didn't assign a world label
                     SetActiveSafe(_label, false);
+                   
                     return;
                 }
 
-                _worldLabel.text = text;
+                //_worldLabel.text = text;
 
                 Vector3 camPos = _worldCamera.transform.position;
 
@@ -183,15 +201,19 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             {
                 SetActiveSafe(_label, false);
                 SetActiveSafe(_worldLabel, false);
+                _hadMeasureLastFrame = false;
+                _cachedText = string.Empty;
                 return;
             }
-            _label.text = text;
+           // _label.text = text;
 
 
             // If behind camera, hide
             if (sp.z <= 0.0001f)
             {
                 SetActiveSafe(_label, false);
+                _hadMeasureLastFrame = false;
+                _cachedText = string.Empty;
                 SetActiveSafe(_worldLabel, false);
                 return;
             }
@@ -210,11 +232,55 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             // move the LABEL rect
             _labelRect.position = pos;
         }
+        
+        private void RefreshMeasurementTextIfNeeded(Vector3 a, Vector3 b, UnitOfMeasure units)
+        {
+            bool unitsChanged = units != _lastUnit;
+
+            // Only recompute value if endpoints (or units) changed meaningfully
+            float prevMeters = _hadMeasureLastFrame ? Vector3.Distance(_lastA, _lastB) : -1f;
+            float currMeters = Vector3.Distance(a, b);
+
+            bool valueChanged =
+                !_hadMeasureLastFrame ||
+                unitsChanged ||
+                Mathf.Abs(currMeters - prevMeters) > _valueEpsilonMeters;
+
+            if (!valueChanged) return;
+
+            (bool gotValue, float distance) = FP_UtilityData.ConvertValue(currMeters, UnitOfMeasure.Meter, units);
+            string text;
+
+            if (gotValue)
+            {
+                var unitAbb = FP_UtilityData.GetUnitAbbreviation(units);
+                text = $"{distance:0.##} {unitAbb}";
+                _cachedDistanceInUnits = distance;
+            }
+            else
+            {
+                text = $"{currMeters:0.###} m";
+                _cachedDistanceInUnits = currMeters;
+            }
+
+            _cachedText = text;
+
+            // Update whichever label(s) exist
+            if (_label != null) _label.text = _cachedText;
+            if (_worldLabel != null) _worldLabel.text = _cachedText;
+            _lastA = a;
+            _lastB = b;
+            _lastUnit = units;
+            MeasurementChanged?.Invoke(_useWorldLabel ? _worldLabel : _label, _cachedDistanceInUnits, units);
+           
+            _hadMeasureLastFrame = true;
+        }
         private static void SetActiveSafe(TMP_Text t, bool on)
         {
             if (t == null) return;
             if (t.gameObject.activeSelf != on) t.gameObject.SetActive(on);
         }
+        #region Public API Methods
         public void UpdateOffsetDetails(float cameraFromMid, float worldupFromMid, UnitOfMeasure newUnits)
         {
             _towardCameraFromMid = cameraFromMid;
@@ -239,5 +305,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             }
             
         }
+        #endregion
     }
 }

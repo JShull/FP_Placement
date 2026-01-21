@@ -12,6 +12,8 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         public event Action OnMeasureToolActivated;
         public event Action OnMeasureToolDeactivated;
         public event Action OnMeasureToolReset;
+        public event Action OnMeasureAngleIncrementActivated;
+        public event Action OnMeasureAngleIncrementDeactivated;
 
         //orbit & Pan
         public event Action OnOrbitModeActivated;
@@ -136,8 +138,14 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 case FP_ToolbarAction.GridXYOn:
                     if (_modelCycle != null) _modelCycle.TurnOnGridXY();
                     break;
-                    case FP_ToolbarAction.GridXYOff:
+                case FP_ToolbarAction.GridXYOff:
                     if (_modelCycle != null) _modelCycle.TurnOffGridXY();
+                    break;
+                case FP_ToolbarAction.ToolMeasureAngleOn:
+                    OnMeasureAngleIncrementActivated?.Invoke();
+                    break;
+                case FP_ToolbarAction.ToolMeasureAngleOff:
+                    OnMeasureAngleIncrementDeactivated?.Invoke();
                     break;
             }
         }

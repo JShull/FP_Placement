@@ -44,6 +44,8 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         GridXZOff,
         GridXYOn,
         GridXYOff,
+        ToolMeasureAngleOn,
+        ToolMeasureAngleOff,
     }
     [Serializable]
     [System.Flags]
