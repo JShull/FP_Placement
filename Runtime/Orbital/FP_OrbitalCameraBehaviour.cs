@@ -2,6 +2,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 {
     using UnityEngine;
     using System;
+
     /// <summary>
     /// Optional convenience MonoBehaviour wrapper for Unity scenes.
     /// Still UI-agnostic: you can call FeedInput() from anywhere.
@@ -13,7 +14,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
         private FP_OrbitalCameraController _controller;
         private FP_OrbitalInput _queuedInput = FP_OrbitalInput.None;
-
+        private Vector3 localOffCenterCache = Vector3.zero;
         public FP_OrbitalCameraController Controller => _controller;
         public BoxCollider TargetBounds;
         [Header("Rotation Event Parameters")]
@@ -34,7 +35,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             if (TargetBounds != null)
             {
                 float checkMaxDistance = 0;
-                _controller.SetTargetBounds(TargetBounds.bounds, null);
+                _controller.SetTargetBounds(TargetBounds.bounds, Vector3.zero,null);
                 checkMaxDistance = TargetBounds.bounds.size.magnitude*1.1f;
                 _controller.ZoomToFitBounds(checkMaxDistance);
             } 
@@ -55,7 +56,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             if (angle >= _rotationEventThresholdDegrees)
             {
                 _lastRotation = current;
-                var lastFrame = new FP_OrbitalViewState(_lastRotation, Vector3.zero,0,_camera.orthographic, _camera.orthographicSize);
+                var lastFrame = new FP_OrbitalViewState(_lastRotation, localOffCenterCache,0,_camera.orthographic, _camera.orthographicSize);
                 OnCameraRotationApplied?.Invoke(lastFrame);
             }
         }
@@ -65,7 +66,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         {
             if (_controller == null) return;
             if (TargetBounds == null) return;
-            _controller.SetTargetBounds(TargetBounds.bounds, null); // sets pivotTarget = bounds.center
+            _controller.SetTargetBounds(TargetBounds.bounds, localOffCenterCache,null); // sets pivotTarget = bounds.center
             if (fit) _controller.FitToBoundsForCurrentProjection();
         }
         /// <summary>
@@ -78,8 +79,12 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             _controller.ZoomToFitBounds(checkMaxDistance);
             _controller.FitToBoundsForCurrentProjection();
         }
-        public void SetBounds(Bounds b, Transform optionalFrame = null) =>
-            _controller.SetTargetBounds(b, optionalFrame);
+        public void SetBounds(Bounds b, Vector3 localBoundsOffCenter,Transform optionalFrame = null)
+        {
+            localOffCenterCache= localBoundsOffCenter;
+             _controller.SetTargetBounds(b, localBoundsOffCenter,optionalFrame);
+        }
+           
 
         public void Snap(FP_OrbitalView view, FP_ProjectionMode mode) =>
             _controller.SnapView(view, mode);

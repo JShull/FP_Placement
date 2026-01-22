@@ -40,7 +40,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             }
                 
             // call SetBounds syncs controller and data
-            _orbital.SetBounds(wb);
+            _orbital.SetBounds(wb,binding.Data.LocalBoundsCenter);
             //set my debug "box collider"
             _orbital.TargetBounds.size = wb.size;
             //JOHN --> still need to now resize my camera based on this information (max/min zoom relative)

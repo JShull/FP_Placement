@@ -369,8 +369,9 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             _settings.Clamp();
         }
 
-        public void SetTargetBounds(Bounds worldBounds, Transform optionalFrame = null)
+        public void SetTargetBounds(Bounds worldBounds, Vector3 centerOffset,Transform optionalFrame = null)
         {
+            worldBounds.center += centerOffset;
             _targetBounds = worldBounds;
             _targetFrame = new FP_TargetFrame(optionalFrame);
 

@@ -64,6 +64,9 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         private Vector2 _lastPos;
         private bool _startedThisFrame;
         private bool _releasedThisFrame;
+        [Tooltip("If true, the mouse mode (orbit/pan) will switch dynamically based on which button is held down.")]
+        [SerializeField]private bool hybridMode=true;
+        [SerializeField]private bool iPadTouchMode=false;
 
         [Header("Input Region Gate")]
         [Tooltip("If true, this input behaviour only responds when the pointer/touch is inside the region.")]
@@ -80,6 +83,11 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         private Vector2 _lastOnePos;
         private float _lastTwoFingerDistance;
         private Vector2 _lastTwoFingerCenter;
+
+        //force input from jumping
+        private bool _suppressOrbitDelta;
+        private bool _suppressPanDelta;
+
 
         #region Testing Methods
         [ContextMenu("Lock Mouse Input")]
@@ -329,18 +337,38 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             // New hybrid mode: determine effective mode
             FP_OrbitalMouseMode effectiveMode = _mode;
-
-            // Momentary overrides: middle pan wins over left orbit
-            if (_isPanDown) effectiveMode = FP_OrbitalMouseMode.Pan;
-            else if (_isDown) effectiveMode = FP_OrbitalMouseMode.Orbit;
-
+            if (hybridMode)
+            {
+                 // Momentary overrides: middle pan wins over left orbit
+                if (_isPanDown) effectiveMode = FP_OrbitalMouseMode.Pan;
+                else if (_isDown) effectiveMode = FP_OrbitalMouseMode.Orbit;
+            }
+            else
+            {
+                //do nothing - like for an iPad interface
+            }
+           
             if (effectiveMode == FP_OrbitalMouseMode.Orbit)
             {
                 Vector2 delta = Vector2.zero;
+                
                 if (_isDown)
                 {
-                    delta = current - _lastPos;
-                    _lastPos = current;
+                    if (_startedThisFrame || _suppressOrbitDelta)
+                    {
+                        // Prime the drag so the first frame never spikes.
+                        _lastPos = current;
+                        delta = Vector2.zero;
+                        _suppressOrbitDelta = false;
+                    }
+                    else
+                    {
+                        delta = current - _lastPos;
+                        _lastPos = current;
+                    }
+                    //OLD
+                    //delta = current - _lastPos;
+                    //_lastPos = current;
                 }
 
                 _orbital.FeedInput(new FP_OrbitalInput(
@@ -360,8 +388,20 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 Vector2 panDelta = Vector2.zero;
                 if (_isPanDown)
                 {
-                    panDelta = current - _lastPanPos;
-                    _lastPanPos = current;
+                    if (_panStartedThisFrame || _suppressPanDelta)
+                    {
+                        _lastPanPos = current;
+                        panDelta = Vector2.zero;
+                        _suppressPanDelta = false;
+                    }
+                    else
+                    {
+                        panDelta = current - _lastPanPos;
+                        _lastPanPos = current;
+                    }
+                    //OLD
+                    //panDelta = current - _lastPanPos;
+                    //_lastPanPos = current;
                 }
 
                 _orbital.FeedInput(new FP_OrbitalInput(
@@ -376,53 +416,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 _panStartedThisFrame = false;
                 _panReleasedThisFrame = false;
             }
-            // orbit or pan?
-            //OLD singluar mode
-            /*
-            if(_mode == FP_OrbitalMouseMode.Orbit)
-            {
-                Vector2 delta = Vector2.zero;
-                if (_isDown)
-                {
-                    delta = current - _lastPos;
-                    _lastPos = current;
-                }
-                _orbital.FeedInput(new FP_OrbitalInput(
-                    isPressed: _startedThisFrame,
-                    isReleased: _releasedThisFrame,
-                    pointerPos: current,
-                    dragDelta: delta,
-                    pinchDelta: pinchDeltaMouse,
-                    isTwoFinger: false
-                ));
-                _startedThisFrame = false;
-                _releasedThisFrame = false;
-            }else if(_mode == FP_OrbitalMouseMode.Pan)
-            {
-                Vector2 panDelta = Vector2.zero;
-                if (_isPanDown)
-                {
-                    panDelta = current - _lastPanPos;
-                    _lastPanPos = current;
-                }
-
-                // IMPORTANT: set isTwoFinger=true so controller routes drag to Pan()
-                _orbital.FeedInput(new FP_OrbitalInput(
-                    isPressed: _panStartedThisFrame,
-                    isReleased: _panReleasedThisFrame,
-                    pointerPos: current,
-                    dragDelta: panDelta,
-                    pinchDelta: pinchDeltaMouse,  // you can keep zoom active while panning if you want
-                    isTwoFinger: true
-                ));
-
-                _panStartedThisFrame = false;
-                _panReleasedThisFrame = false;
-            }
-
-            
-            //END OLD SINGULAR MODE
-            */
             _scrollAccumY = 0f;
         }
         private void OnPrimaryDown(InputAction.CallbackContext ctx)
@@ -431,6 +424,13 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             if (_pointerPosition?.action == null) return;
             if (_inputLocked) return;
 
+            // mouse/PC mode
+            if (iPadTouchMode && _mode == FP_OrbitalMouseMode.Pan)
+            {
+                // send the information over to middle mouse down if we are in pan mode
+                OnMiddleDown(ctx);
+                return;
+            }
             // Ensure pan isn't active (LMB takes over)
             if (_isPanDown) ForcePanRelease();
 
@@ -438,22 +438,18 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             _startedThisFrame = true;
             _releasedThisFrame = false;
             _lastPos = _pointerPosition.action.ReadValue<Vector2>();
-            //OLD Primary Down
-            /*
-            if (!CanProcessInput()) return;
-            if (_pointerPosition?.action == null) return;
-
-            _isDown = true;
-            _startedThisFrame = true;
-            _releasedThisFrame = false;
-            _lastPos = _pointerPosition.action.ReadValue<Vector2>();
-
-            //Ensure pan isn't active
-            if (_isPanDown) ForcePanRelease();
-            */
+            _suppressOrbitDelta = true;
+            
         }
         private void OnPrimaryUp(InputAction.CallbackContext ctx)
         {
+            // mouse/PC mode
+            if (iPadTouchMode && _mode == FP_OrbitalMouseMode.Pan)
+            {
+                // send the information over to middle mouse down if we are in pan mode
+                OnMiddleUp(ctx);
+                return;
+            }
             _isDown = false;
             _releasedThisFrame = true;
             _startedThisFrame = false;
@@ -475,26 +471,10 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             _panStartedThisFrame = true;
             _panReleasedThisFrame = false;
             _lastPanPos = _pointerPosition.action.ReadValue<Vector2>();
-
+            _suppressPanDelta=true;
             // If orbit was active, stop orbit immediately (MMB takes over)
             if (_isDown) ForceRelease();
-            //OLD Middle Down
-            /*
-            if (!CanProcessInput()) return;
-            if (_pointerPosition?.action == null) return;
-            if (_inputLocked) return;
-
-            // Only start pan if we're in Pan mode
-            if (_mode != FP_OrbitalMouseMode.Pan) return;
-
-            _isPanDown = true;
-            _panStartedThisFrame = true;
-            _panReleasedThisFrame = false;
-            _lastPanPos = _pointerPosition.action.ReadValue<Vector2>();
-
-            // Ensure orbit isn't active
-            if (_isDown) ForceRelease();
-            */
+            
         }
         private void OnMiddleUp(InputAction.CallbackContext ctx)
         {
@@ -503,14 +483,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             _isPanDown = false;
             _panReleasedThisFrame = true;
             _panStartedThisFrame = false;
-            // OLD Middle UP
-            /*
-            if (_mode != FP_OrbitalMouseMode.Pan) return;
-
-            _isPanDown = false;
-            _panReleasedThisFrame = true;
-            _panStartedThisFrame = false;
-            */
         }
         private bool CanProcessInput()
         {
@@ -566,7 +538,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             _isDown = false;
             _startedThisFrame = false;
             _releasedThisFrame = true;
-
+            _suppressOrbitDelta = false;
             if (_orbital != null && _pointerPosition?.action != null)
             {
                 Vector2 current = _pointerPosition.action.ReadValue<Vector2>();
@@ -587,7 +559,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             _isPanDown = false;
             _panStartedThisFrame = false;
             _panReleasedThisFrame = true;
-
+            _suppressPanDelta = false;
             if (_orbital != null && _pointerPosition?.action != null)
             {
                 Vector2 current = _pointerPosition.action.ReadValue<Vector2>();
