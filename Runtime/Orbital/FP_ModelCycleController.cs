@@ -250,8 +250,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                     }
                 }
             }
-
-
             OnActiveModelChanged?.Invoke(_activeIndex, active);
         }
         private void UpdateGridPattern(FPRuntimeGridPlane gridPlane,FP_MeasurementHitProvider hitProvider)
