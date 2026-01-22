@@ -2,6 +2,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 {
     using UnityEngine;
     using System;
+    using ExternPropertyAttributes;
 
     /// <summary>
     /// Optional convenience MonoBehaviour wrapper for Unity scenes.
@@ -14,7 +15,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
         private FP_OrbitalCameraController _controller;
         private FP_OrbitalInput _queuedInput = FP_OrbitalInput.None;
-        private Vector3 localOffCenterCache = Vector3.zero;
+        [ShowNonSerializedField]private Vector3 localOffCenterCache = Vector3.zero;
         public FP_OrbitalCameraController Controller => _controller;
         public BoxCollider TargetBounds;
         [Header("Rotation Event Parameters")]
