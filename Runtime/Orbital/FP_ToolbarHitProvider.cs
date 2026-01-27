@@ -3,6 +3,9 @@ namespace FuzzPhyte.Placement.OrbitalCamera
     using UnityEngine;
     using UnityEngine.Events;
 
+    [System.Serializable]
+    public class FPToolbarProviderEvent : UnityEvent<FP_ToolbarHitProvider> { }
+    
     [DisallowMultipleComponent]
     public sealed class FP_ToolbarHitProvider : MonoBehaviour
     {
@@ -12,15 +15,17 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         [Tooltip("Delay an action after start some 'x' seconds")]
         [SerializeField] private bool DelayActionOnStart = false;
         [SerializeField] private float DelaySeconds = 1f;
-        public UnityEvent OnStartDelayedEvent;
+        [Tooltip("Invoked after delay and passes this provider dynamically")]
+        public FPToolbarProviderEvent OnStartDelayedEvent;
+        public FP_ToolbarAction Action => _action;
         public void Start()
         {
             if (DelayActionOnStart)
             {
-                Invoke(nameof(OnStartDelayedEvent), DelaySeconds);
+                Invoke(nameof(InvokeStartDelayed), DelaySeconds);
             }
         }
-        public FP_ToolbarAction Action => _action;
+        
 
         // Optional: hover/selection visual hooks like your cube provider
         public void Hover() { }
@@ -30,5 +35,9 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             OnSelectionEvent?.Invoke();
         }
         public void UnSelect() { }
+        private void InvokeStartDelayed()
+        {
+            OnStartDelayedEvent?.Invoke(this);
+        }
     }
 }
