@@ -30,6 +30,14 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             if (_raycaster != null)
                 _raycaster.OnToolbarAction -= HandleToolbarAction;
         }
+        /// <summary>
+        /// Call if we need to manually handle a toolbar action outside of the raycaster
+        /// </summary>
+        /// <param name="action"></param>
+        public void ManuallyHandleToolbarAction(FP_ToolbarAction action)
+        {
+            HandleToolbarAction(action,null,new RaycastHit());
+        }
 
         private void HandleToolbarAction(FP_ToolbarAction action, FP_ToolbarHitProvider provider, RaycastHit hit)
         {
