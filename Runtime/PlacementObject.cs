@@ -3,7 +3,6 @@ namespace FuzzPhyte.Placement
     using FuzzPhyte.Utility;
     using System.Collections.Generic;
     using UnityEngine;
-    using UnityEngine.InputSystem;
 
     public enum StackSuitability
     {

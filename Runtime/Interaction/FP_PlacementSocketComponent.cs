@@ -60,7 +60,6 @@ namespace FuzzPhyte.Placement.Interaction
 
             return false;
         }
-
         public void CommitPlacement(PlacementObject placement,Transform instance)
         {
             if (placement == null || instance == null)
@@ -76,7 +75,6 @@ namespace FuzzPhyte.Placement.Interaction
                     break;
             }
         }
-
         #endregion
         private bool CategoryAllowed(PlacementObject placement)
         {
