@@ -576,5 +576,4 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             _panReleasedThisFrame = false;
         }
     }
-   
 }

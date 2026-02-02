@@ -352,6 +352,11 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         private bool _isDragging;
         private FP_ProjectionMode _lastAppliedProjection = FP_ProjectionMode.Perspective;
 
+        // Plane constraint
+        private bool _restrictBelowPlane;
+        private Vector3 _planeNormal = Vector3.up;
+        private float _planeDistance; // signed distance form
+
         public FP_OrbitalCameraController(Camera camera, FP_OrbitalCameraSettings settings)
         {
             _camera = camera ? camera : throw new ArgumentNullException(nameof(camera));
@@ -368,8 +373,29 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             _settings.DistanceMax = newMaxDistance;
             _settings.Clamp();
         }
+        /// <summary>
+        /// standard plane equation dot(n, x) + d = 0
+        /// </summary>
+        /// <param name="enabled"></param>
+        /// <param name="planeNormal"></param>
+        /// <param name="pointOnPlane"></param>
+        public void SetPlaneConstraint(bool enabled,Vector3 planeNormal,Vector3 pointOnPlane)
+        {
+            _restrictBelowPlane = enabled;
+            if (!enabled)
+                return;
+            _planeNormal = planeNormal.normalized;
+            _planeDistance = -Vector3.Dot(_planeNormal, pointOnPlane);
+        }
 
-        public void SetTargetBounds(Bounds worldBounds, Vector3 centerOffset,Transform optionalFrame = null)
+        /// <summary>
+        /// Returns the center value which is the worldBounds.center + centerOffset
+        /// </summary>
+        /// <param name="worldBounds"></param>
+        /// <param name="centerOffset"></param>
+        /// <param name="optionalFrame"></param>
+        /// <returns></returns>
+        public Vector3 SetTargetBounds(Bounds worldBounds, Vector3 centerOffset,Transform optionalFrame = null)
         {
             worldBounds.center += centerOffset;
             _targetBounds = worldBounds;
@@ -377,6 +403,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             _pivotTarget = worldBounds.center;
             if (_pivot == Vector3.zero) _pivot = _pivotTarget;
+            return _pivotTarget;
         }
         public void SetProjection(FP_ProjectionMode newProjection)
         {
@@ -551,10 +578,28 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             if (_camera.orthographic)
                 _camera.orthographicSize = _orthoSize;
+            // Apply transform NEW
+            Vector3 desiredCamPos = _pivot + (_rotation * Vector3.back) * _distance;
+            if (_restrictBelowPlane && !IsAbovePlane(desiredCamPos))
+            {
+                // Project camera position onto plane
+                float distToPlane =
+                    Vector3.Dot(_planeNormal, desiredCamPos) + _planeDistance;
 
-            // Apply transform
+                desiredCamPos -= _planeNormal * distToPlane;
+
+                // Optional: gently push the pivot as well for pan cases
+                _pivotTarget = Vector3.Lerp(
+                    _pivotTarget,
+                    desiredCamPos + (_rotation * Vector3.forward) * _distance,
+                    0.5f);
+            }
+            _camera.transform.SetPositionAndRotation(desiredCamPos, _rotation);
+            // Apply transform OLD
+            /*
             Vector3 camPos = _pivot + (_rotation * Vector3.back) * _distance;
             _camera.transform.SetPositionAndRotation(camPos, _rotation);
+        */
         }
         private float ComputeEquivalentOrthoSizeFromPerspective()
         {
@@ -578,11 +623,47 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         }
         private void Orbit(Vector2 dragDelta)
         {
+            float yawDelta = dragDelta.x * _settings.OrbitSensitivity;
+            float pitchDelta = -dragDelta.y * _settings.OrbitSensitivity;
+
+            float candidateYaw = _yaw + yawDelta;
+            float candidatePitch = Mathf.Clamp(
+                _pitch + pitchDelta,
+                _settings.PitchMin,
+                _settings.PitchMax
+            );
+
+            // Full candidate rotation (yaw + pitch)
+            Quaternion fullCandidate =
+                Quaternion.Euler(candidatePitch, candidateYaw, 0f);
+
+            // If full rotation is valid, accept it
+            if (!WouldRotationViolatePlane(fullCandidate))
+            {
+                _yaw = candidateYaw;
+                _pitch = candidatePitch;
+                _rotationTarget = fullCandidate;
+                return;
+            }
+
+            // Otherwise, try yaw-only rotation (no pitch change)
+            Quaternion yawOnlyCandidate =
+                Quaternion.Euler(_pitch, candidateYaw, 0f);
+
+            if (!WouldRotationViolatePlane(yawOnlyCandidate))
+            {
+                _yaw = candidateYaw;
+                _rotationTarget = yawOnlyCandidate;
+                // pitch unchanged
+            }
+            //OLD
+            /*
             _yaw += dragDelta.x * _settings.OrbitSensitivity;
             _pitch -= dragDelta.y * _settings.OrbitSensitivity;
             _pitch = Mathf.Clamp(_pitch, _settings.PitchMin, _settings.PitchMax);
 
             _rotationTarget = Quaternion.Euler(_pitch, _yaw, 0f);
+            */
         }
         private void Pan(Vector2 dragDelta)
         {
@@ -597,8 +678,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         }
         private void FitToBounds(FP_OrbitalView view, FP_ProjectionMode mode)
         {
-            FitToBounds(mode);
-            
+            FitToBounds(mode);  
         }
         private void FitToBounds(FP_ProjectionMode mode)
         {
@@ -630,5 +710,24 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             if (pitchEulerX > 180f) pitchEulerX -= 360f;
             return pitchEulerX;
         }
+        private bool IsAbovePlane(Vector3 worldPos)
+        {
+            // positive means same side as normal
+            float side = Vector3.Dot(_planeNormal, worldPos) + _planeDistance;
+            return side >= 0f;
+        }
+        private bool WouldRotationViolatePlane(Quaternion candidateRotation)
+        {
+            if (!_restrictBelowPlane)
+                return false;
+
+            Vector3 candidatePos =
+                _pivot + (candidateRotation * Vector3.back) * _distance;
+
+            float side = Vector3.Dot(_planeNormal, candidatePos) + _planeDistance;
+            return side < 0f;
+        }
+
+
     }
 }

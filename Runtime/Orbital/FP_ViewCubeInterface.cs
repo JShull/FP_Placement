@@ -52,13 +52,27 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             Quaternion targetRotation = BuildWorldRotation(pose, _targetFrame);
 
             // 3) Drive orbital camera
-            // Option A (best): add a method on the controller to set rotation target directly.
-            // Option B (ok): map to your existing SnapView for faces only.
-            // Here’s Option A:
-            SetOrbitalRotationTarget(targetRotation);
-
+            // check if we are in a restricted orbit or not
+            if (_orbital.RestrictBelowPlane)
+            {
+                switch (hit)
+                {
+                    case FP_ViewCubeHit.Bottom:
+                    case FP_ViewCubeHit.BottomBack:
+                    case FP_ViewCubeHit.BottomLeft:
+                    case FP_ViewCubeHit.BottomRight:
+                    case FP_ViewCubeHit.BottomFront:
+                    case FP_ViewCubeHit.BottomFrontLeft:
+                    case FP_ViewCubeHit.BottomBackLeft:
+                    case FP_ViewCubeHit.BottomBackRight:
+                    case FP_ViewCubeHit.BottomFrontRight:
+                        return;
+                }
+                //assuming only a condition where we don't use the lower regions of the cube
+            }
             // 4) Rotate the view cube visual to match the camera/view
             // Depending on how your cube is modeled, you may want inverse rotation.
+            SetOrbitalRotationTarget(targetRotation);
             SyncViewCube(targetRotation);
         }
 
@@ -88,12 +102,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
         private void SetOrbitalRotationTarget(Quaternion worldRotation)
         {
-            // Minimal, practical approach:
-            // - expose a method on FP_OrbitalCameraBehaviour (or controller) like:
-            //   Controller.SetRotationTarget(worldRotation, projectionMode)
-            //
-            // Since your current controller shown earlier targets _rotationTarget internally,
-            // you'd add a public method there.
             _orbital.Controller.SetRotationTarget(worldRotation, _snapProjection,false);
         }
 
