@@ -222,7 +222,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 var rot = Quaternion.LookRotation(Vector3.forward, planeNormal);
                 _debugPlanes.DrawPlane(planePoint, rot, new Vector2(planeSize, planeSize), Color.green, 10f);
             }
-            _controller.SetSecondaryPlaneConstraint(true, planeNormal, planePoint);
+            _controller.SetPlaneConstraint(true, planeNormal, planePoint);
         }
 
     }
