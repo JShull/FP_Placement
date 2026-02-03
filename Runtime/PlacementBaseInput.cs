@@ -86,6 +86,14 @@ namespace FuzzPhyte.Placement
             UpdateLogic();
         }
         #region Public Accessors
+        public virtual void InputLocked()
+        {
+            SetInputLocked(true);
+        }
+        public virtual void InputUnlocked()
+        {
+            SetInputLocked(false);
+        }
         public virtual void SetInputLocked(bool locked)
         {
             if (_inputLocked == locked) return;
