@@ -337,6 +337,21 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             // New hybrid mode: determine effective mode
             FP_OrbitalMouseMode effectiveMode = _mode;
+            // break if our mode is none
+            if (effectiveMode == FP_OrbitalMouseMode.None)
+            {
+                _scrollAccumY = 0;
+                // primary mouse orbit input parameters
+                if (_isDown) ForceRelease();
+                _startedThisFrame = false;
+                _releasedThisFrame = false;
+
+                // middle mouse pan input parameters
+                if (_isPanDown) ForcePanRelease();
+                _panStartedThisFrame = false;
+                _panReleasedThisFrame = false;
+                return;
+            }
             if (hybridMode)
             {
                  // Momentary overrides: middle pan wins over left orbit
@@ -347,7 +362,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             {
                 //do nothing - like for an iPad interface
             }
-           
+            
             if (effectiveMode == FP_OrbitalMouseMode.Orbit)
             {
                 Vector2 delta = Vector2.zero;
@@ -385,6 +400,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             }
             else // Pan
             {
+
                 Vector2 panDelta = Vector2.zero;
                 if (_isPanDown)
                 {

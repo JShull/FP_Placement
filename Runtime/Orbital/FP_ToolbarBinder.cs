@@ -14,15 +14,21 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         public event Action OnMeasureToolReset;
         public event Action OnMeasureAngleIncrementActivated;
         public event Action OnMeasureAngleIncrementDeactivated;
+        
 
         //orbit & Pan
         public event Action OnOrbitModeActivated;
         public event Action OnPanModeActivated;
+        public event Action OnCameraModeLocked;
+        public event Action OnCameraModeUnlocked;
+        protected FP_OrbitalMouseMode lastMode;
 
         private void OnEnable()
         {
             if (_raycaster != null)
                 _raycaster.OnToolbarAction += HandleToolbarAction;
+
+            lastMode = FP_OrbitalMouseMode.Orbit;
         }
 
         private void OnDisable()
@@ -40,8 +46,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             // If you don't care about hit on Start, just pass a default hit:
             HandleToolbarAction(provider.Action, provider, default);
         }
-
-        private void HandleToolbarAction(FP_ToolbarAction action, FP_ToolbarHitProvider provider, RaycastHit hit)
+        protected virtual void HandleToolbarAction(FP_ToolbarAction action, FP_ToolbarHitProvider provider, RaycastHit hit)
         {
             switch (action)
             {
@@ -123,6 +128,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                     if (_orbitalMouseInputBehaviour != null)
                     {
                         _orbitalMouseInputBehaviour.SetMode(FP_OrbitalMouseMode.Orbit);
+                        lastMode = FP_OrbitalMouseMode.Orbit;
                     }
                     OnOrbitModeActivated?.Invoke();
                     break;
@@ -130,6 +136,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                     if (_orbitalMouseInputBehaviour != null)
                     {
                         _orbitalMouseInputBehaviour.SetMode(FP_OrbitalMouseMode.Pan);
+                        lastMode = FP_OrbitalMouseMode.Pan;
                     }
                     OnPanModeActivated?.Invoke();
                     break;
@@ -156,6 +163,22 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                     break;
                 case FP_ToolbarAction.ToolMeasureAngleOff:
                     OnMeasureAngleIncrementDeactivated?.Invoke();
+                    break;
+                case FP_ToolbarAction.LockCamera:
+                    if (_orbitalMouseInputBehaviour != null)
+                    {
+                        _orbitalMouseInputBehaviour.SetMode(FP_OrbitalMouseMode.None);
+                        _orbitalMouseInputBehaviour.SetInputLocked(true);
+                    }
+                    OnCameraModeLocked?.Invoke();
+                    break;
+                case FP_ToolbarAction.UnlockCamera:
+                    if (_orbitalMouseInputBehaviour != null)
+                    {
+                        _orbitalMouseInputBehaviour.SetMode(lastMode);
+                        _orbitalMouseInputBehaviour.SetInputLocked(false);
+                    }
+                    OnCameraModeUnlocked?.Invoke();
                     break;
             }
         }
