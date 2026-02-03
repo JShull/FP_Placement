@@ -2,6 +2,9 @@ namespace FuzzPhyte.Placement.Interaction
 {
     using System.Collections.Generic;
     using UnityEngine;
+    using UnityEngine.Events;
+    [System.Serializable]
+    public class PlacementSocketHoverEvent : UnityEvent<FP_PlacementSocketComponent> { }
     public class FP_PlacementSocketComponent : MonoBehaviour
     {
         [SerializeField] Transform SocketLocation;
@@ -15,10 +18,15 @@ namespace FuzzPhyte.Placement.Interaction
         [Header("Stacking / Volume Settings")]
         [SerializeField] private Vector3 _localStackAxis = Vector3.right;
         [SerializeField] private float _capacity = 1.0f;
+        [Space]
+        [Header("Hover Events")]
+        [SerializeField] private PlacementSocketHoverEvent onHoverEnter;
+        [SerializeField] private PlacementSocketHoverEvent onHoverExit;
 
+        private bool _isHovered;
         [Header("Debug")]
         [SerializeField] private bool _drawGizmos = true;
-
+        
         private float _usedCapacity = 0f;
         protected void Awake()
         {
@@ -85,6 +93,19 @@ namespace FuzzPhyte.Placement.Interaction
                     break;
             }
         }
+        public void SetHoverState(bool hovered)
+        {
+            if (_isHovered == hovered)
+                return;
+
+            _isHovered = hovered;
+
+            if (_isHovered)
+                onHoverEnter?.Invoke(this);
+            else
+                onHoverExit?.Invoke(this);
+        }
+
         #endregion
         private bool CategoryAllowed(PlacementObject placement)
         {
