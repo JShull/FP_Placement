@@ -354,10 +354,29 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         private bool _isDragging;
         private FP_ProjectionMode _lastAppliedProjection = FP_ProjectionMode.Perspective;
 
-        // Plane constraint
-        private bool _restrictBelowPlane;
-        private Vector3 _planeNormal = Vector3.up;
-        private float _planeDistance; // signed distance form
+        // Plane constraints
+        private struct PlaneConstraint
+        {
+            public bool Enabled;
+            public Vector3 Normal;
+            public float Distance;
+        }
+
+        private PlaneConstraint[] _planeConstraints =
+        {
+            new PlaneConstraint
+            {
+                Enabled = false,
+                Normal = Vector3.up,
+                Distance = 0f
+            },
+            new PlaneConstraint
+            {
+                Enabled = false,
+                Normal = Vector3.up,
+                Distance = 0f
+            }
+        };
 
         public FP_OrbitalCameraController(Camera camera, FP_OrbitalCameraSettings settings)
         {
@@ -383,11 +402,26 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         /// <param name="pointOnPlane"></param>
         public void SetPlaneConstraint(bool enabled,Vector3 planeNormal,Vector3 pointOnPlane)
         {
-            _restrictBelowPlane = enabled;
+            SetPlaneConstraintInternal(0, enabled, planeNormal, pointOnPlane);
+        }
+
+        public void SetSecondaryPlaneConstraint(bool enabled, Vector3 planeNormal, Vector3 pointOnPlane)
+        {
+            SetPlaneConstraintInternal(1, enabled, planeNormal, pointOnPlane);
+        }
+
+        private void SetPlaneConstraintInternal(int index, bool enabled, Vector3 planeNormal, Vector3 pointOnPlane)
+        {
+            if (index < 0 || index >= _planeConstraints.Length)
+                return;
+
+            _planeConstraints[index].Enabled = enabled;
             if (!enabled)
                 return;
-            _planeNormal = planeNormal.normalized;
-            _planeDistance = -Vector3.Dot(_planeNormal, pointOnPlane);
+
+            Vector3 normal = planeNormal.normalized;
+            _planeConstraints[index].Normal = normal;
+            _planeConstraints[index].Distance = -Vector3.Dot(normal, pointOnPlane);
         }
 
         /// <summary>
@@ -582,13 +616,9 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 _camera.orthographicSize = _orthoSize;
             // Apply transform NEW
             Vector3 desiredCamPos = _pivot + (_rotation * Vector3.back) * _distance;
-            if (_restrictBelowPlane && !IsAbovePlane(desiredCamPos))
+            if (HasPlaneConstraints() && !IsAboveAllPlanes(desiredCamPos))
             {
-                // Project camera position onto plane
-                float distToPlane =
-                    Vector3.Dot(_planeNormal, desiredCamPos) + _planeDistance;
-
-                desiredCamPos -= _planeNormal * distToPlane;
+                desiredCamPos = ProjectAbovePlanes(desiredCamPos);
 
                 // Optional: gently push the pivot as well for pan cases
                 _pivotTarget = Vector3.Lerp(
@@ -715,19 +745,62 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         private bool IsAbovePlane(Vector3 worldPos)
         {
             // positive means same side as normal
-            float side = Vector3.Dot(_planeNormal, worldPos) + _planeDistance;
-            return side >= 0f;
+            return IsAboveAllPlanes(worldPos);
         }
         private bool WouldRotationViolatePlane(Quaternion candidateRotation)
         {
-            if (!_restrictBelowPlane)
+            if (!HasPlaneConstraints())
                 return false;
 
             Vector3 candidatePos =
                 _pivot + (candidateRotation * Vector3.back) * _distance;
 
-            float side = Vector3.Dot(_planeNormal, candidatePos) + _planeDistance;
-            return side < 0f;
+            return !IsAboveAllPlanes(candidatePos);
+        }
+
+        private bool HasPlaneConstraints()
+        {
+            for (int i = 0; i < _planeConstraints.Length; i++)
+            {
+                if (_planeConstraints[i].Enabled)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private bool IsAboveAllPlanes(Vector3 worldPos)
+        {
+            for (int i = 0; i < _planeConstraints.Length; i++)
+            {
+                if (!_planeConstraints[i].Enabled)
+                    continue;
+
+                float side = Vector3.Dot(_planeConstraints[i].Normal, worldPos) + _planeConstraints[i].Distance;
+                if (side < 0f)
+                    return false;
+            }
+
+            return true;
+        }
+
+        private Vector3 ProjectAbovePlanes(Vector3 worldPos)
+        {
+            Vector3 adjusted = worldPos;
+
+            for (int i = 0; i < _planeConstraints.Length; i++)
+            {
+                if (!_planeConstraints[i].Enabled)
+                    continue;
+
+                float side = Vector3.Dot(_planeConstraints[i].Normal, adjusted) + _planeConstraints[i].Distance;
+                if (side < 0f)
+                {
+                    adjusted -= _planeConstraints[i].Normal * side;
+                }
+            }
+
+            return adjusted;
         }
 
 
