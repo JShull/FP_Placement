@@ -7,6 +7,7 @@ namespace FuzzPhyte.Placement.Interaction
         [SerializeField] private Renderer targetRenderer;
         [SerializeField] private Material normalMat;
         [SerializeField] private Material hoverMat;
+        [SerializeField] private Material selectMat;
 
         public void OnHoverEnter(FP_PlacementSocketComponent socket)
         {
@@ -18,6 +19,11 @@ namespace FuzzPhyte.Placement.Interaction
         {
             if (targetRenderer == null) return;
             targetRenderer.material = normalMat;
+        }
+        public void OnEndSelected(FP_PlacementSocketComponent socket)
+        {
+            if (targetRenderer == null) return;
+            targetRenderer.material = selectMat;
         }
     }
 }

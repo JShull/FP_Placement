@@ -91,66 +91,7 @@ namespace FuzzPhyte.Placement.Interaction
                 }
             }
         }
-        #region Drag Additional
-        void UpdateFreeDrag(Ray ray)
-        {
-            if (_dragTarget == null) return;
-
-            Vector3 worldPoint = ray.GetPoint(_dragRayDistance);
-            _dragTarget.position = worldPoint + _dragLocalOffset;
-        }
-        void UpdateSocketHover(Ray ray)
-        {
-            newHover = null;
-
-            var hits = Physics.RaycastAll(ray, maxRayDistance, placementMask);
-
-            if (hits == null || hits.Length == 0)
-                return;
-
-            foreach (var hit in hits)
-            {
-                // Socket might be anywhere in the hierarchy
-                if (!hit.collider.TryGetComponent(out FP_PlacementSocketComponent socket))
-                    continue;
-
-                if (drawDebug)
-                {
-                    Debug.Log($"[Placement] Ray hit socket candidate: {socket.name}");
-                }
-
-                if (!socket.CanAccept(_activePlacement))
-                    continue;
-
-                newHover = socket;
-                break; // first valid socket wins break out
-            }
-            if(_previousHoverSocket!= newHover)
-            {
-                if (_previousHoverSocket != null)
-                    _previousHoverSocket.SetHoverState(false);
-
-                if (newHover != null)
-                    newHover.SetHoverState(true);
-
-                _previousHoverSocket = newHover;
-            }
-            _hoverSocket = newHover;
-        }
-        void ApplySocketOverride()
-        {
-            if (_hoverSocket == null || _activeComponent == null)
-                return;
-
-            Transform t = _activeComponent.RootPlacement;
-
-            t.SetPositionAndRotation(
-                _hoverSocket.transform.position,
-                _hoverSocket.transform.rotation
-            );
-        }
-
-        #endregion
+       
         protected void UpdateDrag(Ray ray)
         {
             if (_activePlacement == null || _dragTarget == null)
@@ -217,6 +158,66 @@ namespace FuzzPhyte.Placement.Interaction
             // If no valid socket, do nothing (or optionally snap back later)
             _activeSocket = foundSocket;
         }
+        #region Drag Additional
+        void UpdateFreeDrag(Ray ray)
+        {
+            if (_dragTarget == null) return;
+
+            Vector3 worldPoint = ray.GetPoint(_dragRayDistance);
+            _dragTarget.position = worldPoint + _dragLocalOffset;
+        }
+        void UpdateSocketHover(Ray ray)
+        {
+            newHover = null;
+
+            var hits = Physics.RaycastAll(ray, maxRayDistance, placementMask);
+
+            if (hits == null || hits.Length == 0)
+                return;
+
+            foreach (var hit in hits)
+            {
+                // Socket might be anywhere in the hierarchy
+                if (!hit.collider.TryGetComponent(out FP_PlacementSocketComponent socket))
+                    continue;
+
+                if (drawDebug)
+                {
+                    Debug.Log($"[Placement] Ray hit socket candidate: {socket.name}");
+                }
+
+                if (!socket.CanAccept(_activePlacement))
+                    continue;
+
+                newHover = socket;
+                break; // first valid socket wins break out
+            }
+            if (_previousHoverSocket != newHover)
+            {
+                if (_previousHoverSocket != null)
+                    _previousHoverSocket.SetHoverState(false);
+
+                if (newHover != null)
+                    newHover.SetHoverState(true);
+
+                _previousHoverSocket = newHover;
+            }
+            _hoverSocket = newHover;
+        }
+        void ApplySocketOverride()
+        {
+            if (_hoverSocket == null || _activeComponent == null)
+                return;
+
+            Transform t = _activeComponent.RootPlacement;
+
+            t.SetPositionAndRotation(
+                _hoverSocket.transform.position,
+                _hoverSocket.transform.rotation
+            );
+        }
+
+        #endregion
         protected void EndDrag()
         {
             if (_activePlacement == null)
@@ -246,6 +247,7 @@ namespace FuzzPhyte.Placement.Interaction
             _dragTarget = null;
             _previousHoverSocket = null;
         }
+        
         #endregion
         /// <summary>
         /// What we want to do via Double Click

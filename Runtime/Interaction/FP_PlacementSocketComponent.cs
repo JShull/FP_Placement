@@ -22,6 +22,7 @@ namespace FuzzPhyte.Placement.Interaction
         [Header("Hover Events")]
         [SerializeField] private PlacementSocketHoverEvent onHoverEnter;
         [SerializeField] private PlacementSocketHoverEvent onHoverExit;
+        [SerializeField] private PlacementSocketHoverEvent onDragEnd;
 
         private bool _isHovered;
         [Header("Debug")]
@@ -90,6 +91,9 @@ namespace FuzzPhyte.Placement.Interaction
             {
                 case PlacementBuildMode.Stacking:
                     CommitStacking(placement, instance);
+                    break;
+                case PlacementBuildMode.Ignore:
+                    CommitIgnore(placement, instance);
                     break;
             }
         }
@@ -166,6 +170,10 @@ namespace FuzzPhyte.Placement.Interaction
             instance.SetPositionAndRotation(worldPos, transform.rotation);
 
             _usedCapacity += width;
+        }
+        private void CommitIgnore(PlacementObject placement, Transform instance)
+        {
+            onDragEnd?.Invoke(this);
         }
         private void OnDrawGizmosSelected()
         {
