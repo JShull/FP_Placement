@@ -23,6 +23,8 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         [Space]
         [Header("Plane Constraint")]
         public bool RestrictBelowPlane = false;
+        [Tooltip("Use the bounds information to move the plane to align")]
+        public bool MovePlaneBasedOnBounds = true;
         [SerializeField]public Transform _planeReference;
         public Vector3 PlaneNormal = Vector3.up;
         public float PlaneOffset = 0f;
@@ -51,16 +53,20 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 var newCenter = _controller.SetTargetBounds(TargetBounds.bounds, Vector3.zero,null);
                 checkMaxDistance = TargetBounds.bounds.size.magnitude*1.1f;
                 _controller.ZoomToFitBounds(checkMaxDistance);
-                if (RestrictBelowPlane)
+                if (RestrictBelowPlane && MovePlaneBasedOnBounds)
                 {
                     UpdateRestrictBelowPlaneFromBounds(newCenter);
+                }
+                else if(RestrictBelowPlane && _planeReference!=null)
+                {
+
+                    UpdateRestrictBelowPlaneFromBounds(_planeReference.position);
                 }
                 else
                 {
                     _controller.SetPlaneConstraint(false, Vector3.up, Vector3.zero);
                 }
-            } 
-
+            }
             UpdateSecondaryPlaneConstraint();
         }
         
