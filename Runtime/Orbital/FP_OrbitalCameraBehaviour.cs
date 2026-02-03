@@ -144,7 +144,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             if (_debugPlanes != null)
             {
                 var rot = Quaternion.LookRotation(Vector3.forward, _planeReference.up);
-                _debugPlanes.DrawPlane(_secondaryPlaneReference.position, rot, new Vector2(10, 10), Color.green, 10f);
+                _debugPlanes.DrawPlane(_planeReference.position, rot, new Vector2(10, 10), Color.green, 10f);
             }
             // Push the updated plane into the controller
             _controller.SetPlaneConstraint(
