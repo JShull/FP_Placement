@@ -25,6 +25,11 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         [SerializeField]public Transform _planeReference;
         public Vector3 PlaneNormal = Vector3.up;
         public float PlaneOffset = 0f;
+        [Header("Secondary Plane Constraint")]
+        public bool RestrictSecondaryPlane = false;
+        [SerializeField] public Transform _secondaryPlaneReference;
+        public Vector3 SecondaryPlaneNormal = Vector3.up;
+        public float SecondaryPlaneOffset = 0f;
 
         /// <summary>
         /// Fired after the camera transform has been applied (LateUpdate).
@@ -54,12 +59,16 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                     _controller.SetPlaneConstraint(false, Vector3.up, Vector3.zero);
                 }
             } 
+
+            UpdateSecondaryPlaneConstraint();
         }
         
 
         private void LateUpdate()
         {
             if (_controller == null) return;
+
+            UpdateSecondaryPlaneConstraint();
 
             _controller.ApplyInput(_queuedInput);
             _queuedInput = FP_OrbitalInput.None;
@@ -138,6 +147,26 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 _planeReference.up,
                 _planeReference.position
             );
+        }
+
+        private void UpdateSecondaryPlaneConstraint()
+        {
+            if (!RestrictSecondaryPlane)
+            {
+                _controller.SetSecondaryPlaneConstraint(false, Vector3.up, Vector3.zero);
+                return;
+            }
+
+            Vector3 planeNormal = SecondaryPlaneNormal;
+            Vector3 planePoint = planeNormal.normalized * SecondaryPlaneOffset;
+
+            if (_secondaryPlaneReference != null)
+            {
+                planeNormal = _secondaryPlaneReference.up;
+                planePoint = _secondaryPlaneReference.position + planeNormal.normalized * SecondaryPlaneOffset;
+            }
+
+            _controller.SetSecondaryPlaneConstraint(true, planeNormal, planePoint);
         }
 
     }
