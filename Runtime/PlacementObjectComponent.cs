@@ -1,4 +1,4 @@
-namespace FuzzPhyte.Placement
+namespace FuzzPhyte.Placement.Interaction
 {
     using UnityEngine;
 
@@ -7,6 +7,7 @@ namespace FuzzPhyte.Placement
     {
         public PlacementObject PlacementData;
         public Transform RootPlacement;
+        public FP_PlacementSocketComponent CurrentSocket { get; set; }
         public void Awake()
         {
             if (RootPlacement == null)

@@ -1,4 +1,4 @@
-namespace FuzzPhyte.Placement.Interaction
+﻿namespace FuzzPhyte.Placement.Interaction
 {
     using System.Collections.Generic;
     using UnityEngine;
@@ -19,6 +19,8 @@ namespace FuzzPhyte.Placement.Interaction
         [SerializeField] private Vector3 _localStackAxis = Vector3.right;
         [SerializeField] private float _capacity = 1.0f;
         [Space]
+        private readonly HashSet<PlacementObject> _occupants = new();
+
         [Header("Hover Events")]
         [SerializeField] private PlacementSocketHoverEvent onHoverEnter;
         [SerializeField] private PlacementSocketHoverEvent onHoverExit;
@@ -27,11 +29,11 @@ namespace FuzzPhyte.Placement.Interaction
         private bool _isHovered;
         [Header("Debug")]
         [SerializeField] private bool _drawGizmos = true;
-        
+
         private float _usedCapacity = 0f;
         protected void Awake()
         {
-            if(SocketLocation == null)
+            if (SocketLocation == null)
             {
                 SocketLocation = this.transform;
             }
@@ -41,6 +43,10 @@ namespace FuzzPhyte.Placement.Interaction
         public bool CanAccept(PlacementObject placement)
         {
             if (placement == null)
+                return false;
+
+            // Already registered here → allow hover but not re-add
+            if (_occupants.Contains(placement))
                 return false;
 
             if (placement.BuildMode != _buildMode)
@@ -62,7 +68,7 @@ namespace FuzzPhyte.Placement.Interaction
             return false;
         }
 
-        public bool TryGetPreviewPose(PlacementObject placement,RaycastHit hit,out Pose pose)
+        public bool TryGetPreviewPose(PlacementObject placement, RaycastHit hit, out Pose pose)
         {
             pose = default;
 
@@ -79,7 +85,7 @@ namespace FuzzPhyte.Placement.Interaction
 
             return false;
         }
-        public void CommitPlacement(PlacementObject placement,Transform instance)
+        public void CommitPlacement(PlacementObject placement, Transform instance)
         {
             if (placement == null || instance == null)
                 return;
@@ -129,7 +135,7 @@ namespace FuzzPhyte.Placement.Interaction
             float width = Mathf.Max(0f, placement.StackSize.x);
             return (_usedCapacity + width) <= _capacity;
         }
-        private bool TryGetStackingPose(PlacementObject placement,out Pose pose)
+        private bool TryGetStackingPose(PlacementObject placement, out Pose pose)
         {
             float width = placement.StackSize.x;
             float half = width * 0.5f;
@@ -155,26 +161,53 @@ namespace FuzzPhyte.Placement.Interaction
             {
                 pose = new Pose(transform.position, transform.rotation);
             }
-                return false;
+            return false;
         }
-        private void CommitStacking(PlacementObject placement,Transform instance)
+        private void CommitStacking(PlacementObject placement, Transform instance)
         {
-            float width = placement.StackSize.x;
-            float half = width * 0.5f;
+            if (!TryGetStackingPose(placement, out var pose))
+                return;
 
-            float offset = _usedCapacity + half;
-
-            Vector3 localPos = _localStackAxis.normalized * offset;
-            Vector3 worldPos = transform.TransformPoint(localPos);
-
-            instance.SetPositionAndRotation(worldPos, transform.rotation);
-
-            _usedCapacity += width;
+            instance.SetPositionAndRotation(pose.position, pose.rotation);
+            RegisterPlacement(placement);
         }
         private void CommitIgnore(PlacementObject placement, Transform instance)
         {
+            if (SocketLocation != null)
+                instance.SetPositionAndRotation(SocketLocation.position, SocketLocation.rotation);
+
+            RegisterPlacement(placement);
             onDragEnd?.Invoke(this);
         }
+
+        #region Accounting for Occupants
+        private float GetPlacementSize(PlacementObject placement)
+        {
+            if (placement == null)
+                return 0f;
+
+            return Mathf.Max(0f, placement.StackSize.x);
+        }
+        private void RegisterPlacement(PlacementObject placement)
+        {
+            if (_occupants.Add(placement))
+            {
+                _usedCapacity += GetPlacementSize(placement);
+            }
+        }
+        public void RemovePlacement(PlacementObject placement)
+        {
+            if (placement == null)
+                return;
+
+            if (_occupants.Remove(placement))
+            {
+                _usedCapacity -= GetPlacementSize(placement);
+                _usedCapacity = Mathf.Max(0f, _usedCapacity);
+            }
+        }
+
+        #endregion
         private void OnDrawGizmosSelected()
         {
             if (!_drawGizmos) return;

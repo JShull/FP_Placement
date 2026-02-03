@@ -72,6 +72,7 @@ namespace FuzzPhyte.Placement.Interaction
                 {
                     Debug.DrawRay(ray.origin, ray.direction*maxRayDistance, Color.red, 2f);
                 }
+
                 if (hit.collider.TryGetComponent(out PlacementObjectComponent poc))
                 {
                     _activeComponent = poc;
@@ -79,7 +80,13 @@ namespace FuzzPhyte.Placement.Interaction
                     _startPos = poc.RootPlacement.position;
                     _startRot = poc.RootPlacement.rotation;
                     _dragTarget = poc.RootPlacement;
-                    
+
+                    // current socket check and remove it if we have one
+                    if (_activeComponent.CurrentSocket != null)
+                    {
+                        _activeComponent.CurrentSocket.RemovePlacement(_activePlacement);
+                        _activeComponent.CurrentSocket = null;
+                    }
                     // plane work
                     // Where did we hit the object?
                     Plane dragPlane = new Plane(-ray.direction, _dragTarget.position);
@@ -121,6 +128,7 @@ namespace FuzzPhyte.Placement.Interaction
             return;
 
             // OLD
+            /*
             var hits = Physics.RaycastAll(ray, maxRayDistance, placementMask);
             if (drawDebug)
             {
@@ -157,6 +165,7 @@ namespace FuzzPhyte.Placement.Interaction
             }
             // If no valid socket, do nothing (or optionally snap back later)
             _activeSocket = foundSocket;
+            */
         }
         #region Drag Additional
         void UpdateFreeDrag(Ray ray)
@@ -229,6 +238,7 @@ namespace FuzzPhyte.Placement.Interaction
                     _activePlacement,
                     _activeComponent.transform
                 );
+                _activeComponent.CurrentSocket = _activeSocket;
                 dragEndSocketSuccessEvent?.Invoke(_activePlacement, _activeSocket);
             }
             else
