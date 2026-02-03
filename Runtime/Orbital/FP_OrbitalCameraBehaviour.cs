@@ -188,15 +188,18 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             Vector3 planeNormal = SecondaryPlaneNormal;
             Vector3 planePoint = SecondaryPlaneNormal.normalized * SecondaryPlaneOffset;
-
+            Vector3 refForward = Vector3.forward;
             if (_secondaryPlaneReference != null)
             {
+                refForward = _secondaryPlaneReference.forward;
                 planeNormal = _secondaryPlaneReference.up;
                 planePoint = _secondaryPlaneReference.position + planeNormal.normalized * SecondaryPlaneOffset;
             }
-            if (_debugPlanes!=null)
+            if (_debugPlanes != null)
             {
-                var rot = Quaternion.LookRotation(Vector3.forward, planeNormal);
+                Vector3 planeForward = Vector3.ProjectOnPlane(refForward, planeNormal).normalized;
+                var rot = Quaternion.LookRotation(planeForward, planeNormal);
+
                 _debugPlanes.DrawPlane(planePoint, rot, new Vector2(planeSize, planeSize), Color.green, 10f);
             }
             _controller.SetSecondaryPlaneConstraint(true, planeNormal, planePoint);
