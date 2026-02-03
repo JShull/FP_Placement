@@ -2,6 +2,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 {
     using UnityEngine;
     using System;
+    using FuzzPhyte.Utility;
 
     /// <summary>
     /// Optional convenience MonoBehaviour wrapper for Unity scenes.
@@ -30,7 +31,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         [SerializeField] public Transform _secondaryPlaneReference;
         public Vector3 SecondaryPlaneNormal = Vector3.up;
         public float SecondaryPlaneOffset = 0f;
-
+        [SerializeField] FP_UtilityDraw _debugPlanes;
         /// <summary>
         /// Fired after the camera transform has been applied (LateUpdate).
         /// Subscribers can sync UI (e.g., ViewCube) to match the camera view.
@@ -140,7 +141,11 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             
             _planeReference.position = planePos;
             _planeReference.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
-
+            if (_debugPlanes != null)
+            {
+                var rot = Quaternion.LookRotation(Vector3.forward, _planeReference.up);
+                _debugPlanes.DrawPlane(_secondaryPlaneReference.position, rot, new Vector2(10, 10), Color.green, 10f);
+            }
             // Push the updated plane into the controller
             _controller.SetPlaneConstraint(
                 true,
@@ -165,7 +170,11 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 planeNormal = _secondaryPlaneReference.up;
                 planePoint = _secondaryPlaneReference.position + planeNormal.normalized * SecondaryPlaneOffset;
             }
-
+            if (_debugPlanes!=null)
+            {
+                var rot = Quaternion.LookRotation(Vector3.forward, planeNormal);
+                _debugPlanes.DrawPlane(_secondaryPlaneReference.position, rot, new Vector2(10, 10), Color.green, 10f);
+            }
             _controller.SetSecondaryPlaneConstraint(true, planeNormal, planePoint);
         }
 
