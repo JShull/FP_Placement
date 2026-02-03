@@ -20,14 +20,17 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         public BoxCollider TargetBounds;
         [Header("Rotation Event Parameters")]
         [SerializeField] private float _rotationEventThresholdDegrees = 0.05f;
+        
         [Space]
         [Header("Plane Constraint")]
         public bool RestrictBelowPlane = false;
         [Tooltip("Use the bounds information to move the plane to align")]
         public bool MovePlaneBasedOnBounds = true;
-        [SerializeField]public Transform _planeReference;
-        public Vector3 PlaneNormal = Vector3.up;
-        public float PlaneOffset = 0f;
+        [SerializeField]public Transform _belowPlaneReference;
+        public Vector3 BelowPlaneNormal = Vector3.up;
+        public float BelowPlaneOffset = 0f;
+        
+        [Space]
         [Header("Secondary Plane Constraint")]
         public bool RestrictSecondaryPlane = false;
         [SerializeField] public Transform _secondaryPlaneReference;
@@ -60,10 +63,10 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 {
                     UpdateRestrictBelowPlaneFromBounds(newCenter);
                 }
-                else if(RestrictBelowPlane && _planeReference!=null)
+                else if(RestrictBelowPlane && _belowPlaneReference!=null)
                 {
 
-                    UpdateRestrictBelowPlaneFromBounds(_planeReference.position);
+                    UpdateRestrictBelowPlane();
                 }
                 else
                 {
@@ -102,7 +105,13 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             if (TargetBounds == null) return;
             var newCenter = _controller.SetTargetBounds(TargetBounds.bounds, localOffCenterCache,null); // sets pivotTarget = bounds.center
             if (fit) _controller.FitToBoundsForCurrentProjection();
-            if (RestrictBelowPlane) UpdateRestrictBelowPlaneFromBounds(newCenter);
+            if (RestrictBelowPlane && MovePlaneBasedOnBounds)
+            {
+                UpdateRestrictBelowPlaneFromBounds(newCenter);
+            }else if (RestrictBelowPlane)
+            {
+                UpdateRestrictBelowPlane();
+            }
             
         }
         /// <summary>
@@ -123,7 +132,13 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             TargetBounds.center = b.center;
             localOffCenterCache= localBoundsOffCenter;
             var newCenter= _controller.SetTargetBounds(b, localBoundsOffCenter,optionalFrame);
-            if (RestrictBelowPlane) UpdateRestrictBelowPlaneFromBounds(newCenter);
+            if (RestrictBelowPlane && MovePlaneBasedOnBounds)
+            {
+                UpdateRestrictBelowPlaneFromBounds(newCenter);
+            }else if (RestrictBelowPlane)
+            {
+                UpdateRestrictBelowPlane();
+            }
         }
            
         public void Snap(FP_OrbitalView view, FP_ProjectionMode mode) =>
@@ -138,7 +153,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         /// <param name="centerInfo"></param>
         private void UpdateRestrictBelowPlaneFromBounds(Vector3 centerInfo)
         {
-            if (!RestrictBelowPlane || _planeReference == null || TargetBounds == null)
+            if (!RestrictBelowPlane || _belowPlaneReference == null || TargetBounds == null)
                 return;
 
             var lowerPortionFromCenter = TargetBounds.bounds.extents.y;
@@ -148,18 +163,18 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 centerInfo.z
             );
             
-            _planeReference.position = planePos;
-            _planeReference.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
+            _belowPlaneReference.position = planePos;
+            _belowPlaneReference.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
             if (_debugPlanes != null)
             {
-                var rot = Quaternion.LookRotation(Vector3.forward, _planeReference.up);
-                _debugPlanes.DrawPlane(_planeReference.position, rot, new Vector2(planeSize, planeSize), Color.green, 10f);
+                var rot = Quaternion.LookRotation(Vector3.forward, _belowPlaneReference.up);
+                _debugPlanes.DrawPlane(_belowPlaneReference.position, rot, new Vector2(planeSize, planeSize), Color.green, 10f);
             }
             // Push the updated plane into the controller
             _controller.SetPlaneConstraint(
                 true,
-                _planeReference.up,
-                _planeReference.position
+                _belowPlaneReference.up,
+                _belowPlaneReference.position
             );
         }
 
@@ -172,7 +187,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             }
 
             Vector3 planeNormal = SecondaryPlaneNormal;
-            Vector3 planePoint = planeNormal.normalized * SecondaryPlaneOffset;
+            Vector3 planePoint = SecondaryPlaneNormal.normalized * SecondaryPlaneOffset;
 
             if (_secondaryPlaneReference != null)
             {
@@ -182,7 +197,30 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             if (_debugPlanes!=null)
             {
                 var rot = Quaternion.LookRotation(Vector3.forward, planeNormal);
-                _debugPlanes.DrawPlane(_secondaryPlaneReference.position, rot, new Vector2(planeSize, planeSize), Color.green, 10f);
+                _debugPlanes.DrawPlane(planePoint, rot, new Vector2(planeSize, planeSize), Color.green, 10f);
+            }
+            _controller.SetSecondaryPlaneConstraint(true, planeNormal, planePoint);
+        }
+        private void UpdateRestrictBelowPlane()
+        {
+            if (!RestrictBelowPlane)
+            {
+                _controller.SetPlaneConstraint(false, Vector3.up, Vector3.zero);
+                return;
+            }
+
+            Vector3 planeNormal = BelowPlaneNormal;
+            Vector3 planePoint = planeNormal.normalized * BelowPlaneOffset;
+
+            if (_belowPlaneReference != null)
+            {
+                planeNormal = _belowPlaneReference.up;
+                planePoint = _belowPlaneReference.position + planeNormal.normalized * BelowPlaneOffset;
+            }
+            if (_debugPlanes != null)
+            {
+                var rot = Quaternion.LookRotation(Vector3.forward, planeNormal);
+                _debugPlanes.DrawPlane(planePoint, rot, new Vector2(planeSize, planeSize), Color.green, 10f);
             }
             _controller.SetSecondaryPlaneConstraint(true, planeNormal, planePoint);
         }
