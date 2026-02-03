@@ -10,7 +10,7 @@ namespace FuzzPhyte.Placement.Interaction
         [SerializeField] private float maxRayDistance = 100f;
         [SerializeField] protected bool drawDebug = false;
         [SerializeField] private PlacementObject _activePlacement;
-        private PlacementObjectComponent _activeComponent;
+        [SerializeField] private PlacementObjectComponent _activeComponent;
         private FP_PlacementSocketComponent _activeSocket;
 
         [SerializeField] private Vector3 _startPos;
@@ -61,7 +61,7 @@ namespace FuzzPhyte.Placement.Interaction
             {
                 if (drawDebug)
                 {
-                    Debug.DrawRay(ray.origin, ray.direction, Color.red, 2f);
+                    Debug.DrawRay(ray.origin, ray.direction*maxRayDistance, Color.red, 2f);
                 }
                 if (hit.collider.TryGetComponent(out PlacementObjectComponent poc))
                 {
@@ -75,7 +75,10 @@ namespace FuzzPhyte.Placement.Interaction
         protected void UpdateDrag(Ray ray)
         {
             var hits = Physics.RaycastAll(ray, maxRayDistance, placementMask);
-
+            if (drawDebug)
+            {
+                Debug.DrawRay(ray.origin, ray.direction * maxRayDistance, Color.orange, 0.5f);
+            }
             FP_PlacementSocketComponent foundSocket = null;
 
             foreach (var hit in hits)
@@ -92,11 +95,15 @@ namespace FuzzPhyte.Placement.Interaction
                     if (socket.TryGetPreviewPose(_activePlacement, hit, out var pose))
                     {
                         // Apply preview directly
-                        _activeComponent.transform.SetPositionAndRotation(
+                        _activeComponent.RootPlacement.SetPositionAndRotation(
                             pose.position,
                             pose.rotation
                         );
                         foundSocket = socket;
+                        if (drawDebug)
+                        {
+                            Debug.Log($"Found Socket: {socket.name}");
+                        }
                         break;
                     }
                 }

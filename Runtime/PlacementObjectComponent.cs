@@ -6,6 +6,14 @@ namespace FuzzPhyte.Placement
     public class PlacementObjectComponent : MonoBehaviour
     {
         public PlacementObject PlacementData;
+        public Transform RootPlacement;
+        public void Awake()
+        {
+            if (RootPlacement == null)
+            {
+                RootPlacement = this.transform;
+            }
+        }
         private void OnDrawGizmosSelected()
         {
             if (PlacementData == null) return;
