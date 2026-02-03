@@ -8,8 +8,8 @@ namespace FuzzPhyte.Placement.Interaction
     {
         [Header("Placement")]
         [SerializeField] private float maxRayDistance = 100f;
-
-        private PlacementObject _activePlacement;
+        [SerializeField] protected bool drawDebug = false;
+        [SerializeField] private PlacementObject _activePlacement;
         private PlacementObjectComponent _activeComponent;
         private FP_PlacementSocketComponent _activeSocket;
 
@@ -59,6 +59,10 @@ namespace FuzzPhyte.Placement.Interaction
         {
             if (Physics.Raycast(ray, out var hit, maxRayDistance))
             {
+                if (drawDebug)
+                {
+                    Debug.DrawRay(ray.origin, ray.direction, Color.red, 2f);
+                }
                 if (hit.collider.TryGetComponent(out PlacementObjectComponent poc))
                 {
                     _activeComponent = poc;
@@ -78,6 +82,10 @@ namespace FuzzPhyte.Placement.Interaction
             {
                 if (hit.collider.TryGetComponent(out FP_PlacementSocketComponent socket))
                 {
+                    if (drawDebug)
+                    {
+                        Debug.Log($"Hit something with a FP_PlacementSocketComponent: {socket.name}");
+                    }
                     if (!socket.CanAccept(_activePlacement))
                         continue;
 
