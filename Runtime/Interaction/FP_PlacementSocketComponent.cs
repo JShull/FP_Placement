@@ -4,6 +4,7 @@ namespace FuzzPhyte.Placement.Interaction
     using UnityEngine;
     public class FP_PlacementSocketComponent : MonoBehaviour
     {
+        [SerializeField] Transform SocketLocation;
         [Header("Socket Rules")]
         [Tooltip("Use Ignore for a return true statement, use layout for false")]
         [SerializeField] private PlacementBuildMode _buildMode = PlacementBuildMode.Stacking;
@@ -19,7 +20,13 @@ namespace FuzzPhyte.Placement.Interaction
         [SerializeField] private bool _drawGizmos = true;
 
         private float _usedCapacity = 0f;
-
+        protected void Awake()
+        {
+            if(SocketLocation == null)
+            {
+                SocketLocation = this.transform;
+            }
+        }
         #region Public API
 
         public bool CanAccept(PlacementObject placement)
@@ -57,6 +64,8 @@ namespace FuzzPhyte.Placement.Interaction
             {
                 case PlacementBuildMode.Stacking:
                     return TryGetStackingPose(placement, out pose);
+                case PlacementBuildMode.Ignore:
+                    return TryGetIgnorePose(placement, out pose);
             }
 
             return false;
@@ -109,6 +118,19 @@ namespace FuzzPhyte.Placement.Interaction
 
             pose = new Pose(worldPos, worldRot);
             return true;
+        }
+        private bool TryGetIgnorePose(PlacementObject placement, out Pose pose)
+        {
+            if (SocketLocation != null)
+            {
+                pose = new Pose(SocketLocation.position, SocketLocation.rotation);
+                return true;
+            }
+            else
+            {
+                pose = new Pose(transform.position, transform.rotation);
+            }
+                return false;
         }
         private void CommitStacking(PlacementObject placement,Transform instance)
         {
