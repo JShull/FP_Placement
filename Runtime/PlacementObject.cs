@@ -20,6 +20,7 @@ namespace FuzzPhyte.Placement
     }
     public enum PlacementBuildMode
     {
+        Ignore,
         Stacking,
         Layout
     }

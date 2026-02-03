@@ -5,6 +5,7 @@ namespace FuzzPhyte.Placement.Interaction
     public class FP_PlacementSocketComponent : MonoBehaviour
     {
         [Header("Socket Rules")]
+        [Tooltip("Use Ignore for a return true statement, use layout for false")]
         [SerializeField] private PlacementBuildMode _buildMode = PlacementBuildMode.Stacking;
 
         [Tooltip("Optional category filter. If empty, all are allowed.")]
@@ -34,11 +35,11 @@ namespace FuzzPhyte.Placement.Interaction
 
             switch (_buildMode)
             {
+                case PlacementBuildMode.Ignore:
+                    return true;
                 case PlacementBuildMode.Stacking:
                     return CanAcceptStacking(placement);
-
                 case PlacementBuildMode.Layout:
-                    // Layout sockets come later
                     return false;
             }
 

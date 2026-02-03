@@ -1,7 +1,9 @@
 namespace FuzzPhyte.Placement.Interaction
 {
-    using UnityEngine; 
-
+    using UnityEngine;
+    using System;
+    using UnityEngine.Events;
+    [Serializable] public class PlacementInteractionEvent : UnityEvent<PlacementObject,FP_PlacementSocketComponent> { }
     public class FP_PlacementInteractionBehaviour : PlacementBaseInput
     {
         [Header("Placement")]
@@ -14,8 +16,22 @@ namespace FuzzPhyte.Placement.Interaction
         [SerializeField] private Vector3 _startPos;
         [SerializeField] private Quaternion _startRot;
 
+        [Header("Clicky Placement Events")]
+        [SerializeField] protected PlacementInteractionEvent doubleClickEvent;
+        [SerializeField] protected PlacementInteractionEvent singleClickEvent;
+        [SerializeField] protected PlacementInteractionEvent dragEndSocketSuccessEvent;
+        [SerializeField] protected PlacementInteractionEvent dragEndSocketFailedEvent;
+        public override void OnEnable()
+        {
+            base.OnEnable();
+        }
+        public override void OnDisable()
+        {
+            base.OnDisable();
+        }
         protected override void UpdateLogic()
         {
+            ResolveClickIfNeeded();
             // Pointer position already validated + gated by base class
             Vector2 screenPos = _pointerPosition.action.ReadValue<Vector2>();
             Ray ray = targetCamera.ScreenPointToRay(screenPos);
@@ -38,6 +54,7 @@ namespace FuzzPhyte.Placement.Interaction
             _startedThisFrame = false;
             _releasedThisFrame = false;
         }
+        #region Drag Related Logic
         protected void TryBegin(Ray ray)
         {
             if (Physics.Raycast(ray, out var hit, maxRayDistance))
@@ -90,15 +107,30 @@ namespace FuzzPhyte.Placement.Interaction
                     _activePlacement,
                     _activeComponent.transform
                 );
+                dragEndSocketSuccessEvent?.Invoke(_activePlacement, _activeSocket);
             }
             else
             {
                 _activeComponent.transform.SetPositionAndRotation(_startPos, _startRot);
+                dragEndSocketFailedEvent?.Invoke(_activePlacement, null);
             }
-
+            
             _activePlacement = null;
             _activeComponent = null;
             _activeSocket = null;
+        }
+        #endregion
+        /// <summary>
+        /// What we want to do via Double Click
+        /// </summary>
+        /// <param name="worldPos"></param>
+        protected override void OnPrimaryDoubleClick(Vector3 worldPos)
+        {
+            doubleClickEvent?.Invoke(_activePlacement, _activeSocket);
+        }
+        protected override void OnPrimaryClick(Vector3 worldPos)
+        {
+            singleClickEvent?.Invoke(_activePlacement,_activeSocket);
         }
     }
 }
