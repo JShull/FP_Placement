@@ -1,8 +1,8 @@
-namespace FuzzPhyte.Placement
+namespace FuzzPhyte.Placement.Editor
 {
     using UnityEditor;
     using UnityEngine;
-    using FuzzPhyte.Utility;
+    using FuzzPhyte.Placement.Interaction;
     using System.Collections.Generic;
     public class PlacementObjectBuilderWindow : EditorWindow
     {
