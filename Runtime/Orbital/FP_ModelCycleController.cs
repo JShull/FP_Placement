@@ -17,6 +17,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
         [Tooltip("If true, moves active model to pivot position.")]
         [SerializeField] private bool _snapToPivot = true;
+        [SerializeField] private bool _snapToModel = false;
 
         [Tooltip("If true, resets local rotation of active model at pivot.")]
         [SerializeField] private bool _resetRotationOnShow = true;
@@ -215,10 +216,21 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             if (active != null && _displayPivot != null)
             {
                 if (_snapToPivot)
+                {
                     active.transform.position = _displayPivot.position;
+                }
+                else if(_snapToModel)
+                {
+                    _displayPivot.position = active.transform.position;
+                    //
+                }
+
 
                 if (_resetRotationOnShow)
+                {
                     active.transform.rotation = Quaternion.identity;
+                }
+                   
 
                 // set/update grid if we have one
                 var measureDetails = active.gameObject.GetComponent<FP_MeasurementHitProvider>();
