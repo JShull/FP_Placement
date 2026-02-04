@@ -11,16 +11,15 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         public FP_ModelDisplayData Data => _data;
         // cache of all renderers under this model root
         public List<Renderer> AllRenderers = new List<Renderer>();
-
         /// <summary>
         /// Returns world-space bounds that should be used by the orbital camera system.
         /// </summary>
         public Bounds GetWorldBounds()
         {
-            if (_data != null && _data.UseLocalBoundsOverride)
+            if (_data != null && !_data.UseLocalBoundsOverride)
             {
                 // Local override converted to world using root transform
-                var b = new Bounds(_data.LocalBoundsCenter, _data.LocalBoundsSize);
+                var b = new Bounds(_data.BoundsCenter, _data.BoundsSize);
                 return TransformLocalBoundsToWorld(b, transform);
             }
 

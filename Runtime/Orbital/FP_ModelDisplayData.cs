@@ -13,10 +13,10 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         public bool UseLocalBoundsOverride;
 
         [Tooltip("Center in local space.")]
-        public Vector3 LocalBoundsCenter;
+        public Vector3 BoundsCenter;
 
         [Tooltip("Size in local space.")]
-        public Vector3 LocalBoundsSize = Vector3.one;
+        public Vector3 BoundsSize = Vector3.one;
 
         [Header("Optional Padding")]
         [Min(1f)] public float BoundsPadding = 1.0f;
@@ -41,7 +41,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
         public Bounds GetLocalBounds()
         {
-            var b = new Bounds(LocalBoundsCenter, LocalBoundsSize);
+            var b = new Bounds(BoundsCenter, BoundsSize);
             b.extents *= BoundsPadding;
             return b;
         }
