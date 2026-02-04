@@ -2,6 +2,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 {
     using FuzzPhyte.Utility;
     using System;
+    using System.Linq;
     using System.Collections;
     using UnityEngine;
     [DisallowMultipleComponent]
@@ -22,8 +23,9 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
         [Header("State")]
         [SerializeField] private int _activeIndex;
-        //[SerializeField] private FP_ToolbarAction _activeVisualAction;
+       
         [SerializeField] private FPMeshViewStatus _activeMeshViewStatus;
+        [SerializeField] private bool _showAllModels = false;
         [Tooltip("If you want to scale your grid based on the model...")]
         [SerializeField] private FPRuntimeGridPlane _gridPlaneXZ;
         [SerializeField] private FPRuntimeGridPlane _gridPlaneXY;
@@ -42,7 +44,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         {
             StartCoroutine(DelayAwakeReset());
         }
-
         IEnumerator DelayAwakeReset()
         {
             yield return new WaitForEndOfFrame();
@@ -54,57 +55,25 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 ShowRenderer = true
             };
         }
-
+        #region Public Accessors
         public void SetModels(FP_ModelDisplayBinding[] models, int startIndex = 0)
         {
             _models = models;
             _activeIndex = Mathf.Clamp(startIndex, 0, Mathf.Max(0, Count - 1));
             ApplyActiveModel(force: true);
         }
-
         public void Next()
         {
             if (Count == 0) return;
             _activeIndex = (_activeIndex + 1) % Count;
             ApplyActiveModel(force: false);
         }
-
         public void Prev()
         {
             if (Count == 0) return;
             _activeIndex = (_activeIndex - 1 + Count) % Count;
             ApplyActiveModel(force: false);
         }
-        #region Grid Related public Functions
-        public void TurnOnGridXZ()
-        {
-            if (_gridPlaneXZ != null)
-            {
-                _gridPlaneXZ.gameObject.SetActive(true);
-            }
-        }
-        public void TurnOffGridXZ()
-        {
-            if (_gridPlaneXZ != null)
-            {
-                _gridPlaneXZ.gameObject.SetActive(false);
-            }
-        }
-        public void TurnOnGridXY()
-        {
-            if (_gridPlaneXY != null)
-            {
-                _gridPlaneXY.gameObject.SetActive(true);
-            }
-        }
-        public void TurnOffGridXY()
-        {
-            if (_gridPlaneXY != null)
-            {
-                _gridPlaneXY.gameObject.SetActive(false);
-            }
-        }
-        #endregion
         public void SetVisualInformation(FP_ToolbarAction action)
         {
             switch (action)
@@ -138,6 +107,23 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             }
             OnActiveVisualActionChanged?.Invoke(_activeIndex, ActiveModel, _activeMeshViewStatus);
         }
+        public void SetModelByDisplayBinding(FP_ModelDisplayBinding binding)
+        {
+            if (_models == null || _models.Length == 0)
+            {
+                return;
+            }
+            var foundModel = _models.FirstOrDefault(p => p == binding);
+            if (foundModel != null) 
+            {
+                int index = Array.IndexOf(_models, foundModel);
+                SetIndex(index);
+            }
+            else
+            {
+                Debug.LogWarning($"Didn't find a model in the array of {binding.gameObject.name}");
+            }
+        }
         public void SetIndex(int index)
         {
             if (Count == 0) return;
@@ -147,7 +133,6 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             _activeIndex = clamped;
             ApplyActiveModel(force: false);
         }
-
         public void HideAll()
         {
             if (_models == null) return;
@@ -156,6 +141,45 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 if (_models[i] != null) _models[i].gameObject.SetActive(false);
             }
         }
+        public void ShowAll()
+        {
+            if (_models == null) return;
+            for (int i = 0; i < _models.Length; i++)
+            {
+                if (_models[i] != null) _models[i].gameObject.SetActive(true);
+            }
+        }
+        #endregion
+        #region Grid Related public Functions
+        public void TurnOnGridXZ()
+        {
+            if (_gridPlaneXZ != null)
+            {
+                _gridPlaneXZ.gameObject.SetActive(true);
+            }
+        }
+        public void TurnOffGridXZ()
+        {
+            if (_gridPlaneXZ != null)
+            {
+                _gridPlaneXZ.gameObject.SetActive(false);
+            }
+        }
+        public void TurnOnGridXY()
+        {
+            if (_gridPlaneXY != null)
+            {
+                _gridPlaneXY.gameObject.SetActive(true);
+            }
+        }
+        public void TurnOffGridXY()
+        {
+            if (_gridPlaneXY != null)
+            {
+                _gridPlaneXY.gameObject.SetActive(false);
+            }
+        }
+        #endregion
 
         private void ApplyActiveModel(bool force)
         {
@@ -165,19 +189,28 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 return;
             }
 
-            // Hide all except active
             for (int i = 0; i < _models.Length; i++)
             {
                 var go = _models[i];
                 if (go == null) continue;
 
-                bool shouldShow = (i == _activeIndex);
-                if (force || go.gameObject.activeSelf != shouldShow)
+                if (_showAllModels)
                 {
-                    go.gameObject.SetActive(shouldShow);
-                }  
+                    go.gameObject.SetActive(true);
+                }
+                else
+                {
+                    // show just one at a time
+                    bool shouldShow = (i == _activeIndex);
+                    if (force || go.gameObject.activeSelf != shouldShow)
+                    {
+                        go.gameObject.SetActive(shouldShow);
+                    }
+                }
+                   
             }
 
+            /// assign active model and update location / position etc.
             var active = _models[_activeIndex];
             if (active != null && _displayPivot != null)
             {
