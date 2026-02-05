@@ -95,7 +95,19 @@ namespace FuzzPhyte.Placement
         [Header("Category Links")]
         public List<PlacementCategory> Categories = new(); // CEFR level, tags, vocab category
         public List<string> VocabularyTags = new(); // Optional tags for vocabulary or thematic grouping
-        
+
+        public Transform QuadSurfaceTransform;
+        [Range(0.1f,1f)]
+        public float QuadAreaUsageLimit = 0.85f;
+        [Range(0.001f,1f)]
+        public float QuadItemPadding = 0.01f;
+        public int QuadPlacementAttempts = 64;
+        public float QuadScalePenalty = 1f;
+        public float InwardBiasScale = 5f;
+        public QuadAreaPlacer.QuadStartAnchor StartAnchorLocation;
+        public QuadAreaPlacer.PlacementSortMode SortMode;
+        [Range(4,32)]
+        public int NumPiePieces = 8;
 
         public Vector3 GetRandomPointLocal()
         {

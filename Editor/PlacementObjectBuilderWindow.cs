@@ -481,6 +481,16 @@ namespace FuzzPhyte.Placement.Editor
             placementObj.SphereEvenMode = sphereEvenMode;
             placementObj.LatLonRingCount = latLonRingCount;
 
+            // quad
+            placementObj.QuadSurfaceTransform = quadSurfaceTransform;
+            placementObj.QuadAreaUsageLimit = quadAreaUsageLimit;
+            placementObj.QuadItemPadding = quadItemPadding;
+            placementObj.QuadPlacementAttempts = quadPlacementAttempts;
+            placementObj.QuadScalePenalty = quadScalePenalty;
+            placementObj.InwardBiasScale = inwardBiasScale;
+            placementObj.StartAnchorLocation = startAnchorLocation;
+            placementObj.SortMode = sortMode;
+            placementObj.NumPiePieces = numPiePieces;
             // mesh settings
             if (meshSurfaceSource != null)
             {
