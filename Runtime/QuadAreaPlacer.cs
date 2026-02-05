@@ -1,4 +1,4 @@
-namespace FuzzPhyte.Placement
+﻿namespace FuzzPhyte.Placement
 {
     using System;
     using System.Collections.Generic;
@@ -22,6 +22,31 @@ namespace FuzzPhyte.Placement
             public Vector2 Position;
             public float Radius;
         }
+        public enum QuadSizeMode
+        {
+            MeshAndScale,      // Default: mesh bounds × lossy scale
+            TransformScaleOnly // Ignore mesh, treat scale as the size
+        }
+        public enum QuadStartAnchor
+        {
+            Center,
+
+            TopEdge,
+            BottomEdge,
+            LeftEdge,
+            RightEdge,
+
+            TopLeftCorner,
+            TopRightCorner,
+            BottomLeftCorner,
+            BottomRightCorner
+        }
+        public enum PlacementSortMode
+        {
+            LargestFirst,
+            SmallestFirst,
+            None
+        }
 
         public static int ApplyToQuadArea(
             IReadOnlyList<Transform> items,
@@ -30,25 +55,34 @@ namespace FuzzPhyte.Placement
             int randomSeed = 0,
             float areaUsageLimit = 0.85f,
             float spacingPadding = 0.01f,
-            int maxPlacementAttemptsPerItem = 64)
+            float borderPenalityScale = 0.1f,
+            int maxPlacementAttemptsPerItem = 64,
+            float biasScaleInward=5,
+            int aroundCircle=12,
+            QuadStartAnchor startAnchor = QuadStartAnchor.Center,
+            PlacementSortMode sortMode = PlacementSortMode.LargestFirst)
         {
             if (items == null || items.Count == 0 || quadTransform == null) return 0;
 
-            Vector2 quadSize = GetQuadSizeFromTransform(quadTransform);
+            Vector2 quadSize = GetQuadSizeFromTransform(quadTransform,QuadSizeMode.TransformScaleOnly);
+            //Debug.Log($"Quad Size: {quadSize}");
             float quadArea = Mathf.Abs(quadSize.x * quadSize.y);
             if (quadArea <= 0.000001f) return 0;
 
             float clampedUsage = Mathf.Clamp01(areaUsageLimit);
             if (clampedUsage <= 0f) return 0;
-
-            List<PackedItem> candidates = BuildCandidates(items, spacingPadding);
+            //recenter items
+            ResetItemsToQuadCenter(items, quadTransform, false);
+            List<PackedItem> candidates = BuildCandidates(items, spacingPadding,quadTransform);
             if (candidates.Count == 0) return 0;
 
+            // make sure we don't have an abnormally large item
             List<PackedItem> selected = SelectByAreaBudget(candidates, quadArea * clampedUsage);
             if (selected.Count == 0) return 0;
 
             var rng = (randomSeed == 0) ? new System.Random() : new System.Random(randomSeed);
-            SortDescendingByRadius(selected);
+
+            SortByRadius(selected,sortMode);
 
             List<PlacedCircle> placed = new List<PlacedCircle>(selected.Count);
             float halfW = quadSize.x * 0.5f;
@@ -60,7 +94,7 @@ namespace FuzzPhyte.Placement
                 PackedItem item = selected[i];
                 Vector2 local2D;
 
-                if (!TryFindPositionForCircle(item.Radius, placed, halfW, halfH, rng, maxPlacementAttemptsPerItem, out local2D))
+                if (!TryFindPositionForCircle(item.Radius, placed, halfW, halfH, rng, maxPlacementAttemptsPerItem, borderPenalityScale,biasScaleInward, startAnchor, aroundCircle,out local2D))
                 {
                     continue;
                 }
@@ -70,10 +104,11 @@ namespace FuzzPhyte.Placement
                     Position = local2D,
                     Radius = item.Radius
                 });
-
+                
                 Vector3 local3 = new Vector3(local2D.x, 0f, local2D.y);
-                Vector3 worldPos = quadTransform.TransformPoint(local3);
-                item.Transform.position = worldPos;
+                //Vector3 worldPos = quadTransform.TransformPoint(local3);
+                //Debug.Log($"Local Pos: {local2D} and adjusted world {worldPos}");
+                item.Transform.position = local3 + quadTransform.position;
 
                 if (orientToSurface)
                 {
@@ -92,7 +127,30 @@ namespace FuzzPhyte.Placement
             return placedCount;
         }
 
-        private static List<PackedItem> BuildCandidates(IReadOnlyList<Transform> items, float spacingPadding)
+        private static void ResetItemsToQuadCenter(IReadOnlyList<Transform> items,Transform quadTransform,bool orientToSurface)
+        {
+            Vector3 centerWorld = quadTransform.position;
+
+            for (int i = 0; i < items.Count; i++)
+            {
+                Transform t = items[i];
+                if (t == null) continue;
+
+                // Move directly to quad center
+                t.position = centerWorld;
+
+                // Optional: align rotation immediately
+                if (orientToSurface)
+                {
+                    t.rotation = Quaternion.LookRotation(
+                        quadTransform.forward,
+                        quadTransform.up
+                    );
+                }
+            }
+        }
+
+        private static List<PackedItem> BuildCandidates(IReadOnlyList<Transform> items, float spacingPadding, Transform quadSpace)
         {
             float pad = Mathf.Max(0f, spacingPadding);
             var list = new List<PackedItem>(items.Count);
@@ -102,7 +160,11 @@ namespace FuzzPhyte.Placement
                 Transform t = items[i];
                 if (t == null) continue;
 
-                float radius = ComputeBoundingSphereRadius(t) + pad;
+              
+                float radius = ComputeFootprintRadiusInQuadSpace(t, quadSpace);
+                radius += pad * 0.5f;
+                //padding is going in twice I think, cut in half?
+                //float radius = ComputeBoundingSphereRadius(t) + pad*0.5f;
                 radius = Mathf.Max(0.001f, radius);
 
                 list.Add(new PackedItem
@@ -143,6 +205,10 @@ namespace FuzzPhyte.Placement
             float halfH,
             System.Random rng,
             int maxAttempts,
+            float penaltyScalar,
+            float inwardBiasScale,
+            QuadStartAnchor startAnchor,
+            int rotationsAround,
             out Vector2 position)
         {
             position = Vector2.zero;
@@ -154,13 +220,40 @@ namespace FuzzPhyte.Placement
 
             if (placed.Count == 0)
             {
-                position = Vector2.zero;
+                position = GetAnchorStartPosition(startAnchor,radius,halfW,halfH);
                 return true;
             }
 
             float bestScore = float.MaxValue;
             bool found = false;
             Vector2 best = Vector2.zero;
+
+            /// First attempt: Tangent Candidate Pass
+            /// 
+            List<Vector2> tangentCandidates = new List<Vector2>();
+            AddTangentCandidates(radius, placed, halfW, halfH, tangentCandidates, rotationsAround);
+
+            for (int i = 0; i < tangentCandidates.Count; i++)
+            {
+                Vector2 candidate = tangentCandidates[i];
+
+                float score = DistanceToNearestPlaced(candidate, placed);
+                //float score = -CountTouches(candidate, radius, placed);
+                if (score < bestScore)
+                {
+                    bestScore = score;
+                    best = candidate;
+                    found = true;
+                }
+            }
+
+            if (found)
+            {
+                position = best;
+                return true;
+            }
+            /// Fallback Random Sampling
+            /// 
 
             int attempts = Mathf.Max(8, maxAttempts);
             for (int i = 0; i < attempts; i++)
@@ -169,12 +262,18 @@ namespace FuzzPhyte.Placement
                 float y = Mathf.Lerp(-halfH + radius, halfH - radius, (float)rng.NextDouble());
                 Vector2 candidate = new Vector2(x, y);
 
+                if (!InsideQuad(candidate, radius, halfW, halfH))
+                    continue;
+
                 if (OverlapsAny(candidate, radius, placed))
                 {
                     continue;
                 }
-
-                float score = ComputeScore(candidate, halfW, halfH);
+                if (inwardBiasScale <= 0)
+                {
+                    inwardBiasScale = 5;
+                }
+                float score = ComputeScore(candidate, halfW, halfH, penaltyScalar, inwardBiasScale, startAnchor);
                 if (score < bestScore)
                 {
                     bestScore = score;
@@ -191,6 +290,41 @@ namespace FuzzPhyte.Placement
 
             return false;
         }
+        private static Vector2 GetAnchorStartPosition(QuadStartAnchor anchor,float radius,float halfW,float halfH)
+        {
+            switch (anchor)
+            {
+                case QuadStartAnchor.TopEdge:
+                    return new Vector2(0f, halfH - radius);
+
+                case QuadStartAnchor.BottomEdge:
+                    return new Vector2(0f, -halfH + radius);
+
+                case QuadStartAnchor.LeftEdge:
+                    return new Vector2(-halfW + radius, 0f);
+
+                case QuadStartAnchor.RightEdge:
+                    return new Vector2(halfW - radius, 0f);
+
+                // ✅ CORNERS
+                case QuadStartAnchor.TopLeftCorner:
+                    return new Vector2(-halfW + radius, halfH - radius);
+
+                case QuadStartAnchor.TopRightCorner:
+                    return new Vector2(halfW - radius, halfH - radius);
+
+                case QuadStartAnchor.BottomLeftCorner:
+                    return new Vector2(-halfW + radius, -halfH + radius);
+
+                case QuadStartAnchor.BottomRightCorner:
+                    return new Vector2(halfW - radius, -halfH + radius);
+
+                case QuadStartAnchor.Center:
+                default:
+                    return Vector2.zero;
+            }
+        }
+
 
         private static bool OverlapsAny(Vector2 candidate, float radius, List<PlacedCircle> placed)
         {
@@ -208,52 +342,150 @@ namespace FuzzPhyte.Placement
         }
 
         // Lower is better: prefer center-out packing to keep usable border area coherent.
-        private static float ComputeScore(Vector2 p, float halfW, float halfH)
+        private static float ComputeScore(Vector2 p, float halfW, float halfH, float penaltyScale, float inwardBiasScale,QuadStartAnchor anchor)
         {
-            float centerBias = p.sqrMagnitude;
+            float inwardBias = 0f;
+
+            Vector2 inwardDir = GetInwardDirection(anchor);
+            if (inwardDir != Vector2.zero)
+            {
+                // Project position onto inward direction
+                inwardBias = Vector2.Dot(p, inwardDir) * inwardBiasScale;
+            }
+            else
+            {
+                // Center mode
+                inwardBias = p.sqrMagnitude;
+            }
 
             // Mildly penalize proximity to borders to avoid premature edge fragmentation.
             float marginX = halfW - Mathf.Abs(p.x);
             float marginY = halfH - Mathf.Abs(p.y);
             float borderPenalty = 1f / Mathf.Max(0.001f, marginX * marginY);
 
-            return centerBias + borderPenalty;
-        }
+            return inwardBias + borderPenalty * penaltyScale;
 
-        private static void SortDescendingByRadius(List<PackedItem> items)
-        {
-            items.Sort((a, b) => b.Radius.CompareTo(a.Radius));
         }
-
-        private static float ComputeBoundingSphereRadius(Transform t)
+        private static void SortByRadius( List<PackedItem> items,PlacementSortMode mode)
         {
-            var renderers = t.GetComponentsInChildren<Renderer>();
-            if (renderers == null || renderers.Length == 0)
+            switch (mode)
             {
+                case PlacementSortMode.LargestFirst:
+                    items.Sort((a, b) => b.Radius.CompareTo(a.Radius));
+                    break;
+
+                case PlacementSortMode.SmallestFirst:
+                    items.Sort((a, b) => a.Radius.CompareTo(b.Radius));
+                    break;
+
+                case PlacementSortMode.None:
+                default:
+                    // Keep original order
+                    break;
+            }
+        }
+
+        
+        private static float ComputeFootprintRadiusInQuadSpace(Transform item,Transform quadTransform)
+        {
+            var renderers = item.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0)
                 return 0.25f;
-            }
 
-            Bounds b = renderers[0].bounds;
-            for (int i = 1; i < renderers.Length; i++)
+            float maxDist = 0f;
+
+            foreach (var r in renderers)
             {
-                b.Encapsulate(renderers[i].bounds);
-            }
+                Bounds lb = r.localBounds;
+                Vector3 c = lb.center;
+                Vector3 e = lb.extents;
 
-            return b.extents.magnitude;
+                // 8 local corners in renderer space
+                Vector3[] corners =
+                {
+                    c + new Vector3( e.x,  e.y,  e.z),
+                    c + new Vector3( e.x,  e.y, -e.z),
+                    c + new Vector3( e.x, -e.y,  e.z),
+                    c + new Vector3( e.x, -e.y, -e.z),
+                    c + new Vector3(-e.x,  e.y,  e.z),
+                    c + new Vector3(-e.x,  e.y, -e.z),
+                    c + new Vector3(-e.x, -e.y,  e.z),
+                    c + new Vector3(-e.x, -e.y, -e.z),
+                };
+
+                for (int i = 0; i < corners.Length; i++)
+                {
+                    // Convert corner to world space properly
+                    Vector3 worldCorner = r.transform.TransformPoint(corners[i]);
+
+                    // Convert into quad local space
+                    Vector3 quadLocal = quadTransform.InverseTransformPoint(worldCorner);
+
+                    // Footprint distance in quad plane
+                    Vector2 flat = new Vector2(quadLocal.x, quadLocal.z);
+
+                    maxDist = Mathf.Max(maxDist, flat.magnitude);
+                }
+            }
+            //Debug.Log($"Item: {item.gameObject.name} w/ Footprint Radius: {maxDist}");
+            return maxDist;
         }
 
-        public static Vector2 GetQuadSizeFromTransform(Transform quadTransform)
+        private static Vector2 GetInwardDirection(QuadStartAnchor anchor)
+        {
+            switch (anchor)
+            {
+                case QuadStartAnchor.TopEdge: return Vector2.down;
+                case QuadStartAnchor.BottomEdge: return Vector2.up;
+                case QuadStartAnchor.LeftEdge: return Vector2.right;
+                case QuadStartAnchor.RightEdge: return Vector2.left;
+
+                //CORNERS (Diagonal inward)
+                case QuadStartAnchor.TopLeftCorner: return (Vector2.down + Vector2.right).normalized;
+                case QuadStartAnchor.TopRightCorner: return (Vector2.down + Vector2.left).normalized;
+                case QuadStartAnchor.BottomLeftCorner: return (Vector2.up + Vector2.right).normalized;
+                case QuadStartAnchor.BottomRightCorner: return (Vector2.up + Vector2.left).normalized;
+
+                default:
+                    return Vector2.zero;
+            }
+        }
+
+
+        public static Vector2 GetQuadSizeFromTransform(Transform quadTransform, QuadSizeMode mode=QuadSizeMode.TransformScaleOnly)
         {
             if (quadTransform == null)
             {
                 return Vector2.zero;
             }
-
-            Vector2 meshSize = TryGetQuadMeshSize(quadTransform);
             float sx = Mathf.Abs(quadTransform.lossyScale.x);
             float sz = Mathf.Abs(quadTransform.lossyScale.z);
 
-            return new Vector2(meshSize.x * sx, meshSize.y * sz);
+            switch (mode)
+            {
+                case QuadSizeMode.TransformScaleOnly:
+                    // Treat scale as literal size
+                    return new Vector2(sx, sz);
+
+                case QuadSizeMode.MeshAndScale:
+                default:
+                    Vector2 meshSize = TryGetQuadMeshSize(quadTransform);
+                    return new Vector2(meshSize.x * sx, meshSize.y * sz);
+            }
+        }
+
+        private static float DistanceToNearestPlaced(Vector2 candidate, List<PlacedCircle> placed)
+        {
+            float best = float.MaxValue;
+
+            for (int i = 0; i < placed.Count; i++)
+            {
+                float d = Vector2.Distance(candidate, placed[i].Position);
+                if (d < best)
+                    best = d;
+            }
+
+            return best;
         }
 
         private static Vector2 TryGetQuadMeshSize(Transform quadTransform)
@@ -274,6 +506,38 @@ namespace FuzzPhyte.Placement
             }
 
             return new Vector2(width, depth);
+        }
+        private static void AddTangentCandidates(float radius, List<PlacedCircle> placed, float halfW, float halfH, List<Vector2> candidates, int sizeK=12)
+        {
+            //Debug.Log($"Candidates********");
+            for (int i = 0; i < placed.Count; i++)
+            {
+                PlacedCircle other = placed[i];
+
+                float touchDist = radius + other.Radius;
+
+                // Try several angles around this circle
+                for (int k = 0; k < sizeK; k++)
+                {
+                    float angle = (Mathf.PI * 2f) * ((float)k / sizeK);
+                    Vector2 dir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+
+                    Vector2 candidate = other.Position + dir * touchDist;
+                    //Debug.Log($"Candidate pos: {candidate}, angle: {angle}, touch Dist: {touchDist}, direction: {dir}");
+                    if (!InsideQuad(candidate, radius, halfW, halfH))
+                        continue;
+
+                    if (!OverlapsAny(candidate, radius, placed))
+                        candidates.Add(candidate);
+                }
+            }
+        }
+        private static bool InsideQuad(Vector2 p, float r, float halfW, float halfH)
+        {
+            return p.x - r >= -halfW &&
+                   p.x + r <= halfW &&
+                   p.y - r >= -halfH &&
+                   p.y + r <= halfH;
         }
     }
 }

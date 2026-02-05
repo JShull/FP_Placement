@@ -67,6 +67,11 @@ namespace FuzzPhyte.Placement.Editor
         protected int quadPlacementAttempts = 64;
         protected Color quadDebugColor = Color.green;
         protected float quadDebugDuration = 0.25f;
+        protected float quadScalePenalty = 1f;
+        protected float inwardBiasScale = 5f;
+        protected QuadAreaPlacer.QuadStartAnchor startAnchorLocation;
+        protected QuadAreaPlacer.PlacementSortMode sortMode;
+        protected int numPiePieces = 8;
         #endregion
         #endregion
 
@@ -111,7 +116,7 @@ namespace FuzzPhyte.Placement.Editor
                 drawer = Undo.AddComponent<FuzzPhyte.Utility.FP_UtilityDraw>(quadSurfaceTransform.gameObject);
             }
 
-            Vector2 quadSize = QuadAreaPlacer.GetQuadSizeFromTransform(quadSurfaceTransform);
+            Vector2 quadSize = QuadAreaPlacer.GetQuadSizeFromTransform(quadSurfaceTransform,QuadAreaPlacer.QuadSizeMode.TransformScaleOnly);
             drawer.DrawPlane(
                 quadSurfaceTransform.position,
                 quadSurfaceTransform.rotation,
@@ -396,11 +401,17 @@ namespace FuzzPhyte.Placement.Editor
                 }
 
                 quadAreaUsageLimit = EditorGUILayout.Slider("Area Usage Limit", quadAreaUsageLimit, 0.1f, 0.99f);
+                quadScalePenalty = EditorGUILayout.Slider("Center Bias Penalty Scalar", quadScalePenalty, 0.1f, 1f);
+                inwardBiasScale = EditorGUILayout.Slider("Inward Bias Penalty Scalar", inwardBiasScale, 0.1f, 10f);
                 quadItemPadding = EditorGUILayout.FloatField("Item Padding", quadItemPadding);
                 quadItemPadding = Mathf.Max(0f, quadItemPadding);
                 quadPlacementAttempts = EditorGUILayout.IntField("Placement Attempts", quadPlacementAttempts);
                 quadPlacementAttempts = Mathf.Max(8, quadPlacementAttempts);
-
+                numPiePieces = EditorGUILayout.IntSlider("Number Quadrants", numPiePieces,4,32);
+                
+                // layoutSurface = (LayoutSurfaceType)EditorGUILayout.EnumPopup("Layout Surface", layoutSurface);
+                startAnchorLocation = (QuadAreaPlacer.QuadStartAnchor)EditorGUILayout.EnumPopup("Starting Position", startAnchorLocation);
+                sortMode = (QuadAreaPlacer.PlacementSortMode)EditorGUILayout.EnumPopup("Sort Mode?", sortMode);
                 EditorGUILayout.Space();
                 GUILayout.Label("Debug Plane Preview", EditorStyles.miniBoldLabel);
                 quadDebugColor = EditorGUILayout.ColorField("Debug Color", quadDebugColor);
@@ -495,7 +506,7 @@ namespace FuzzPhyte.Placement.Editor
 
             if (quadSurfaceTransform != null)
             {
-                placementObj.QuadSurfaceSize = QuadAreaPlacer.GetQuadSizeFromTransform(quadSurfaceTransform);
+                placementObj.QuadSurfaceSize = QuadAreaPlacer.GetQuadSizeFromTransform(quadSurfaceTransform,QuadAreaPlacer.QuadSizeMode.TransformScaleOnly);
             }
 
             // Category default
@@ -668,7 +679,12 @@ namespace FuzzPhyte.Placement.Editor
                     randomSeed: layoutSeed,
                     areaUsageLimit: quadAreaUsageLimit,
                     spacingPadding: quadItemPadding,
-                    maxPlacementAttemptsPerItem: quadPlacementAttempts
+                    biasScaleInward: inwardBiasScale,
+                    borderPenalityScale: quadScalePenalty,
+                    aroundCircle: numPiePieces,
+                    maxPlacementAttemptsPerItem: quadPlacementAttempts,
+                    startAnchor: startAnchorLocation,
+                    sortMode: sortMode
                 );
 
                 foreach (var child in children)
