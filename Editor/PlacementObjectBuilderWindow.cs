@@ -59,6 +59,15 @@ namespace FuzzPhyte.Placement.Editor
         protected bool meshInvertBoundsFilter = false;
 
         #endregion
+
+        #region Quad Surface Layout Parameters
+        protected Transform quadSurfaceTransform;
+        protected float quadAreaUsageLimit = 0.85f;
+        protected float quadItemPadding = 0.01f;
+        protected int quadPlacementAttempts = 64;
+        protected Color quadDebugColor = Color.green;
+        protected float quadDebugDuration = 0.25f;
+        #endregion
         #endregion
 
         [MenuItem("FuzzPhyte/Placement/Placement Object Builder", priority = FuzzPhyte.Utility.FP_UtilityData.ORDER_SUBMENU_LVL5)]
@@ -79,11 +88,39 @@ namespace FuzzPhyte.Placement.Editor
 
         private void OnSceneGUI(SceneView sceneView)
         {
-            // Only draw when MeshSurface + a bounds filter is assigned
-            if (layoutSurface != LayoutSurfaceType.MeshSurface) return;
-            if (meshBoundsFilter == null) return;
+            if (layoutSurface == LayoutSurfaceType.MeshSurface)
+            {
+                if (meshBoundsFilter == null) return;
+                DrawBoundsFilterGizmo(meshBoundsFilter, meshIncludeBoundary, meshInvertBoundsFilter);
+                return;
+            }
 
-            DrawBoundsFilterGizmo(meshBoundsFilter, meshIncludeBoundary,meshInvertBoundsFilter);
+            if (layoutSurface != LayoutSurfaceType.QuadSurface) return;
+            if (quadSurfaceTransform == null) return;
+
+            DrawQuadSurfacePreview();
+        }
+
+        private void DrawQuadSurfacePreview()
+        {
+            if (quadSurfaceTransform == null) return;
+
+            var drawer = quadSurfaceTransform.GetComponent<FuzzPhyte.Utility.FP_UtilityDraw>();
+            if (drawer == null)
+            {
+                drawer = Undo.AddComponent<FuzzPhyte.Utility.FP_UtilityDraw>(quadSurfaceTransform.gameObject);
+            }
+
+            Vector2 quadSize = QuadAreaPlacer.GetQuadSizeFromTransform(quadSurfaceTransform);
+            drawer.DrawPlane(
+                quadSurfaceTransform.position,
+                quadSurfaceTransform.rotation,
+                quadSize,
+                quadDebugColor,
+                quadDebugDuration
+            );
+
+            SceneView.RepaintAll();
         }
 
         private static void DrawBoundsFilterGizmo(BoxCollider box, bool includeBoundary, bool meshBoundsInvert)
@@ -305,7 +342,7 @@ namespace FuzzPhyte.Placement.Editor
                 boxSize = EditorGUILayout.Vector3Field("Box Size", boxSize);
                 boxCenterOffset = EditorGUILayout.Vector3Field("Box Center Offset", boxCenterOffset);
             }
-            else
+            else if (layoutSurface == LayoutSurfaceType.MeshSurface)
             {
                 GUILayout.Label("Mesh Surface Settings", EditorStyles.boldLabel);
 
@@ -337,18 +374,41 @@ namespace FuzzPhyte.Placement.Editor
                     );
 
                 }
-                // Pick mode: ties to your "Even/Random" concepts
-                // If you want it to follow layoutDistribution automatically, you can hide this and derive it.
-                //meshPickMode = (MeshVertexPickMode)EditorGUILayout.EnumPopup("Pick Mode", meshPickMode);
 
-                // Optional quality-of-life: keep in sync with your Distribution dropdown
                 if (layoutDistribution == LayoutDistribution.Even)
                     meshPickMode = MeshVertexPickMode.EvenInOrder;
                 else if (layoutDistribution == LayoutDistribution.Random)
                     meshPickMode = MeshVertexPickMode.Random;
             }
+            else if (layoutSurface == LayoutSurfaceType.QuadSurface)
+            {
+                GUILayout.Label("Quad Surface Settings", EditorStyles.boldLabel);
+                quadSurfaceTransform = (Transform)EditorGUILayout.ObjectField(
+                    "Quad Transform",
+                    quadSurfaceTransform,
+                    typeof(Transform),
+                    true
+                );
+
+                if (layoutDistribution != LayoutDistribution.Random)
+                {
+                    EditorGUILayout.HelpBox("QuadSurface layout currently supports Random distribution. Please switch Distribution to Random.", MessageType.Info);
+                }
+
+                quadAreaUsageLimit = EditorGUILayout.Slider("Area Usage Limit", quadAreaUsageLimit, 0.1f, 0.99f);
+                quadItemPadding = EditorGUILayout.FloatField("Item Padding", quadItemPadding);
+                quadItemPadding = Mathf.Max(0f, quadItemPadding);
+                quadPlacementAttempts = EditorGUILayout.IntField("Placement Attempts", quadPlacementAttempts);
+                quadPlacementAttempts = Mathf.Max(8, quadPlacementAttempts);
 
                 EditorGUILayout.Space();
+                GUILayout.Label("Debug Plane Preview", EditorStyles.miniBoldLabel);
+                quadDebugColor = EditorGUILayout.ColorField("Debug Color", quadDebugColor);
+                quadDebugDuration = EditorGUILayout.FloatField("Debug Duration", quadDebugDuration);
+                quadDebugDuration = Mathf.Max(0.01f, quadDebugDuration);
+            }
+
+            EditorGUILayout.Space();
 
             bool hasAnchor =
                 layoutAnchor != null ||
@@ -361,8 +421,10 @@ namespace FuzzPhyte.Placement.Editor
                 (useSelectionAsFallbackAnchor && Selection.activeTransform != null);
 
             bool hasMeshSource = layoutSurface != LayoutSurfaceType.MeshSurface || meshSurfaceSource != null;
-            
-            using (new EditorGUI.DisabledScope(!(hasAnchor || hasParent || hasMeshSource)))
+            bool hasQuadSource = layoutSurface != LayoutSurfaceType.QuadSurface || quadSurfaceTransform != null;
+            bool quadDistributionSupported = layoutSurface != LayoutSurfaceType.QuadSurface || layoutDistribution == LayoutDistribution.Random;
+
+            using (new EditorGUI.DisabledScope(!(hasAnchor || hasParent || hasMeshSource || hasQuadSource) || !quadDistributionSupported))
             {
                 if (GUILayout.Button("Apply Layout To Children"))
                 {
@@ -429,6 +491,11 @@ namespace FuzzPhyte.Placement.Editor
                 placementObj.MeshDuplicateEpsilon = meshDuplicateEpsilon;
                 placementObj.MeshPickMode = meshPickMode;
                 placementObj.MeshIncludeSkinned = meshIncludeSkinned;
+            }
+
+            if (quadSurfaceTransform != null)
+            {
+                placementObj.QuadSurfaceSize = QuadAreaPlacer.GetQuadSizeFromTransform(quadSurfaceTransform);
             }
 
             // Category default
@@ -571,6 +638,47 @@ namespace FuzzPhyte.Placement.Editor
 
                 Undo.CollapseUndoOperations(group);
                 Debug.Log($"Applied {layoutSurface} layout to {children.Count} children under '{parent.name}'.");
+                return;
+            }
+
+            if (layoutSurface == LayoutSurfaceType.QuadSurface)
+            {
+                if (layoutDistribution != LayoutDistribution.Random)
+                {
+                    Debug.LogWarning("QuadSurface layout currently supports Random distribution only.");
+                    return;
+                }
+
+                if (quadSurfaceTransform == null)
+                {
+                    Debug.LogWarning("Quad Surface selected but no Quad Transform assigned.");
+                    return;
+                }
+
+                foreach (var child in children)
+                {
+                    if (child != null)
+                        Undo.RecordObject(child, "Apply Layout To Children");
+                }
+
+                int placedCount = QuadAreaPlacer.ApplyToQuadArea(
+                    children,
+                    quadSurfaceTransform,
+                    orientToSurface: layoutOrientOutward,
+                    randomSeed: layoutSeed,
+                    areaUsageLimit: quadAreaUsageLimit,
+                    spacingPadding: quadItemPadding,
+                    maxPlacementAttemptsPerItem: quadPlacementAttempts
+                );
+
+                foreach (var child in children)
+                {
+                    if (child != null)
+                        EditorUtility.SetDirty(child);
+                }
+
+                Undo.CollapseUndoOperations(group);
+                Debug.Log($"Applied {layoutSurface} layout to {placedCount}/{children.Count} children under '{parent.name}'.");
                 return;
             }
             for (int i = 0; i < children.Count; i++)
