@@ -28,7 +28,8 @@ namespace FuzzPhyte.Placement
     {
         SphereSurface,
         BoxSurface,
-        MeshSurface
+        MeshSurface,
+        QuadSurface
     }
     public enum LayoutDistribution
     {
@@ -88,6 +89,9 @@ namespace FuzzPhyte.Placement
         public float MeshDuplicateEpsilon = 0.0001f;
         public MeshVertexPickMode MeshPickMode = MeshVertexPickMode.EvenInOrder;
         public bool MeshIncludeSkinned = true;
+
+        [Header("Layout: Quad Surface")]
+        public Vector2 QuadSurfaceSize = Vector2.one;
         [Header("Category Links")]
         public List<PlacementCategory> Categories = new(); // CEFR level, tags, vocab category
         public List<string> VocabularyTags = new(); // Optional tags for vocabulary or thematic grouping
@@ -95,6 +99,18 @@ namespace FuzzPhyte.Placement
 
         public Vector3 GetRandomPointLocal()
         {
+            // For layout-driven quad mode, return a random point on the quad plane in local XZ.
+            if (BuildMode == PlacementBuildMode.Layout && LayoutSurface == LayoutSurfaceType.QuadSurface)
+            {
+                float halfW = Mathf.Abs(QuadSurfaceSize.x) * 0.5f;
+                float halfD = Mathf.Abs(QuadSurfaceSize.y) * 0.5f;
+                return new Vector3(
+                    Random.Range(-halfW, halfW),
+                    0f,
+                    Random.Range(-halfD, halfD)
+                );
+            }
+
             Vector2 local2D = Vector2.zero;
             switch (Shape)
             {
