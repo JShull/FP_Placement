@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac7f68b39f2ae4c5d8acac07c7f34f53, type: 3}
+  m_Name: PlacementObjectTest_Cube
+  m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.PlacementObject
+  UniqueID: 
+  Normal: {x: 0, y: 1, z: 0}
+  FootprintPoints: []
+  FootprintSize: 0.5
+  BoundingBox:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0.5, y: 0.5, z: 0.5}
+  BuildMode: 2
+  Stackable: 1
+  StackSuitability: 1
+  Shape: 2
+  StackSize: {x: 0.5, y: 0.5}
+  StackCenterOffset: {x: 0, y: 0.5, z: 0}
+  LayoutSurface: 3
+  LayoutDistribution: 1
+  SphereEvenMode: 0
+  LatLonRingCount: 8
+  LayoutSeed: 12345
+  LayoutOrientOutward: 1
+  SphereRadius: 1
+  ThetaRangeDeg: {x: 0, y: 180}
+  PhiRangeDeg: {x: 0, y: 360}
+  BoxSize: {x: 1, y: 1, z: 1}
+  BoxCenterOffset: {x: 0, y: 0, z: 0}
+  MeshSurfaceSource: {fileID: 0}
+  MeshRemoveDuplicateVertices: 1
+  MeshDuplicateEpsilon: 0.0001
+  MeshPickMode: 0
+  MeshIncludeSkinned: 1
+  QuadSurfaceSize: {x: 1, y: 1}
+  Categories:
+  - {fileID: 11400000, guid: 6ee5026a73952464a8decfd8127be466, type: 2}
+  VocabularyTags: []
+  QuadSurfaceTransform: {fileID: 0}
+  QuadAreaUsageLimit: 0.85
+  QuadItemPadding: 0.01
+  QuadPlacementAttempts: 64
+  QuadScalePenalty: 1
+  InwardBiasScale: 5
+  StartAnchorLocation: 0
+  SortMode: 0
+  NumPiePieces: 8

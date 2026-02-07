@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.OrbitalCamera.FP_ModelDisplayData
   DisplayName: Five Meter Volume Bounds
   UseLocalBoundsOverride: 1
-  LocalBoundsCenter: {x: 0, y: 0, z: 0}
-  LocalBoundsSize: {x: 10, y: 10, z: 10}
+  BoundsCenter: {x: 0, y: 0, z: 0}
+  BoundsSize: {x: 10, y: 10, z: 10}
   BoundsPadding: 1
   LocalPivotOffset: {x: 0, y: 0, z: 0}
   DefaultLocalEuler: {x: 0, y: 0, z: 0}

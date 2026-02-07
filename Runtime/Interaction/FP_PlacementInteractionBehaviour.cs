@@ -1,4 +1,4 @@
-namespace FuzzPhyte.Placement.Interaction
+﻿namespace FuzzPhyte.Placement.Interaction
 {
     using UnityEngine;
     using System;
@@ -15,7 +15,14 @@ namespace FuzzPhyte.Placement.Interaction
 
         [SerializeField] private Vector3 _startPos;
         [SerializeField] private Quaternion _startRot;
+        [Space]
+        [Header("Drag Surface Parameters")]
+        [SerializeField] private float boxCastDist = 2f;
+        [SerializeField] private LayerMask surfaceMask;
+        [SerializeField] private float surfaceCastDistance = 2f;
 
+        private Transform _currentSurface;
+        private Plane _currentSurfacePlane;
         [Header("Private Parameters")]
         [SerializeField] private float _dragRayDistance;
         [SerializeField] private Vector3 _dragLocalOffset;
@@ -24,12 +31,18 @@ namespace FuzzPhyte.Placement.Interaction
         private FP_PlacementSocketComponent _previousHoverSocket;
         private FP_PlacementSocketComponent newHover;
 
+        [Header("Placement Bounds")]
+        [SerializeField] private bool enforceBounds = true;
+        [SerializeField] private Vector3 boundsCenter = Vector3.zero;
+        [SerializeField] private Vector3 boundsSize = new Vector3(10f, 5f, 10f);
+
 
         [Header("Clicky Placement Events")]
         [SerializeField] protected PlacementInteractionEvent doubleClickEvent;
         [SerializeField] protected PlacementInteractionEvent singleClickEvent;
         [SerializeField] protected PlacementInteractionEvent dragEndSocketSuccessEvent;
         [SerializeField] protected PlacementInteractionEvent dragEndSocketFailedEvent;
+        [SerializeField] protected PlacementInteractionEvent dragEndMovedLocationEvent;
         public override void OnEnable()
         {
             base.OnEnable();
@@ -75,6 +88,8 @@ namespace FuzzPhyte.Placement.Interaction
 
                 if (hit.collider.TryGetComponent(out PlacementObjectComponent poc))
                 {
+                    if (poc.Locked) return;
+
                     _activeComponent = poc;
                     _activePlacement = poc.PlacementData;
                     _startPos = poc.RootPlacement.position;
@@ -92,7 +107,7 @@ namespace FuzzPhyte.Placement.Interaction
                     Plane dragPlane = new Plane(-ray.direction, _dragTarget.position);
                     dragPlane.Raycast(ray, out _dragRayDistance);
 
-                    // Offset so we don�t snap pivot to cursor
+                    // Offset so we don’t snap pivot to cursor
                     Vector3 hitPoint = ray.GetPoint(_dragRayDistance);
                     _dragLocalOffset = _dragTarget.position - hitPoint;
                 }
@@ -127,53 +142,99 @@ namespace FuzzPhyte.Placement.Interaction
             }
             return;
 
-            // OLD
-            /*
-            var hits = Physics.RaycastAll(ray, maxRayDistance, placementMask);
-            if (drawDebug)
-            {
-                Debug.DrawRay(ray.origin, ray.direction * maxRayDistance, Color.orange, 0.5f);
-            }
-            FP_PlacementSocketComponent foundSocket = null;
-
-            foreach (var hit in hits)
-            {
-                if (hit.collider.TryGetComponent(out FP_PlacementSocketComponent socket))
-                {
-                    if (drawDebug)
-                    {
-                        Debug.Log($"Hit something with a FP_PlacementSocketComponent: {socket.name}");
-                    }
-                    if (!socket.CanAccept(_activePlacement))
-                        continue;
-
-                    if (socket.TryGetPreviewPose(_activePlacement, hit, out var pose))
-                    {
-                        // Apply preview directly
-                        _activeComponent.RootPlacement.SetPositionAndRotation(
-                            pose.position,
-                            pose.rotation
-                        );
-                        foundSocket = socket;
-                        if (drawDebug)
-                        {
-                            Debug.Log($"Found Socket: {socket.name}");
-                        }
-                        break;
-                    }
-                }
-            }
-            // If no valid socket, do nothing (or optionally snap back later)
-            _activeSocket = foundSocket;
-            */
         }
         #region Drag Additional
-        void UpdateFreeDrag(Ray ray)
+     
+        protected void UpdateFreeDrag(Ray ray)
         {
-            if (_dragTarget == null) return;
+            if (_dragTarget == null || _activeComponent == null)
+                return;
 
-            Vector3 worldPoint = ray.GetPoint(_dragRayDistance);
-            _dragTarget.position = worldPoint + _dragLocalOffset;
+            // 1. Find surface below the dragged object
+            ResolveSurfaceBelow();
+
+            // 2. Project mouse onto surface plane
+            Vector3 targetPoint = GetSurfaceProjectedPoint(ray);
+
+            // 3. Maintain bottom contact
+            targetPoint = ApplySurfaceHeightCorrection(targetPoint);
+
+            _dragTarget.position = targetPoint;
+        }
+        protected void ResolveSurfaceBelow()
+        {
+            var sides = _activeComponent.Sides.ToArray();
+            FP_PlacementSide bottom = null;
+
+            foreach (var side in sides)
+            {
+                if (side.SideType == FPObjectSideType.Bottom)
+                {
+                    bottom = side;
+                    break;
+                }
+            }
+
+            if (bottom == null)
+                return;
+
+            Vector3 origin = bottom.transform.position + Vector3.up * 0.1f;
+            Vector3 halfExtents = new Vector3(
+                bottom.SurfaceSize.x * 0.5f,
+                0.05f,
+                bottom.SurfaceSize.y * 0.5f
+            );
+
+            if (Physics.BoxCast(
+                origin,
+                halfExtents,
+                Vector3.down,
+                out RaycastHit hit,
+                bottom.transform.rotation,
+                surfaceCastDistance,
+                surfaceMask))
+            {
+                _currentSurface = hit.collider.transform;
+                _currentSurfacePlane = new Plane(hit.normal, hit.point);
+            }
+        }
+        protected Vector3 GetSurfaceProjectedPoint(Ray ray)
+        {
+            if (_currentSurface == null)
+            {
+                // fallback to original camera depth
+                return ray.GetPoint(_dragRayDistance) + _dragLocalOffset;
+            }
+
+            if (_currentSurfacePlane.Raycast(ray, out float enter))
+            {
+                return ray.GetPoint(enter) + _dragLocalOffset;
+            }
+
+            return _dragTarget.position;
+        }
+        Vector3 ApplySurfaceHeightCorrection(Vector3 targetPoint)
+        {
+            var sides = _activeComponent.Sides.ToArray();
+            FP_PlacementSide bottom = null;
+
+            foreach (var side in sides)
+            {
+                if (side.SideType == FPObjectSideType.Bottom)
+                {
+                    bottom = side;
+                    break;
+                }
+            }
+
+            if (bottom == null)
+                return targetPoint;
+
+            float bottomOffset =
+                bottom.transform.position.y - _dragTarget.position.y;
+
+            targetPoint.y -= bottomOffset;
+            return targetPoint;
         }
         void UpdateSocketHover(Ray ray)
         {
@@ -225,8 +286,42 @@ namespace FuzzPhyte.Placement.Interaction
                 _hoverSocket.transform.rotation
             );
         }
-
         #endregion
+        protected bool TryFindSurfaceBelow(out RaycastHit hit)
+        {
+            var movingObj = _activeComponent;
+            var surfaceMask = placementMask;
+            var bottomSide = movingObj.GetSide(FPObjectSideType.Bottom);
+
+            Vector3 origin = bottomSide.transform.position + Vector3.up * 0.1f;
+            Vector3 halfExtents = new Vector3(
+                bottomSide.SurfaceSize.x * 0.5f,
+                0.05f,
+                bottomSide.SurfaceSize.y * 0.5f
+            );
+
+            return Physics.BoxCast(
+                origin,
+                halfExtents,
+                Vector3.down,
+                out hit,
+                bottomSide.transform.rotation,
+                boxCastDist,
+                surfaceMask
+            );
+        }
+        protected Vector3 GetDragSurfacePoint(Plane plane, Vector2 curMousePoint)
+        {
+            var cam = targetCamera;
+            Ray ray = cam.ScreenPointToRay(curMousePoint);
+
+            if (plane.Raycast(ray, out float enter))
+            {
+                return ray.GetPoint(enter);
+            }
+
+            return Vector3.zero;
+        }
         protected void EndDrag()
         {
             if (_activePlacement == null)
@@ -243,7 +338,23 @@ namespace FuzzPhyte.Placement.Interaction
             }
             else
             {
-                _activeComponent.transform.SetPositionAndRotation(_startPos, _startRot);
+                //No socket : surface drop allowed
+                Vector3 dropPos = _activeComponent.transform.position;
+
+                if (!IsWithinBounds(dropPos))
+                {
+                    // Out of bounds → return home
+                    _activeComponent.transform.SetPositionAndRotation(_startPos, _startRot);
+                }
+                else
+                {
+                    // In bounds → keep dropped position
+                    if (drawDebug)
+                    {
+                        Debug.Log("[Placement] Dropped on surface (no socket). Keeping position.");
+                    }
+                    dragEndMovedLocationEvent?.Invoke(_activePlacement, null);
+                }
                 dragEndSocketFailedEvent?.Invoke(_activePlacement, null);
             }
             if(_previousHoverSocket != null)
@@ -257,7 +368,23 @@ namespace FuzzPhyte.Placement.Interaction
             _dragTarget = null;
             _previousHoverSocket = null;
         }
-        
+        protected bool IsWithinBounds(Vector3 position)
+        {
+            if (!enforceBounds)
+                return true;
+
+            Bounds b = new Bounds(boundsCenter, boundsSize);
+            return b.Contains(position);
+        }
+        private void OnDrawGizmosSelected()
+        {
+            if (!enforceBounds)
+                return;
+
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireCube(boundsCenter, boundsSize);
+        }
+
         #endregion
         /// <summary>
         /// What we want to do via Double Click

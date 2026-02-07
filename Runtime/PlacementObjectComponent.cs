@@ -1,5 +1,6 @@
 namespace FuzzPhyte.Placement.Interaction
 {
+    using System.Collections.Generic;
     using UnityEngine;
 
     [DisallowMultipleComponent]
@@ -7,7 +8,14 @@ namespace FuzzPhyte.Placement.Interaction
     {
         public PlacementObject PlacementData;
         public Transform RootPlacement;
+        public bool Locked = false;
+        public List<FP_PlacementSide> Sides = new List<FP_PlacementSide>();
         public FP_PlacementSocketComponent CurrentSocket { get; set; }
+
+        public FP_PlacementSide GetSide(FPObjectSideType type)
+        {
+            return Sides.Find(s => s.SideType == type);
+        }
         public void Awake()
         {
             if (RootPlacement == null)
