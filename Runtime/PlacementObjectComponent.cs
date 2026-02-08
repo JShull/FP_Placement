@@ -10,6 +10,10 @@ namespace FuzzPhyte.Placement.Interaction
         public Transform RootPlacement;
         public bool Locked = false;
         public List<FP_PlacementSide> Sides = new List<FP_PlacementSide>();
+        protected FP_PlacementSide bottomSide;
+        protected FP_PlacementSide topSide;
+        public FP_PlacementSide GetBottomSide => bottomSide;
+        public FP_PlacementSide GetTopSide => topSide;
         public FP_PlacementSocketComponent CurrentSocket { get; set; }
 
         public FP_PlacementSide GetSide(FPObjectSideType type)
@@ -21,6 +25,18 @@ namespace FuzzPhyte.Placement.Interaction
             if (RootPlacement == null)
             {
                 RootPlacement = this.transform;
+            }
+
+            foreach (var side in Sides)
+            {
+                if (side.SideType == FPObjectSideType.Bottom)
+                {
+                    bottomSide = side;
+                }
+                if(side.SideType == FPObjectSideType.Top)
+                {
+                    topSide = side;
+                }
             }
         }
         private void OnDrawGizmosSelected()

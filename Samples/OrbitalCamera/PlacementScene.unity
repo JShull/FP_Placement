@@ -119,6 +119,110 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &170869364
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 170869365}
+  - component: {fileID: 170869366}
+  - component: {fileID: 170869367}
+  m_Layer: 0
+  m_Name: PlacementSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &170869365
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 170869364}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4132946863753651465}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &170869366
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 170869364}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f809b74783fe1f42a0ce493e35cae01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.Interaction.FP_PlacementInteractionBehaviour
+  _pointerPosition: {fileID: -7638083817468324326, guid: 0b9ea9a8cdb0e4e44a2a394fa00c08f4, type: 3}
+  _primaryClick: {fileID: 9184032065912687976, guid: 0b9ea9a8cdb0e4e44a2a394fa00c08f4, type: 3}
+  targetCamera: {fileID: 3109658353191055684}
+  placementMask:
+    serializedVersion: 2
+    m_Bits: 1
+  _requireRegion: 1
+  _inputRegion: {fileID: 11400000, guid: fee5935ff2e345d479aa74cf757a3953, type: 2}
+  _requireApplicationFocus: 1
+  _isDown: 0
+  _inputLocked: 1
+  doubleClickThreshold: 0.25
+  maxRayDistance: 40
+  drawDebug: 1
+  _activePlacement: {fileID: 0}
+  _activeComponent: {fileID: 0}
+  _startPos: {x: 0, y: 0, z: 0}
+  _startRot: {x: 0, y: 0, z: 0, w: 0}
+  _dragLocalStartPoint: {x: 0, y: 0, z: 0}
+  boxCastDist: 2
+  surfaceMask:
+    serializedVersion: 2
+    m_Bits: 1048577
+  surfaceCastDistance: 2
+  _currentSurface: {fileID: 0}
+  _dragRayDistance: 0
+  _dragLocalOffset: {x: 0, y: 0, z: 0}
+  _dragTarget: {fileID: 0}
+  enforceBounds: 1
+  boundsCenter: {x: 0, y: 0, z: 0}
+  boundsSize: {x: 20, y: 20, z: 20}
+  fpDrawer: {fileID: 170869367}
+  doubleClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  singleClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  dragEndSocketSuccessEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  dragEndSocketFailedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  dragEndMovedLocationEvent:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &170869367
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 170869364}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c89c7b184b30d4a0ba2c73c787c36c02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.fuzzphyte.utility::FuzzPhyte.Utility.FP_UtilityDraw
 --- !u!1 &196810080
 GameObject:
   m_ObjectHideFlags: 0
@@ -1178,7 +1282,7 @@ GameObject:
   - component: {fileID: 1101320085}
   - component: {fileID: 1101320084}
   - component: {fileID: 1101320088}
-  m_Layer: 19
+  m_Layer: 20
   m_Name: FakeGround
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1495,7 +1599,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1415971107}
   - component: {fileID: 1415971106}
-  m_Layer: 19
+  m_Layer: 20
   m_Name: TOPPlane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1583,7 +1687,7 @@ MonoBehaviour:
   OnSelectionEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 9192130768491634104}
+      - m_Target: {fileID: 170869366}
         m_TargetAssemblyTypeName: FuzzPhyte.Placement.Interaction.FP_PlacementInteractionBehaviour,
           com.fuzzphyte.placement
         m_MethodName: InputLocked
@@ -1919,7 +2023,7 @@ MonoBehaviour:
   OnSelectionEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 9192130768491634104}
+      - m_Target: {fileID: 170869366}
         m_TargetAssemblyTypeName: FuzzPhyte.Placement.Interaction.FP_PlacementInteractionBehaviour,
           com.fuzzphyte.placement
         m_MethodName: InputUnlocked
@@ -13272,7 +13376,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 524359
+    m_Bits: 1572931
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -16723,9 +16827,10 @@ Transform:
   - {fileID: 144832253020928166}
   - {fileID: 5131890706077912539}
   - {fileID: 6873662117296329300}
-  - {fileID: 3134043182592219222}
+  - {fileID: 170869365}
   - {fileID: 3123894575388217302}
   - {fileID: 273236163465991935}
+  - {fileID: 3134043182592219222}
   - {fileID: 1083124111748744825}
   - {fileID: 6673795848931817749}
   - {fileID: 1669566835303827814}
@@ -33195,7 +33300,6 @@ GameObject:
   - component: {fileID: 6104472431124440272}
   - component: {fileID: 4368930027698933282}
   - component: {fileID: 8618225453788226764}
-  - component: {fileID: 9192130768491634104}
   m_Layer: 0
   m_Name: 3DUICamera
   m_TagString: Untagged
@@ -33203,62 +33307,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &9192130768491634104
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9192130768491634103}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9f809b74783fe1f42a0ce493e35cae01, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.Interaction.FP_PlacementInteractionBehaviour
-  _pointerPosition: {fileID: -7638083817468324326, guid: 0b9ea9a8cdb0e4e44a2a394fa00c08f4, type: 3}
-  _primaryClick: {fileID: 9184032065912687976, guid: 0b9ea9a8cdb0e4e44a2a394fa00c08f4, type: 3}
-  targetCamera: {fileID: 3109658353191055684}
-  placementMask:
-    serializedVersion: 2
-    m_Bits: 1
-  _requireRegion: 1
-  _inputRegion: {fileID: 11400000, guid: fee5935ff2e345d479aa74cf757a3953, type: 2}
-  _requireApplicationFocus: 1
-  _isDown: 0
-  _inputLocked: 1
-  doubleClickThreshold: 0.25
-  maxRayDistance: 40
-  drawDebug: 0
-  _activePlacement: {fileID: 0}
-  _activeComponent: {fileID: 0}
-  _startPos: {x: 0, y: 0, z: 0}
-  _startRot: {x: 0, y: 0, z: 0, w: 0}
-  boxCastDist: 2
-  surfaceMask:
-    serializedVersion: 2
-    m_Bits: 524289
-  surfaceCastDistance: 2
-  _dragRayDistance: 0
-  _dragLocalOffset: {x: 0, y: 0, z: 0}
-  _dragTarget: {fileID: 0}
-  enforceBounds: 1
-  boundsCenter: {x: 0, y: 0, z: 0}
-  boundsSize: {x: 20, y: 20, z: 20}
-  doubleClickEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  singleClickEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  dragEndSocketSuccessEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  dragEndSocketFailedEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  dragEndMovedLocationEvent:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &9207934416169721939
 GameObject:
   m_ObjectHideFlags: 0

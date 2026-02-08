@@ -15,14 +15,16 @@
 
         [SerializeField] private Vector3 _startPos;
         [SerializeField] private Quaternion _startRot;
+        [Tooltip("Where we grabbed the _activeComponent in local space.")]
+        //[SerializeField] private Vector3 _dragLocalStartPoint;
         [Space]
         [Header("Drag Surface Parameters")]
         [SerializeField] private float boxCastDist = 2f;
         [SerializeField] private LayerMask surfaceMask;
         [SerializeField] private float surfaceCastDistance = 2f;
 
-        private Transform _currentSurface;
-        private Plane _currentSurfacePlane;
+        [SerializeField] private Transform _currentSurface;
+        [SerializeField] private Plane _currentSurfacePlane;
         [Header("Private Parameters")]
         [SerializeField] private float _dragRayDistance;
         [SerializeField] private Vector3 _dragLocalOffset;
@@ -35,7 +37,7 @@
         [SerializeField] private bool enforceBounds = true;
         [SerializeField] private Vector3 boundsCenter = Vector3.zero;
         [SerializeField] private Vector3 boundsSize = new Vector3(10f, 5f, 10f);
-
+        public FuzzPhyte.Utility.FP_UtilityDraw fpDrawer;
 
         [Header("Clicky Placement Events")]
         [SerializeField] protected PlacementInteractionEvent doubleClickEvent;
@@ -95,7 +97,7 @@
                     _startPos = poc.RootPlacement.position;
                     _startRot = poc.RootPlacement.rotation;
                     _dragTarget = poc.RootPlacement;
-
+                    //_dragLocalStartPoint = hit.point - poc.RootPlacement.position;
                     // current socket check and remove it if we have one
                     if (_activeComponent.CurrentSocket != null)
                     {
@@ -153,51 +155,87 @@
             // 1. Find surface below the dragged object
             ResolveSurfaceBelow();
 
-            // 2. Project mouse onto surface plane
+            // 2. Project mouse onto surface plane, from the camera to the active object, to the surface below
             Vector3 targetPoint = GetSurfaceProjectedPoint(ray);
-
+            //Debug.Log($"{_dragLocalOffset} = offset. Target Point: {targetPoint} Get Surface Projection Point");
             // 3. Maintain bottom contact
             targetPoint = ApplySurfaceHeightCorrection(targetPoint);
-
+            //Debug.Log($"Target Point After Height Correction: {targetPoint} Apply Surface Height Correction");
+            // 4. Apply final position
             _dragTarget.position = targetPoint;
         }
         protected void ResolveSurfaceBelow()
         {
-            var sides = _activeComponent.Sides.ToArray();
-            FP_PlacementSide bottom = null;
-
-            foreach (var side in sides)
-            {
-                if (side.SideType == FPObjectSideType.Bottom)
-                {
-                    bottom = side;
-                    break;
-                }
-            }
-
+            //var sides = _activeComponent.Sides.ToArray();
+            FP_PlacementSide bottom = _activeComponent.GetBottomSide;
             if (bottom == null)
                 return;
 
-            Vector3 origin = bottom.transform.position + Vector3.up * 0.1f;
+            Vector3 origin = bottom.transform.position + Vector3.up;
             Vector3 halfExtents = new Vector3(
                 bottom.SurfaceSize.x * 0.5f,
                 0.05f,
                 bottom.SurfaceSize.y * 0.5f
             );
 
-            if (Physics.BoxCast(
+            RaycastHit[] hits = Physics.BoxCastAll(
                 origin,
                 halfExtents,
                 Vector3.down,
-                out RaycastHit hit,
                 bottom.transform.rotation,
                 surfaceCastDistance,
-                surfaceMask))
+                surfaceMask
+            );
+            if(drawDebug && fpDrawer != null)
             {
-                _currentSurface = hit.collider.transform;
-                _currentSurfacePlane = new Plane(hit.normal, hit.point);
+                fpDrawer.DrawBox(origin, Quaternion.identity, halfExtents*2f, Color.green, 1f);
+                fpDrawer.DrawBox(origin + Vector3.down * surfaceCastDistance, Quaternion.identity, halfExtents * 2f, Color.green, 1f);
             }
-        }
+            if (hits == null || hits.Length == 0)
+                return;
+
+            RaycastHit bestHit = default;
+
+            float highestPt = -100000f;
+            PlacementObjectComponent hitPlacement = null;
+            for(int i=0;i<hits.Length;i++)
+            {
+                var hit = hits[i];
+                if (hit.collider.transform.IsChildOf(_activeComponent.transform))
+                    continue;
+                var Placement = hit.collider.gameObject.GetComponent<PlacementObjectComponent>();
+                if(Placement != null)
+                {
+                    Debug.Log($"Hit placement object: {Placement.name}");
+                    // location of top
+                    if (Placement.GetTopSide != null)
+                    {
+                        if(Placement.GetTopSide.transform.position.y>=highestPt)
+                        {
+                            bestHit = hit;
+                            highestPt = Placement.GetTopSide.transform.position.y;
+                            hitPlacement = Placement;
+                        }
+                    }
+                }
+            }
+            if(bestHit.collider == null)
+                return;
+            if(hitPlacement != null)
+            {
+                _currentSurface = hitPlacement.GetTopSide.transform;
+                _currentSurfacePlane = new Plane(hitPlacement.GetTopSide.Normal.normalized,bestHit.point);
+                if(drawDebug && fpDrawer != null)
+                {
+                    fpDrawer.DrawPlane(bestHit.point,Quaternion.identity,new Vector2(2,2), Color.blue, 2f);
+                }
+            }
+            else
+            {
+                _currentSurface = bestHit.collider.transform;
+                _currentSurfacePlane = new Plane(bestHit.normal, bestHit.point);
+            }
+        }  
         protected Vector3 GetSurfaceProjectedPoint(Ray ray)
         {
             if (_currentSurface == null)
@@ -205,35 +243,26 @@
                 // fallback to original camera depth
                 return ray.GetPoint(_dragRayDistance) + _dragLocalOffset;
             }
-
+            
             if (_currentSurfacePlane.Raycast(ray, out float enter))
             {
                 return ray.GetPoint(enter) + _dragLocalOffset;
             }
-
+            
             return _dragTarget.position;
         }
         Vector3 ApplySurfaceHeightCorrection(Vector3 targetPoint)
         {
-            var sides = _activeComponent.Sides.ToArray();
-            FP_PlacementSide bottom = null;
-
-            foreach (var side in sides)
-            {
-                if (side.SideType == FPObjectSideType.Bottom)
-                {
-                    bottom = side;
-                    break;
-                }
-            }
+            FP_PlacementSide bottom = _activeComponent.GetBottomSide;
 
             if (bottom == null)
                 return targetPoint;
 
             float bottomOffset =
                 bottom.transform.position.y - _dragTarget.position.y;
-
-            targetPoint.y -= bottomOffset;
+            // remove local drag offset to get the true bottom height relative pivot
+            float extentHieghtYOffset = _dragTarget.position.y-bottom.transform.position.y-_dragLocalOffset.y; 
+            targetPoint.y += extentHieghtYOffset;
             return targetPoint;
         }
         void UpdateSocketHover(Ray ray)
@@ -287,41 +316,6 @@
             );
         }
         #endregion
-        protected bool TryFindSurfaceBelow(out RaycastHit hit)
-        {
-            var movingObj = _activeComponent;
-            var surfaceMask = placementMask;
-            var bottomSide = movingObj.GetSide(FPObjectSideType.Bottom);
-
-            Vector3 origin = bottomSide.transform.position + Vector3.up * 0.1f;
-            Vector3 halfExtents = new Vector3(
-                bottomSide.SurfaceSize.x * 0.5f,
-                0.05f,
-                bottomSide.SurfaceSize.y * 0.5f
-            );
-
-            return Physics.BoxCast(
-                origin,
-                halfExtents,
-                Vector3.down,
-                out hit,
-                bottomSide.transform.rotation,
-                boxCastDist,
-                surfaceMask
-            );
-        }
-        protected Vector3 GetDragSurfacePoint(Plane plane, Vector2 curMousePoint)
-        {
-            var cam = targetCamera;
-            Ray ray = cam.ScreenPointToRay(curMousePoint);
-
-            if (plane.Raycast(ray, out float enter))
-            {
-                return ray.GetPoint(enter);
-            }
-
-            return Vector3.zero;
-        }
         protected void EndDrag()
         {
             if (_activePlacement == null)
@@ -367,6 +361,7 @@
             _hoverSocket = null;
             _dragTarget = null;
             _previousHoverSocket = null;
+            _dragLocalOffset = Vector3.zero;
         }
         protected bool IsWithinBounds(Vector3 position)
         {
