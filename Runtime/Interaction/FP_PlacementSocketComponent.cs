@@ -12,29 +12,53 @@
         [Header("Socket Rules")]
         [Tooltip("Use Ignore for a return true statement, use layout for false")]
         [SerializeField] private PlacementBuildMode _buildMode = PlacementBuildMode.Stacking;
-
+        [SerializeField] private QuadAreaPlacer.PlacementCapacityMode _capacityMode = QuadAreaPlacer.PlacementCapacityMode.FixedCount;
+        [SerializeField] private Collider _socketCollider;
         [Tooltip("Optional category filter. If empty, all are allowed.")]
+        
         [SerializeField] private List<PlacementCategory> _allowedCategories = new();
-
+        
         [Header("Stacking / Volume Settings")]
         [SerializeField] private Vector3 _localStackAxis = Vector3.right;
         [SerializeField] private float _capacity = 1.0f;
+        [Tooltip("If disabled, capacity checks are ignored.")]
+        [SerializeField] private bool _useCapacityLimiter = true;
         public float Capacity
         {
             get => _capacity;
             set => _capacity = Mathf.Max(0f, value);
         }
+        protected bool AtCapacity
+        {
+            get
+            {
+                if (!_useCapacityLimiter)
+                    return false;
+                return _usedCapacity >= _capacity;
+            }
+        }
         [Space]
         private readonly HashSet<PlacementObjectComponent> _occupants = new();
 
-        [Header("Hover Events")]
+        [Header("Hover Local Events")]
         [SerializeField] private PlacementSocketHoverEvent onHoverEnter;
         [SerializeField] private PlacementSocketHoverEvent onHoverExit;
         [SerializeField] private PlacementSocketHoverEvent onDragEnd;
-        //public PlacementObjectEvent AddPlacementEvent;
-        //public PlacementObjectEvent RemovePlacementEvent;
+        [SerializeField] private PlacementSocketHoverEvent onHoverCapacityFull;
+
+        [SerializeField] private PlacementSocketHoverEvent onCapacityReached;
+        [SerializeField] private PlacementSocketHoverEvent onCapacityExited;
+
+        public System.Action<FP_PlacementSocketComponent> OnHoverEnterAction;
+        public System.Action<FP_PlacementSocketComponent> OnHoverExitAction;
+        public System.Action<FP_PlacementSocketComponent> OnDragEndAction;
+        public System.Action<FP_PlacementSocketComponent> OnHoverCapacityFullAction;
+
         public System.Action<PlacementObjectComponent>OnPlacementAddedAction;
         public System.Action<PlacementObjectComponent>OnPlacementRemovedAction;
+        
+        public System.Action<PlacementObjectComponent> HitCapacityAction;
+        public System.Action<PlacementObjectComponent> ExitedCapacityAction;
 
         private bool _isHovered;
         [Header("Debug")]
@@ -64,7 +88,12 @@
 
             if (!CategoryAllowed(placement.PlacementData))
                 return false;
-
+            if (AtCapacity)
+            {
+                OnHoverCapacityFullAction?.Invoke(this);
+                onHoverCapacityFull?.Invoke(this);
+                return false;
+            }
             switch (_buildMode)
             {
                 case PlacementBuildMode.Ignore:
@@ -75,6 +104,22 @@
                     return false;
             }
 
+            return false;
+        }
+        /// <summary>
+        /// Called on a bounds/out of bounds or returning by force
+        /// </summary>
+        /// <param name="placement"></param>
+        /// <param name="pos"></param>
+        /// <returns></returns>
+        public bool OverrideCanAccept(PlacementObjectComponent placement, Vector3 pos)
+        {
+            if (placement == null) return false;
+            if (_socketCollider == null) return false;
+            if(_socketCollider.bounds.Contains(pos))
+            {
+                return CanAccept(placement);
+            }
             return false;
         }
 
@@ -117,13 +162,25 @@
         {
             if (_isHovered == hovered)
                 return;
-
             _isHovered = hovered;
-
-            if (_isHovered)
-                onHoverEnter?.Invoke(this);
+            if (AtCapacity)
+            {
+                OnHoverCapacityFullAction?.Invoke(this);
+                onHoverCapacityFull?.Invoke(this);
+            }
             else
-                onHoverExit?.Invoke(this);
+            {
+                if (_isHovered)
+                {
+                    OnHoverEnterAction?.Invoke(this);
+                    onHoverEnter?.Invoke(this);
+                }
+                else
+                {
+                    onHoverExit?.Invoke(this);
+                    OnHoverExitAction?.Invoke(this);
+                }
+            }   
         }
 
         #endregion
@@ -185,25 +242,38 @@
         {
             if (SocketLocation != null)
                 instance.SetPositionAndRotation(SocketLocation.position, SocketLocation.rotation);
-
-            RegisterPlacement(placement,instance);
             onDragEnd?.Invoke(this);
+            OnDragEndAction?.Invoke(this);
+            RegisterPlacement(placement, instance);
         }
 
         #region Accounting for Occupants
-        private float GetPlacementSize(PlacementObjectComponent placement, Transform instance)
+        private float GetPlacementSize(PlacementObjectComponent placement, Transform instance, QuadAreaPlacer.PlacementCapacityMode capMode)
         {
             if (placement == null)
                 return 0f;
-
-            return Mathf.Max(0f, placement.PlacementData.StackSize.x);
+            switch (capMode)
+            {
+                case QuadAreaPlacer.PlacementCapacityMode.NA:
+                case QuadAreaPlacer.PlacementCapacityMode.FixedCount:
+                    return 1f;
+                case QuadAreaPlacer.PlacementCapacityMode.AreaBudget:
+                    return Mathf.Max(0f, placement.PlacementData.StackSize.x);
+            }
+            return 0;
+            
         }
         private void RegisterPlacement(PlacementObjectComponent placement, Transform instance)
         {
             if (_occupants.Add(placement))
             {
-                _usedCapacity += GetPlacementSize(placement,instance);
+                _usedCapacity += GetPlacementSize(placement,instance, _capacityMode);
                 Debug.Log($"Registered placement: {placement.name}, used capacity now {_usedCapacity}/{_capacity}");
+                if (AtCapacity)
+                {
+                    HitCapacityAction?.Invoke(placement);
+                    onCapacityReached?.Invoke(this);
+                }
                 if(instance != null)
                 {
                     var PC= instance.gameObject.GetComponent<PlacementObjectComponent>();
@@ -224,9 +294,15 @@
 
             if (_occupants.Remove(placement))
             {
-                _usedCapacity -= GetPlacementSize(placement,instance);
+                if (AtCapacity)
+                {
+                    ExitedCapacityAction?.Invoke(placement);
+                    onCapacityExited?.Invoke(this);
+                }
+                _usedCapacity -= GetPlacementSize(placement,instance, _capacityMode);
                 _usedCapacity = Mathf.Max(0f, _usedCapacity);
-                if(instance != null)
+                Debug.Log($"Registered a Removed Object: {placement.name}, used capacity now {_usedCapacity}/{_capacity}");
+                if (instance != null)
                 {
                     var PC= instance.gameObject.GetComponent<PlacementObjectComponent>();
                     if (PC!=null)

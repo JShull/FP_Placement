@@ -4,7 +4,7 @@ namespace FuzzPhyte.Placement.Interaction
     using UnityEngine;
 
     [DisallowMultipleComponent]
-    public class PlacementObjectComponent : MonoBehaviour
+    public class PlacementObjectComponent : MonoBehaviour, IFPPlacementSocket
     {
         public PlacementObject PlacementData;
         public Transform RootPlacement;
@@ -14,8 +14,9 @@ namespace FuzzPhyte.Placement.Interaction
         protected FP_PlacementSide topSide;
         public FP_PlacementSide GetBottomSide => bottomSide;
         public FP_PlacementSide GetTopSide => topSide;
-        public FP_PlacementSocketComponent CurrentSocket { get; set; }
-
+        public FP_PlacementSocketComponent CurrentSocket { get => currentSocket;}
+        [SerializeField] protected FP_PlacementSocketComponent currentSocket;
+        [SerializeField] protected FP_PlacementSocketComponent previousSocket;
         public FP_PlacementSide GetSide(FPObjectSideType type)
         {
             return Sides.Find(s => s.SideType == type);
@@ -89,6 +90,39 @@ namespace FuzzPhyte.Placement.Interaction
             {
                 Vector3 center = transform.position + PlacementData.BoxCenterOffset;
                 Gizmos.DrawWireCube(center, PlacementData.BoxSize);
+            }
+        }
+
+        public void OnPlacementInSocket(FP_PlacementSocketComponent socket)
+        {
+            if (currentSocket == null)
+            {
+                currentSocket = socket;
+                if(previousSocket == null)
+                {
+                    previousSocket = socket;
+                }
+            }
+        }
+
+        public void OnPlacementRemoved(FP_PlacementSocketComponent socket)
+        {
+            if(currentSocket == socket)
+            {
+                currentSocket = null;
+            }
+        }
+        public void OnPlacementOutOfBounds(Vector3 pos, Quaternion rot)
+        {
+            RootPlacement.SetPositionAndRotation(pos, rot);
+            //check if we were thrown back into bounds of another socket
+            if (previousSocket != null)
+            {
+                //did we go back to this socket?
+                if (previousSocket.OverrideCanAccept(this,pos))
+                {
+                    Debug.Log($"Manually moving back into a socket situation");
+                }
             }
         }
     }

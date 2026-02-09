@@ -106,12 +106,12 @@
                     _startPos = poc.RootPlacement.position;
                     _startRot = poc.RootPlacement.rotation;
                     _dragTarget = poc.RootPlacement;
-                    //_dragLocalStartPoint = hit.point - poc.RootPlacement.position;
+                    
                     // current socket check and remove it if we have one
                     if (_activeComponent.CurrentSocket != null)
                     {
                         _activeComponent.CurrentSocket.RemovePlacement(poc,poc.RootPlacement);
-                        _activeComponent.CurrentSocket = null;
+                        _activeComponent.OnPlacementRemoved(_activeComponent.CurrentSocket);
                     }
                     // plane work
                     // Where did we hit the object?
@@ -124,41 +124,6 @@
                     break;
                 }
             }
-            /*
-            if (Physics.Raycast(ray, out var hit, maxRayDistance))
-            {
-                if (drawDebug)
-                {
-                    Debug.DrawRay(ray.origin, ray.direction*maxRayDistance, Color.red, 2f);
-                }
-                
-                if (hit.collider.TryGetComponent(out PlacementObjectComponent poc))
-                {
-                    if (poc.Locked) return;
-
-                    _activeComponent = poc;
-                    _activePlacement = poc.PlacementData;
-                    _startPos = poc.RootPlacement.position;
-                    _startRot = poc.RootPlacement.rotation;
-                    _dragTarget = poc.RootPlacement;
-                    //_dragLocalStartPoint = hit.point - poc.RootPlacement.position;
-                    // current socket check and remove it if we have one
-                    if (_activeComponent.CurrentSocket != null)
-                    {
-                        _activeComponent.CurrentSocket.RemovePlacement(_activePlacement);
-                        _activeComponent.CurrentSocket = null;
-                    }
-                    // plane work
-                    // Where did we hit the object?
-                    Plane dragPlane = new Plane(-ray.direction, _dragTarget.position);
-                    dragPlane.Raycast(ray, out _dragRayDistance);
-
-                    // Offset so we don’t snap pivot to cursor
-                    Vector3 hitPoint = ray.GetPoint(_dragRayDistance);
-                    _dragLocalOffset = _dragTarget.position - hitPoint;
-                }
-            }
-            */
         }
        
         protected void UpdateDrag(Ray ray)
@@ -424,7 +389,7 @@
                     _activeComponent,
                     _activeComponent.transform
                 );
-                _activeComponent.CurrentSocket = _activeSocket;
+                _activeComponent.OnPlacementInSocket(_activeSocket);
                 dragEndSocketSuccessEvent?.Invoke(_activeComponent, _activeSocket);
             }
             else
@@ -435,7 +400,8 @@
                 if (!IsWithinBounds(dropPos))
                 {
                     // Out of bounds → return home
-                    _activeComponent.transform.SetPositionAndRotation(_startPos, _startRot);
+                    _activeComponent.OnPlacementOutOfBounds(_startPos, _startRot);
+                    //_activeComponent.transform.SetPositionAndRotation(_startPos, _startRot);
                 }
                 else
                 {

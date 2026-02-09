@@ -47,6 +47,12 @@
             SmallestFirst,
             None
         }
+        public enum PlacementCapacityMode
+        {
+            NA,
+            AreaBudget,
+            FixedCount
+        }
 
         public static int ApplyToQuadArea(
             IReadOnlyList<Transform> items,

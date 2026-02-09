@@ -1,5 +1,6 @@
 namespace FuzzPhyte.Placement
 {
+    using FuzzPhyte.Placement.Interaction;
     using FuzzPhyte.Utility;
     using System;
     using System.Collections.Generic;
@@ -51,6 +52,12 @@ namespace FuzzPhyte.Placement
         Back,
         ExtraOne,
         ExtraTwo
+    }
+    public interface IFPPlacementSocket
+    {
+        public void OnPlacementInSocket(FP_PlacementSocketComponent socket);
+        public void OnPlacementRemoved(FP_PlacementSocketComponent socket);
+        public void OnPlacementOutOfBounds(Vector3 pos,Quaternion rot);
     }
     [Serializable]
     public class FPSurfaceDragData
