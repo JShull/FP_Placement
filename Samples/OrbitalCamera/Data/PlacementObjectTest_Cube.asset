@@ -19,7 +19,7 @@ MonoBehaviour:
   BoundingBox:
     m_Center: {x: 0, y: 0, z: 0}
     m_Extent: {x: 0.5, y: 0.5, z: 0.5}
-  BuildMode: 2
+  BuildMode: 0
   Stackable: 1
   StackSuitability: 1
   Shape: 2

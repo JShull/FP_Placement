@@ -5,6 +5,7 @@
     using UnityEngine.Events;
     [System.Serializable]
     public class PlacementSocketHoverEvent : UnityEvent<FP_PlacementSocketComponent> { }
+    public class PlacementObjectEvent:UnityEvent<PlacementObjectComponent> { }
     public class FP_PlacementSocketComponent : MonoBehaviour
     {
         [SerializeField] Transform SocketLocation;
@@ -18,13 +19,22 @@
         [Header("Stacking / Volume Settings")]
         [SerializeField] private Vector3 _localStackAxis = Vector3.right;
         [SerializeField] private float _capacity = 1.0f;
+        public float Capacity
+        {
+            get => _capacity;
+            set => _capacity = Mathf.Max(0f, value);
+        }
         [Space]
-        private readonly HashSet<PlacementObject> _occupants = new();
+        private readonly HashSet<PlacementObjectComponent> _occupants = new();
 
         [Header("Hover Events")]
         [SerializeField] private PlacementSocketHoverEvent onHoverEnter;
         [SerializeField] private PlacementSocketHoverEvent onHoverExit;
         [SerializeField] private PlacementSocketHoverEvent onDragEnd;
+        //public PlacementObjectEvent AddPlacementEvent;
+        //public PlacementObjectEvent RemovePlacementEvent;
+        public System.Action<PlacementObjectComponent>OnPlacementAddedAction;
+        public System.Action<PlacementObjectComponent>OnPlacementRemovedAction;
 
         private bool _isHovered;
         [Header("Debug")]
@@ -40,7 +50,7 @@
         }
         #region Public API
 
-        public bool CanAccept(PlacementObject placement)
+        public bool CanAccept(PlacementObjectComponent placement)
         {
             if (placement == null)
                 return false;
@@ -49,10 +59,10 @@
             if (_occupants.Contains(placement))
                 return false;
 
-            if (placement.BuildMode != _buildMode)
+            if (placement.PlacementData.BuildMode != _buildMode)
                 return false;
 
-            if (!CategoryAllowed(placement))
+            if (!CategoryAllowed(placement.PlacementData))
                 return false;
 
             switch (_buildMode)
@@ -60,7 +70,7 @@
                 case PlacementBuildMode.Ignore:
                     return true;
                 case PlacementBuildMode.Stacking:
-                    return CanAcceptStacking(placement);
+                    return CanAcceptStacking(placement.PlacementData);
                 case PlacementBuildMode.Layout:
                     return false;
             }
@@ -68,7 +78,7 @@
             return false;
         }
 
-        public bool TryGetPreviewPose(PlacementObject placement, RaycastHit hit, out Pose pose)
+        public bool TryGetPreviewPose(PlacementObjectComponent placement, RaycastHit hit, out Pose pose)
         {
             pose = default;
 
@@ -85,7 +95,7 @@
 
             return false;
         }
-        public void CommitPlacement(PlacementObject placement, Transform instance)
+        public void CommitPlacement(PlacementObjectComponent placement, Transform instance)
         {
             if (placement == null || instance == null)
                 return;
@@ -135,9 +145,9 @@
             float width = Mathf.Max(0f, placement.StackSize.x);
             return (_usedCapacity + width) <= _capacity;
         }
-        private bool TryGetStackingPose(PlacementObject placement, out Pose pose)
+        private bool TryGetStackingPose(PlacementObjectComponent placement, out Pose pose)
         {
-            float width = placement.StackSize.x;
+            float width = placement.PlacementData.StackSize.x;
             float half = width * 0.5f;
 
             float offset = _usedCapacity + half;
@@ -150,7 +160,7 @@
             pose = new Pose(worldPos, worldRot);
             return true;
         }
-        private bool TryGetIgnorePose(PlacementObject placement, out Pose pose)
+        private bool TryGetIgnorePose(PlacementObjectComponent placement, out Pose pose)
         {
             if (SocketLocation != null)
             {
@@ -163,47 +173,68 @@
             }
             return false;
         }
-        private void CommitStacking(PlacementObject placement, Transform instance)
+        private void CommitStacking(PlacementObjectComponent placement, Transform instance)
         {
             if (!TryGetStackingPose(placement, out var pose))
                 return;
 
             instance.SetPositionAndRotation(pose.position, pose.rotation);
-            RegisterPlacement(placement);
+            RegisterPlacement(placement,instance);
         }
-        private void CommitIgnore(PlacementObject placement, Transform instance)
+        private void CommitIgnore(PlacementObjectComponent placement, Transform instance)
         {
             if (SocketLocation != null)
                 instance.SetPositionAndRotation(SocketLocation.position, SocketLocation.rotation);
 
-            RegisterPlacement(placement);
+            RegisterPlacement(placement,instance);
             onDragEnd?.Invoke(this);
         }
 
         #region Accounting for Occupants
-        private float GetPlacementSize(PlacementObject placement)
+        private float GetPlacementSize(PlacementObjectComponent placement, Transform instance)
         {
             if (placement == null)
                 return 0f;
 
-            return Mathf.Max(0f, placement.StackSize.x);
+            return Mathf.Max(0f, placement.PlacementData.StackSize.x);
         }
-        private void RegisterPlacement(PlacementObject placement)
+        private void RegisterPlacement(PlacementObjectComponent placement, Transform instance)
         {
             if (_occupants.Add(placement))
             {
-                _usedCapacity += GetPlacementSize(placement);
+                _usedCapacity += GetPlacementSize(placement,instance);
+                Debug.Log($"Registered placement: {placement.name}, used capacity now {_usedCapacity}/{_capacity}");
+                if(instance != null)
+                {
+                    var PC= instance.gameObject.GetComponent<PlacementObjectComponent>();
+                    if (PC!=null)
+                    {
+                        //AddPlacementEvent?.Invoke(PC);
+                        OnPlacementAddedAction?.Invoke(PC);
+                        Debug.Log($"Invoked AddPlacementEvent for {placement.name}");
+                    }
+                }
+                
             }
         }
-        public void RemovePlacement(PlacementObject placement)
+        public void RemovePlacement(PlacementObjectComponent placement,Transform instance)
         {
             if (placement == null)
                 return;
 
             if (_occupants.Remove(placement))
             {
-                _usedCapacity -= GetPlacementSize(placement);
+                _usedCapacity -= GetPlacementSize(placement,instance);
                 _usedCapacity = Mathf.Max(0f, _usedCapacity);
+                if(instance != null)
+                {
+                    var PC= instance.gameObject.GetComponent<PlacementObjectComponent>();
+                    if (PC!=null)
+                    {
+                        //RemovePlacementEvent?.Invoke(PC);
+                        OnPlacementRemovedAction?.Invoke(PC);
+                    }
+                }  
             }
         }
 

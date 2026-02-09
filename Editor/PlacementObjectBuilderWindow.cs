@@ -690,7 +690,7 @@ namespace FuzzPhyte.Placement.Editor
                     areaUsageLimit: quadAreaUsageLimit,
                     spacingPadding: quadItemPadding,
                     biasScaleInward: inwardBiasScale,
-                    borderPenalityScale: quadScalePenalty,
+                    borderPenaltyScale: quadScalePenalty,
                     aroundCircle: numPiePieces,
                     maxPlacementAttemptsPerItem: quadPlacementAttempts,
                     startAnchor: startAnchorLocation,

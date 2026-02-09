@@ -55,17 +55,18 @@
             int randomSeed = 0,
             float areaUsageLimit = 0.85f,
             float spacingPadding = 0.01f,
-            float borderPenalityScale = 0.1f,
+            float borderPenaltyScale = 0.1f,
             int maxPlacementAttemptsPerItem = 64,
             float biasScaleInward=5,
             int aroundCircle=12,
             QuadStartAnchor startAnchor = QuadStartAnchor.Center,
-            PlacementSortMode sortMode = PlacementSortMode.LargestFirst)
+            PlacementSortMode sortMode = PlacementSortMode.LargestFirst,
+            QuadSizeMode sizeMode = QuadSizeMode.TransformScaleOnly)
         {
             if (items == null || items.Count == 0 || quadTransform == null) return 0;
 
-            Vector2 quadSize = GetQuadSizeFromTransform(quadTransform,QuadSizeMode.TransformScaleOnly);
-            //Debug.Log($"Quad Size: {quadSize}");
+            Vector2 quadSize = GetQuadSizeFromTransform(quadTransform,sizeMode);
+            Debug.Log($"Quad Size: {quadSize}");
             float quadArea = Mathf.Abs(quadSize.x * quadSize.y);
             if (quadArea <= 0.000001f) return 0;
 
@@ -94,11 +95,13 @@
                 PackedItem item = selected[i];
                 Vector2 local2D;
 
-                if (!TryFindPositionForCircle(item.Radius, placed, halfW, halfH, rng, maxPlacementAttemptsPerItem, borderPenalityScale,biasScaleInward, startAnchor, aroundCircle,out local2D))
+                if (!TryFindPositionForCircle(item.Radius, placed, halfW, halfH, rng, maxPlacementAttemptsPerItem, borderPenaltyScale,biasScaleInward, startAnchor, aroundCircle,out local2D))
                 {
                     continue;
                 }
-
+                // local2D will be the position in quad local space
+                // this works directly if our children items are under the quad scale
+                // this doesn't work directly if our children items are not under that quad scale
                 placed.Add(new PlacedCircle
                 {
                     Position = local2D,
@@ -106,8 +109,10 @@
                 });
                 
                 Vector3 local3 = new Vector3(local2D.x, 0f, local2D.y);
+                //transform to quadTransform scale
+                
                 //Vector3 worldPos = quadTransform.TransformPoint(local3);
-                //Debug.Log($"Local Pos: {local2D} and adjusted world {worldPos}");
+                Debug.Log($"Local Pos: {local3}");
                 item.Transform.position = local3 + quadTransform.position;
 
                 if (orientToSurface)
@@ -162,11 +167,12 @@
 
               
                 float radius = ComputeFootprintRadiusInQuadSpace(t, quadSpace);
+                Debug.Log($"Radius for {t.gameObject.name}: {radius}");
                 radius += pad * 0.5f;
                 //padding is going in twice I think, cut in half?
                 //float radius = ComputeBoundingSphereRadius(t) + pad*0.5f;
                 radius = Mathf.Max(0.001f, radius);
-
+                
                 list.Add(new PackedItem
                 {
                     Transform = t,
@@ -390,13 +396,17 @@
         {
             var renderers = item.GetComponentsInChildren<Renderer>();
             if (renderers.Length == 0)
+            {
+                Debug.LogWarning($"No Renderers Found. {0.25f} set as a radius fallback");
                 return 0.25f;
+            }
 
             float maxDist = 0f;
 
-            foreach (var r in renderers)
+            for (int r=0;r< renderers.Length;r++)
             {
-                Bounds lb = r.localBounds;
+                var AR = renderers[r];
+                Bounds lb = AR.bounds;
                 Vector3 c = lb.center;
                 Vector3 e = lb.extents;
 
@@ -416,7 +426,7 @@
                 for (int i = 0; i < corners.Length; i++)
                 {
                     // Convert corner to world space properly
-                    Vector3 worldCorner = r.transform.TransformPoint(corners[i]);
+                    Vector3 worldCorner = AR.transform.TransformPoint(corners[i]);
 
                     // Convert into quad local space
                     Vector3 quadLocal = quadTransform.InverseTransformPoint(worldCorner);

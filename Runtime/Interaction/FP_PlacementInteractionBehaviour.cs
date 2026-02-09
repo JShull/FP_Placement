@@ -3,7 +3,7 @@
     using UnityEngine;
     using System;
     using UnityEngine.Events;
-    [Serializable] public class PlacementInteractionEvent : UnityEvent<PlacementObject,FP_PlacementSocketComponent> { }
+    [Serializable] public class PlacementInteractionEvent : UnityEvent<PlacementObjectComponent,FP_PlacementSocketComponent> { }
     public class FP_PlacementInteractionBehaviour : PlacementBaseInput
     {
         [Header("Placement")]
@@ -32,7 +32,12 @@
         private FP_PlacementSocketComponent _hoverSocket;
         private FP_PlacementSocketComponent _previousHoverSocket;
         private FP_PlacementSocketComponent newHover;
-
+        [Space]
+        [Header("Magnet Parameters")]
+        [SerializeField] private bool useSocketMagnet = true;
+        [SerializeField] private float magnetRange = 0.5f;
+        [SerializeField] private float magnetStrength =8f;
+        [SerializeField] private float magnetSnapDistance =0.05f;
         [Header("Placement Bounds")]
         [SerializeField] private bool enforceBounds = true;
         [SerializeField] private Vector3 boundsCenter = Vector3.zero;
@@ -81,13 +86,52 @@
         #region Drag Related Logic
         protected void BeginDrag(Ray ray)
         {
+            var allHits = Physics.RaycastAll(ray,maxRayDistance,placementMask);
+            if (allHits == null || allHits.Length == 0)return;
+            for(int i=0;i<allHits.Length;i++)
+            {
+                //only need to hit something with PlacementObjectComponent on it
+                var hit = allHits[i];
+                if (drawDebug)
+                {
+                    Debug.DrawRay(ray.origin, ray.direction*maxRayDistance, Color.red, 2f);
+                }
+                
+                if (hit.collider.TryGetComponent(out PlacementObjectComponent poc))
+                {
+                    if (poc.Locked) return;
+
+                    _activeComponent = poc;
+                    _activePlacement = poc.PlacementData;
+                    _startPos = poc.RootPlacement.position;
+                    _startRot = poc.RootPlacement.rotation;
+                    _dragTarget = poc.RootPlacement;
+                    //_dragLocalStartPoint = hit.point - poc.RootPlacement.position;
+                    // current socket check and remove it if we have one
+                    if (_activeComponent.CurrentSocket != null)
+                    {
+                        _activeComponent.CurrentSocket.RemovePlacement(poc,poc.RootPlacement);
+                        _activeComponent.CurrentSocket = null;
+                    }
+                    // plane work
+                    // Where did we hit the object?
+                    Plane dragPlane = new Plane(-ray.direction, _dragTarget.position);
+                    dragPlane.Raycast(ray, out _dragRayDistance);
+
+                    // Offset so we don’t snap pivot to cursor
+                    Vector3 hitPoint = ray.GetPoint(_dragRayDistance);
+                    _dragLocalOffset = _dragTarget.position - hitPoint;
+                    break;
+                }
+            }
+            /*
             if (Physics.Raycast(ray, out var hit, maxRayDistance))
             {
                 if (drawDebug)
                 {
                     Debug.DrawRay(ray.origin, ray.direction*maxRayDistance, Color.red, 2f);
                 }
-
+                
                 if (hit.collider.TryGetComponent(out PlacementObjectComponent poc))
                 {
                     if (poc.Locked) return;
@@ -114,6 +158,7 @@
                     _dragLocalOffset = _dragTarget.position - hitPoint;
                 }
             }
+            */
         }
        
         protected void UpdateDrag(Ray ray)
@@ -135,7 +180,7 @@
             // 3. If hovering a valid socket, override transform
             if (_hoverSocket != null)
             {
-                ApplySocketOverride();
+                ApplySocketMagnetism();
                 _activeSocket = _hoverSocket;
             }
             else
@@ -206,7 +251,7 @@
                 var Placement = hit.collider.gameObject.GetComponent<PlacementObjectComponent>();
                 if(Placement != null)
                 {
-                    Debug.Log($"Hit placement object: {Placement.name}");
+                    //Debug.Log($"Hit placement object: {Placement.name}");
                     // location of top
                     if (Placement.GetTopSide != null)
                     {
@@ -282,10 +327,10 @@
 
                 if (drawDebug)
                 {
-                    Debug.Log($"[Placement] Ray hit socket candidate: {socket.name}");
+                    //Debug.Log($"[Placement] Ray hit socket candidate: {socket.name}");
                 }
 
-                if (!socket.CanAccept(_activePlacement))
+                if (!socket.CanAccept(_activeComponent))
                     continue;
 
                 newHover = socket;
@@ -315,20 +360,72 @@
                 _hoverSocket.transform.rotation
             );
         }
+        protected void ApplySocketMagnetism()
+        {
+            if (!useSocketMagnet)
+            {
+                ApplySocketOverride();
+                return;
+            }
+            if(_hoverSocket == null || _dragTarget == null)
+            {
+                return;
+            }
+            // baseline position from free drag
+            Vector3 surfacePos = _dragTarget.position;
+            Quaternion surfaceRot = _dragTarget.rotation;
+
+            // Socket Target
+
+            Vector3 socketPos = _hoverSocket.transform.position;
+            Quaternion socketRot = _hoverSocket.transform.rotation;
+
+            // Distance to socket
+            float dist = Vector3.Distance(surfacePos, socketPos);
+
+            if (dist > magnetRange)
+            {
+                return;
+            }
+
+            //normalized pull factor (0 far, 1 close)
+            float t = 1f - (dist/magnetRange);
+
+            //smooth easing
+            t = t * t;
+
+            // Blend Position
+
+            Vector3 blendPos = Vector3.Lerp(surfacePos,socketPos,t);
+
+            //blend rotation? 
+            //Quaternion blendedRot = Quaternion.Slerp(surfaceRot,socketRot,t);
+
+            _dragTarget.position = Vector3.Lerp(surfacePos,blendPos,Time.deltaTime*magnetStrength);
+            //_dragTarget.rotation = Quaternion.Slerp(surfaceRot,blendedRot,Time.deltaTime*magnetStrength);
+
+            // really close snap it in
+            if (dist < magnetSnapDistance)
+            {
+                _dragTarget.SetPositionAndRotation(socketPos,socketRot);
+            }
+
+        }
         #endregion
         protected void EndDrag()
         {
             if (_activePlacement == null)
                 return;
-
+            if(_activeComponent == null)
+                return;
             if (_activeSocket != null)
             {
                 _activeSocket.CommitPlacement(
-                    _activePlacement,
+                    _activeComponent,
                     _activeComponent.transform
                 );
                 _activeComponent.CurrentSocket = _activeSocket;
-                dragEndSocketSuccessEvent?.Invoke(_activePlacement, _activeSocket);
+                dragEndSocketSuccessEvent?.Invoke(_activeComponent, _activeSocket);
             }
             else
             {
@@ -347,9 +444,9 @@
                     {
                         Debug.Log("[Placement] Dropped on surface (no socket). Keeping position.");
                     }
-                    dragEndMovedLocationEvent?.Invoke(_activePlacement, null);
+                    dragEndMovedLocationEvent?.Invoke(_activeComponent, null);
                 }
-                dragEndSocketFailedEvent?.Invoke(_activePlacement, null);
+                dragEndSocketFailedEvent?.Invoke(_activeComponent, null);
             }
             if(_previousHoverSocket != null)
             {
@@ -387,11 +484,11 @@
         /// <param name="worldPos"></param>
         protected override void OnPrimaryDoubleClick(Vector3 worldPos)
         {
-            doubleClickEvent?.Invoke(_activePlacement, _activeSocket);
+            doubleClickEvent?.Invoke(_activeComponent, _activeSocket);
         }
         protected override void OnPrimaryClick(Vector3 worldPos)
         {
-            singleClickEvent?.Invoke(_activePlacement,_activeSocket);
+            singleClickEvent?.Invoke(_activeComponent,_activeSocket);
         }
     }
 }
