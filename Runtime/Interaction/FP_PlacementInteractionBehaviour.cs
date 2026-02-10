@@ -13,32 +13,34 @@
         [SerializeField] private PlacementObjectComponent _activeComponent;
         [SerializeField] private PlacementObjectComponent _clickedComponent;
         [SerializeField] private FP_PlacementSocketComponent _activeSocket;
-
         [SerializeField] private Vector3 _startPos;
         [SerializeField] private Quaternion _startRot;
-        [Tooltip("Where we grabbed the _activeComponent in local space.")]
-        //[SerializeField] private Vector3 _dragLocalStartPoint;
+        
         [Space]
         [Header("Drag Surface Parameters")]
         [SerializeField] private LayerMask surfaceMask;
         [SerializeField] private float surfaceCastDistance = 2f;
-        //[SerializeField] private bool _dragStarted;
         [SerializeField] private Transform _currentSurface;
         [SerializeField] private Plane _currentSurfacePlane;
         [Header("Private Parameters")]
         [SerializeField] private float _dragRayDistance;
         [SerializeField] private Vector3 _dragLocalOffset;
         [SerializeField] private Transform _dragTarget;
+        
+        [Space]
         [Header("Socket Hover Parameters")]
         [SerializeField] private FP_PlacementSocketComponent _hoverSocket;
         [SerializeField] private FP_PlacementSocketComponent _previousHoverSocket;
         [SerializeField] private FP_PlacementSocketComponent newHover;
+        
         [Space]
         [Header("Magnet Parameters")]
         [SerializeField] private bool useSocketMagnet = true;
         [SerializeField] private float magnetRange = 0.5f;
         [SerializeField] private float magnetStrength =8f;
         [SerializeField] private float magnetSnapDistance =0.05f;
+        
+        [Space]
         [Header("Placement Bounds")]
         [SerializeField] private bool enforceBounds = true;
         [SerializeField] private Vector3 boundsCenter = Vector3.zero;
@@ -47,7 +49,6 @@
 
         [Header("Clicky Placement Events")]
         [SerializeField] protected PlacementInteractionEvent doubleClickEvent;
-        
         [SerializeField] protected PlacementInteractionEvent singleClickEvent;
         [SerializeField] protected PlacementInteractionEvent dragEndSocketSuccessEvent;
         [SerializeField] protected PlacementInteractionEvent dragEndSocketFailedEvent;
