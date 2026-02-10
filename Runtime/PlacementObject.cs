@@ -6,6 +6,14 @@ namespace FuzzPhyte.Placement
     using System.Collections.Generic;
     using UnityEngine;
 
+    public enum InputState
+    {
+        NA,
+        Idle,
+        Pressing,
+        AwaitingSecondClick,
+        Dragging,
+    }
     public enum StackSuitability
     {
         Heavy,

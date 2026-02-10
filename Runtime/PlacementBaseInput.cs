@@ -5,15 +5,15 @@ namespace FuzzPhyte.Placement
     using UnityEngine.InputSystem;
     using UnityEngine.InputSystem.EnhancedTouch;
     using System.Collections;
-
+    
     public abstract class PlacementBaseInput : MonoBehaviour
     {
         [Header("Input")]
+        [SerializeField] protected InputState _state = InputState.Idle;
         [SerializeField] protected InputActionReference _pointerPosition;
         [SerializeField] protected InputActionReference _primaryClick;
-
         [SerializeField] protected Camera targetCamera;
-
+        [Space]
         [Header("Raycasting")]
         [SerializeField] protected LayerMask placementMask;
         [Header("Input Region Gate")]
@@ -21,20 +21,19 @@ namespace FuzzPhyte.Placement
         [SerializeField] protected bool _requireRegion = true;
         [Tooltip("Screen region that accepts orbit/zoom input.")]
         [SerializeField] protected FP_ScreenRegionAsset _inputRegion;
-
+        [Space]
         [Header("Options")]
         [Tooltip("If true, orbit only occurs while the pointer is over the Game view (best effort).")]
         [SerializeField] protected bool _requireApplicationFocus = true;
         [SerializeField] protected bool _isDown;
         [Header("Input Lock")]
         [SerializeField] private bool _inputLocked;
-
+        public bool IsInputLocked => _inputLocked;
         [Space]
         [Header("Click Settings")]
         [SerializeField] protected float doubleClickThreshold = 0.25f;
         [SerializeField] protected float dragStartThresholdPixels = 8f;
         [SerializeField] protected Vector2 _pressStartPos;
-
         [Space]
         [Header("Drag Timing")]
         [SerializeField] protected float dragSuppressTime = 0.12f; //seconds
@@ -43,14 +42,10 @@ namespace FuzzPhyte.Placement
 
         protected float _lastClickTime = -1f;
         protected int _clickCount = 0;
-        [SerializeField]protected bool _dragOccurred = false;
-        protected bool _clickResolvedThisRelease;
 
-        public bool IsInputLocked => _inputLocked;
         protected Vector2 _lastPos;
-        protected bool _startedThisFrame;
-        [SerializeField] protected bool _releasedThisFrame;
-        
+
+        [SerializeField] Coroutine _clickResolutionRoutine;
         public virtual void OnEnable()
         {
             if (_pointerPosition?.action != null) _pointerPosition.action.Enable();
@@ -75,7 +70,6 @@ namespace FuzzPhyte.Placement
             }
             EnhancedTouchSupport.Disable();
         }
-        
         public virtual void Update()
         {
             if (!CanProcessInput()) return;
@@ -87,17 +81,17 @@ namespace FuzzPhyte.Placement
             }
             Vector2 current = _pointerPosition.action.ReadValue<Vector2>();
             if (!RegionGate(current)) return;
-            if(_isDown && !_dragOccurred && _dragEligible)
+
+            if(_state==InputState.Pressing && _dragEligible)
             {
                 float dragDistance = Vector2.Distance(current, _pressStartPos);
-
                 if(dragDistance>= dragStartThresholdPixels)
                 {
-                    _dragOccurred = true;
-                    _clickCount = 0;
+                   
+                    _state = InputState.Dragging;
+                    OnDragStarted();
                 }
             }
-            
             _lastPos = current;
             UpdateLogic();
         }
@@ -125,41 +119,29 @@ namespace FuzzPhyte.Placement
         {
             if (!CanProcessInput()) return;
             if (_pointerPosition?.action == null) return;
-            if (_inputLocked)
-            {
-                ForceRelease();
-                return;
-            }
-            _isDown = true;
-            _startedThisFrame = true;
-            _releasedThisFrame = false;
-            _dragOccurred = false;
-            _dragEligible = false;
-            float time = Time.time;
-            if(time - _lastClickTime <= doubleClickThreshold)
-            {
-                _clickCount++;
-            }
-            else
-            {
-                _clickCount = 1;
-            }
-            
-            _lastClickTime = time;
             _pressStartPos = _pointerPosition.action.ReadValue<Vector2>();
-            _lastPos = _pointerPosition.action.ReadValue<Vector2>();
-            _clickResolvedThisRelease = false;
-            if (_clickCount >= 2)
+            _isDown = true;
+
+            if (_state == InputState.AwaitingSecondClick)
             {
-                _dragEligible = false;
+                // SECOND CLICK
+                _state = InputState.Idle;
+                if (_clickResolutionRoutine != null)
+                {
+                    StopCoroutine(_clickResolutionRoutine);
+                    _clickResolutionRoutine = null;
+                }
+                OnPrimaryDoubleClick(GetPointerWorldPosition());
                 return;
             }
-            if (_dragEligibilityRoutine != null)
-            {
-                StopCoroutine(_dragEligibilityRoutine);
-            }
-            _dragEligibilityRoutine = StartCoroutine(EnableDragAfterDelay());
 
+            // FIRST CLICK
+            _state = InputState.Pressing;
+
+            if (_dragEligibilityRoutine != null)
+                StopCoroutine(_dragEligibilityRoutine);
+
+            _dragEligibilityRoutine = StartCoroutine(EnableDragAfterDelay());
         }
         protected virtual IEnumerator EnableDragAfterDelay()
         {
@@ -169,14 +151,19 @@ namespace FuzzPhyte.Placement
         protected virtual void OnPrimaryUp(InputAction.CallbackContext ctx)
         {
             _isDown = false;
-            _releasedThisFrame = true;
-            _startedThisFrame = false;
-            _dragEligible = false;
-            Debug.Log($"Primary Up");
-            if (_dragEligibilityRoutine!=null)
+            if (_state == InputState.Pressing)
             {
-                StopCoroutine(_dragEligibilityRoutine);
-                _dragEligibilityRoutine = null;
+                _state = InputState.AwaitingSecondClick;
+                _clickResolutionRoutine = StartCoroutine(
+                    ResolveClickAfterDelay(GetPointerWorldPosition())
+                );
+                return;
+            }
+
+            if (_state == InputState.Dragging)
+            {
+                OnDragEnded();
+                _state = InputState.Idle;
             }
         }
         protected virtual bool CanProcessInput()
@@ -184,33 +171,19 @@ namespace FuzzPhyte.Placement
             if (!_requireApplicationFocus) return true;
             return Application.isFocused;
         }
-        
-        protected abstract void UpdateLogic();
-        /// <summary>
-        /// Call before additional logic code as needed to confirm primary or double click
-        /// </summary>
-        protected virtual void ResolveClickIfNeeded()
+        protected virtual IEnumerator ResolveClickAfterDelay(Vector3 worldPos)
         {
-            if (!_releasedThisFrame) return;
-            if (_clickResolvedThisRelease) return;
-
-            _clickResolvedThisRelease = true;
-
-            if (_dragOccurred)
-                return; // drag wins over click
-
-            Vector3 worldPos = GetPointerWorldPosition();
-
-            if (_clickCount >= 2)
-            {
-                OnPrimaryDoubleClick(worldPos);
-                _clickCount = 0;
-            }
-            else
+            yield return new WaitForSeconds(doubleClickThreshold);
+            if(_state == InputState.AwaitingSecondClick)
             {
                 OnPrimaryClick(worldPos);
+                _state = InputState.Idle;
             }
+            _clickResolutionRoutine = null;
         }
+        protected abstract void UpdateLogic();
+        protected abstract void OnDragStarted();
+        protected abstract void OnDragEnded();
         protected virtual Vector3 GetPointerWorldPosition()
         {
             Vector2 screenPos = _pointerPosition.action.ReadValue<Vector2>();
@@ -237,10 +210,7 @@ namespace FuzzPhyte.Placement
         {
             if (!IsInRegion(pointerPos))
             {
-                // primary mouse orbit input parameters
                 if (_isDown) ForceRelease();
-                _startedThisFrame = false;
-                _releasedThisFrame = false;
                 return false;
             }
             return true;
@@ -260,8 +230,6 @@ namespace FuzzPhyte.Placement
         protected virtual void ForceRelease()
         {
             _isDown = false;
-            _startedThisFrame = false;
-            _releasedThisFrame = false;
             _dragEligible = false;
             if (_dragEligibilityRoutine != null)
             {

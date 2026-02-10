@@ -20,10 +20,9 @@
         //[SerializeField] private Vector3 _dragLocalStartPoint;
         [Space]
         [Header("Drag Surface Parameters")]
-        [SerializeField] private float boxCastDist = 2f;
         [SerializeField] private LayerMask surfaceMask;
         [SerializeField] private float surfaceCastDistance = 2f;
-        [SerializeField] private bool _dragStarted;
+        //[SerializeField] private bool _dragStarted;
         [SerializeField] private Transform _currentSurface;
         [SerializeField] private Plane _currentSurfacePlane;
         [Header("Private Parameters")]
@@ -62,6 +61,13 @@
         }
         protected override void UpdateLogic()
         {
+            if(_state !=InputState.Dragging) return;
+            if (_activePlacement == null) return;
+            Ray ray = targetCamera.ScreenPointToRay(_pointerPosition.action.ReadValue<Vector2>());
+            UpdateDrag(ray);
+            
+            //OLD
+            /*
             ResolveClickIfNeeded();
             // Pointer position already validated + gated by base class
             Vector2 screenPos = _pointerPosition.action.ReadValue<Vector2>();
@@ -69,7 +75,7 @@
             // --- Begin drag ---
             if (_dragOccurred&&!_dragStarted)
             {
-                BeginDrag(ray);
+                OnDragStarted();
                 _dragStarted = true;
             }
             // --- Update drag ---
@@ -81,15 +87,21 @@
             if (_releasedThisFrame && _dragStarted)
             {
                 Debug.Log($"End Drag?");
-                EndDrag();
+                OnDragEnded();
             }
             // reset per-frame flags (important!)
             _startedThisFrame = false;
             _releasedThisFrame = false;
+            */
         }
         #region Drag Related Logic
-        protected void BeginDrag(Ray ray)
+        protected override void OnDragStarted()
         {
+            if(_state != InputState.Dragging)
+            {
+                return;
+            }
+            Ray ray = targetCamera.ScreenPointToRay(_pointerPosition.action.ReadValue<Vector2>());
             var allHits = Physics.RaycastAll(ray,maxRayDistance,placementMask);
             if (allHits == null || allHits.Length == 0)return;
             for(int i=0;i<allHits.Length;i++)
@@ -104,7 +116,6 @@
                 if (hit.collider.TryGetComponent(out PlacementObjectComponent poc))
                 {
                     if (poc.Locked) return;
-                    if (!_dragOccurred) return;
 
                     _activeComponent = poc;
                     _activePlacement = poc.PlacementData;
@@ -138,52 +149,117 @@
        
         protected void UpdateDrag(Ray ray)
         {
-            if (_activePlacement == null || _dragTarget == null)
-                return;
+            // we need these to do anything, so return early if missing
+            if (_activePlacement == null || _dragTarget == null || _activeComponent==null) return;
 
             if (drawDebug)
             {
                 Debug.DrawRay(ray.origin, ray.direction * maxRayDistance, Color.orange, 0.5f);
             }
+            ResolveSurfaceBelow();
+            // Free Drag Target Point Work
+            Vector3 targetPoint = GetSurfaceProjectedPoint(ray);
+            targetPoint = ApplySurfaceHeightCorrection(targetPoint);
+            _dragTarget.position = targetPoint;
+            
+            // Socket Hover Work
+            newHover = null;
+            var hits = Physics.RaycastAll(ray, maxRayDistance, placementMask);
 
-            // 1. Always update free drag first
-            UpdateFreeDrag(ray);
+            if (hits == null || hits.Length == 0)
+                return;
 
-            // 2. Check for socket hover
-            UpdateSocketHover(ray);
+            foreach (var hit in hits)
+            {
+                // Socket might be anywhere in the hierarchy
+                if (!hit.collider.TryGetComponent(out FP_PlacementSocketComponent socket))
+                    continue;
 
-            // 3. If hovering a valid socket, override transform
+                if (drawDebug)
+                {
+                    //Debug.Log($"[Placement] Ray hit socket candidate: {socket.name}");
+                }
+
+                if (!socket.CanAccept(_activeComponent))
+                    continue;
+
+                newHover = socket;
+                break; // first valid socket wins break out
+            }
+            if (_previousHoverSocket != newHover)
+            {
+                if (_previousHoverSocket != null)
+                    _previousHoverSocket.SetHoverState(false);
+
+                if (newHover != null)
+                    newHover.SetHoverState(true);
+
+                _previousHoverSocket = newHover;
+            }
+            _hoverSocket = newHover;
+            
+            // Magnetism or null
+
             if (_hoverSocket != null)
             {
-                ApplySocketMagnetism();
+                // ApplySocketMagnetism();
+
+                // Socket Hover Work
+                if (!useSocketMagnet)
+                {
+                    // not using magnetism, just snap to socket
+                    Transform target = _activeComponent.RootPlacement;
+
+                    target.SetPositionAndRotation(
+                        _hoverSocket.transform.position,
+                        _hoverSocket.transform.rotation
+                    );
+                    // kick out
+                    return;
+                }
+                // baseline position from free drag
+                Vector3 surfacePos = _dragTarget.position;
+                Quaternion surfaceRot = _dragTarget.rotation;
+                // Socket Target
+                Vector3 socketPos = _hoverSocket.transform.position;
+                Quaternion socketRot = _hoverSocket.transform.rotation;
+                // Distance to socket
+                float dist = Vector3.Distance(surfacePos, socketPos);
+                if (dist > magnetRange)
+                {
+                    // kick out we failed on distance check, no magnetism applied
+                    return;
+                }
+                //normalized pull factor (0 far, 1 close)
+                float t = 1f - (dist / magnetRange);
+
+                //smooth easing
+                t = t * t;
+
+                // Blend Position
+
+                Vector3 blendPos = Vector3.Lerp(surfacePos, socketPos, t);
+
+                //blend rotation? 
+                //Quaternion blendedRot = Quaternion.Slerp(surfaceRot,socketRot,t);
+
+                _dragTarget.position = Vector3.Lerp(surfacePos, blendPos, Time.deltaTime * magnetStrength);
+                //_dragTarget.rotation = Quaternion.Slerp(surfaceRot,blendedRot,Time.deltaTime*magnetStrength);
+
+                // really close snap it in
+                if (dist < magnetSnapDistance)
+                {
+                    _dragTarget.SetPositionAndRotation(socketPos, socketRot);
+                }
+
                 _activeSocket = _hoverSocket;
             }
             else
             {
                 _activeSocket = null;
             }
-            return;
-
         }
-        #region Drag Additional
-     
-        protected void UpdateFreeDrag(Ray ray)
-        {
-            if (_dragTarget == null || _activeComponent == null)
-                return;
-
-            // 1. Find surface below the dragged object
-            ResolveSurfaceBelow();
-
-            // 2. Project mouse onto surface plane, from the camera to the active object, to the surface below
-            Vector3 targetPoint = GetSurfaceProjectedPoint(ray);
-            //Debug.Log($"{_dragLocalOffset} = offset. Target Point: {targetPoint} Get Surface Projection Point");
-            // 3. Maintain bottom contact
-            targetPoint = ApplySurfaceHeightCorrection(targetPoint);
-            //Debug.Log($"Target Point After Height Correction: {targetPoint} Apply Surface Height Correction");
-            // 4. Apply final position
-            _dragTarget.position = targetPoint;
-        }
+        #region Drag Details
         protected void ResolveSurfaceBelow()
         {
             //var sides = _activeComponent.Sides.ToArray();
@@ -255,7 +331,8 @@
                 _currentSurface = bestHit.collider.transform;
                 _currentSurfacePlane = new Plane(bestHit.normal, bestHit.point);
             }
-        }  
+        }
+
         protected Vector3 GetSurfaceProjectedPoint(Ray ray)
         {
             if (_currentSurface == null)
@@ -285,63 +362,23 @@
             targetPoint.y += extentHieghtYOffset;
             return targetPoint;
         }
-        void UpdateSocketHover(Ray ray)
-        {
-            newHover = null;
-
-            var hits = Physics.RaycastAll(ray, maxRayDistance, placementMask);
-
-            if (hits == null || hits.Length == 0)
-                return;
-
-            foreach (var hit in hits)
-            {
-                // Socket might be anywhere in the hierarchy
-                if (!hit.collider.TryGetComponent(out FP_PlacementSocketComponent socket))
-                    continue;
-
-                if (drawDebug)
-                {
-                    //Debug.Log($"[Placement] Ray hit socket candidate: {socket.name}");
-                }
-
-                if (!socket.CanAccept(_activeComponent))
-                    continue;
-
-                newHover = socket;
-                break; // first valid socket wins break out
-            }
-            if (_previousHoverSocket != newHover)
-            {
-                if (_previousHoverSocket != null)
-                    _previousHoverSocket.SetHoverState(false);
-
-                if (newHover != null)
-                    newHover.SetHoverState(true);
-
-                _previousHoverSocket = newHover;
-            }
-            _hoverSocket = newHover;
-        }
-        void ApplySocketOverride()
-        {
-            if (_hoverSocket == null || _activeComponent == null)
-                return;
-
-            Transform t = _activeComponent.RootPlacement;
-
-            t.SetPositionAndRotation(
-                _hoverSocket.transform.position,
-                _hoverSocket.transform.rotation
-            );
-        }
+        [System.Obsolete("Not needed to be isolated")]
         protected void ApplySocketMagnetism()
         {
             if (!useSocketMagnet)
             {
-                ApplySocketOverride();
+                // not using magnetism, just snap to socket
+                if (_hoverSocket == null || _activeComponent == null) return;
+
+                Transform target = _activeComponent.RootPlacement;
+
+                target.SetPositionAndRotation(
+                    _hoverSocket.transform.position,
+                    _hoverSocket.transform.rotation
+                );
                 return;
             }
+
             if(_hoverSocket == null || _dragTarget == null)
             {
                 return;
@@ -387,7 +424,7 @@
 
         }
         #endregion
-        protected void EndDrag()
+        protected override void OnDragEnded()
         {
             if (_activePlacement == null)
                 return;
@@ -445,8 +482,8 @@
             _hoverSocket = null;
             _dragTarget = null;
             _previousHoverSocket = null;
-            _dragStarted = false;
-            _dragOccurred = false;
+            //_dragStarted = false;
+            //_dragOccurred = false;
             _dragLocalOffset = Vector3.zero;
         }
         protected bool IsWithinBounds(Vector3 position)
@@ -526,7 +563,7 @@
         protected override void ForceRelease()
         {
             base.ForceRelease();
-            _dragStarted = false;
+            //_dragStarted = false;
         }
     }
 }
