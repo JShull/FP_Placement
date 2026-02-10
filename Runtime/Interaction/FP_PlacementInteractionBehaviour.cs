@@ -12,7 +12,7 @@
         [SerializeField] private PlacementObject _activePlacement;
         [SerializeField] private PlacementObjectComponent _activeComponent;
         [SerializeField] private PlacementObjectComponent _clickedComponent;
-        private FP_PlacementSocketComponent _activeSocket;
+        [SerializeField] private FP_PlacementSocketComponent _activeSocket;
 
         [SerializeField] private Vector3 _startPos;
         [SerializeField] private Quaternion _startRot;
@@ -29,9 +29,10 @@
         [SerializeField] private float _dragRayDistance;
         [SerializeField] private Vector3 _dragLocalOffset;
         [SerializeField] private Transform _dragTarget;
-        private FP_PlacementSocketComponent _hoverSocket;
-        private FP_PlacementSocketComponent _previousHoverSocket;
-        private FP_PlacementSocketComponent newHover;
+        [Header("Socket Hover Parameters")]
+        [SerializeField] private FP_PlacementSocketComponent _hoverSocket;
+        [SerializeField] private FP_PlacementSocketComponent _previousHoverSocket;
+        [SerializeField] private FP_PlacementSocketComponent newHover;
         [Space]
         [Header("Magnet Parameters")]
         [SerializeField] private bool useSocketMagnet = true;
@@ -66,33 +67,7 @@
             Ray ray = targetCamera.ScreenPointToRay(_pointerPosition.action.ReadValue<Vector2>());
             UpdateDrag(ray);
             
-            //OLD
-            /*
-            ResolveClickIfNeeded();
-            // Pointer position already validated + gated by base class
-            Vector2 screenPos = _pointerPosition.action.ReadValue<Vector2>();
-            Ray ray = targetCamera.ScreenPointToRay(screenPos);
-            // --- Begin drag ---
-            if (_dragOccurred&&!_dragStarted)
-            {
-                OnDragStarted();
-                _dragStarted = true;
-            }
-            // --- Update drag ---
-            if (_isDown && _dragStarted && _activePlacement != null)
-            {
-                UpdateDrag(ray);
-            }
-            // --- End drag ---
-            if (_releasedThisFrame && _dragStarted)
-            {
-                Debug.Log($"End Drag?");
-                OnDragEnded();
-            }
-            // reset per-frame flags (important!)
-            _startedThisFrame = false;
-            _releasedThisFrame = false;
-            */
+            
         }
         #region Drag Related Logic
         protected override void OnDragStarted()
@@ -203,7 +178,7 @@
             if (_hoverSocket != null)
             {
                 // ApplySocketMagnetism();
-
+                _activeSocket = _hoverSocket;
                 // Socket Hover Work
                 if (!useSocketMagnet)
                 {
@@ -252,7 +227,7 @@
                     _dragTarget.SetPositionAndRotation(socketPos, socketRot);
                 }
 
-                _activeSocket = _hoverSocket;
+                
             }
             else
             {
