@@ -1,10 +1,10 @@
 {
     "name": "com.fuzzphyte.placement",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "displayName": "FP Placement",
     "description": "FP Placement is a library for placement of dynamic objects in a 3D space.",
     "unity": "6000.3",
-    "unityRelease": "2f1",
+    "unityRelease": "5f2",
     "documentationUrl": "https://github.com/jshull/FP_Placement/blob/main/README.md",
     "changelogUrl": "https://github.com/JShull/FP_Placement/blob/main/CHANGELOG.md",
     "licensesUrl": "https://github.com/jshull/FP_Placement/blob/main/LICENSE.md",
@@ -25,8 +25,13 @@
       },
       {
         "displayName": "Orbital Camera",
-        "description": "Includes an example scene and all data objects for Orbital Camera functionality",
+        "description": "Includes an example scene and all data objects for Orbital Camera functionality, see the PlacementScene for a good example",
         "path": "Samples~/OrbitalCamera"
+      },
+      {
+         "displayName": "Layout Render Cut",
+          "description": "URP render feature cutting a hole in a mesh",
+          "path": "Samples~/LayoutRenderCut"
       }
     ],
     "keywords": [
