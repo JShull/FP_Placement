@@ -4,6 +4,7 @@ namespace FuzzPhyte.Placement
     using UnityEngine;
     using UnityEngine.InputSystem;
     using UnityEngine.InputSystem.EnhancedTouch;
+    using System.Collections;
 
     public abstract class PlacementBaseInput : MonoBehaviour
     {
@@ -31,16 +32,24 @@ namespace FuzzPhyte.Placement
         [Space]
         [Header("Click Settings")]
         [SerializeField] protected float doubleClickThreshold = 0.25f;
+        [SerializeField] protected float dragStartThresholdPixels = 8f;
+        [SerializeField] protected Vector2 _pressStartPos;
+
+        [Space]
+        [Header("Drag Timing")]
+        [SerializeField] protected float dragSuppressTime = 0.12f; //seconds
+        [SerializeField] protected bool _dragEligible;
+        protected Coroutine _dragEligibilityRoutine;
 
         protected float _lastClickTime = -1f;
         protected int _clickCount = 0;
-        protected bool _dragOccurred = false;
+        [SerializeField]protected bool _dragOccurred = false;
         protected bool _clickResolvedThisRelease;
 
         public bool IsInputLocked => _inputLocked;
         protected Vector2 _lastPos;
         protected bool _startedThisFrame;
-        protected bool _releasedThisFrame;
+        [SerializeField] protected bool _releasedThisFrame;
         
         public virtual void OnEnable()
         {
@@ -78,10 +87,17 @@ namespace FuzzPhyte.Placement
             }
             Vector2 current = _pointerPosition.action.ReadValue<Vector2>();
             if (!RegionGate(current)) return;
-            if (_isDown && current!=_lastPos)
+            if(_isDown && !_dragOccurred && _dragEligible)
             {
-                _dragOccurred = true; 
+                float dragDistance = Vector2.Distance(current, _pressStartPos);
+
+                if(dragDistance>= dragStartThresholdPixels)
+                {
+                    _dragOccurred = true;
+                    _clickCount = 0;
+                }
             }
+            
             _lastPos = current;
             UpdateLogic();
         }
@@ -118,6 +134,7 @@ namespace FuzzPhyte.Placement
             _startedThisFrame = true;
             _releasedThisFrame = false;
             _dragOccurred = false;
+            _dragEligible = false;
             float time = Time.time;
             if(time - _lastClickTime <= doubleClickThreshold)
             {
@@ -127,16 +144,40 @@ namespace FuzzPhyte.Placement
             {
                 _clickCount = 1;
             }
+            
             _lastClickTime = time;
+            _pressStartPos = _pointerPosition.action.ReadValue<Vector2>();
             _lastPos = _pointerPosition.action.ReadValue<Vector2>();
             _clickResolvedThisRelease = false;
+            if (_clickCount >= 2)
+            {
+                _dragEligible = false;
+                return;
+            }
+            if (_dragEligibilityRoutine != null)
+            {
+                StopCoroutine(_dragEligibilityRoutine);
+            }
+            _dragEligibilityRoutine = StartCoroutine(EnableDragAfterDelay());
 
+        }
+        protected virtual IEnumerator EnableDragAfterDelay()
+        {
+            yield return new WaitForSeconds(dragSuppressTime);
+            _dragEligible = true;
         }
         protected virtual void OnPrimaryUp(InputAction.CallbackContext ctx)
         {
             _isDown = false;
             _releasedThisFrame = true;
             _startedThisFrame = false;
+            _dragEligible = false;
+            Debug.Log($"Primary Up");
+            if (_dragEligibilityRoutine!=null)
+            {
+                StopCoroutine(_dragEligibilityRoutine);
+                _dragEligibilityRoutine = null;
+            }
         }
         protected virtual bool CanProcessInput()
         {
@@ -160,7 +201,7 @@ namespace FuzzPhyte.Placement
 
             Vector3 worldPos = GetPointerWorldPosition();
 
-            if (_clickCount == 2)
+            if (_clickCount >= 2)
             {
                 OnPrimaryDoubleClick(worldPos);
                 _clickCount = 0;
@@ -221,6 +262,12 @@ namespace FuzzPhyte.Placement
             _isDown = false;
             _startedThisFrame = false;
             _releasedThisFrame = false;
+            _dragEligible = false;
+            if (_dragEligibilityRoutine != null)
+            {
+                StopCoroutine(_dragEligibilityRoutine);
+                _dragEligibilityRoutine = null;
+            }
         }
     }
 }

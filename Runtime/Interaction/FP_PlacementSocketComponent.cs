@@ -6,7 +6,7 @@
     [System.Serializable]
     public class PlacementSocketHoverEvent : UnityEvent<FP_PlacementSocketComponent> { }
     public class PlacementObjectEvent:UnityEvent<PlacementObjectComponent> { }
-    public class FP_PlacementSocketComponent : MonoBehaviour
+    public class FP_PlacementSocketComponent : MonoBehaviour, IFPPlacementSocket
     {
         [SerializeField] Transform SocketLocation;
         [Header("Socket Rules")]
@@ -54,8 +54,8 @@
         public System.Action<FP_PlacementSocketComponent> OnDragEndAction;
         public System.Action<FP_PlacementSocketComponent> OnHoverCapacityFullAction;
 
-        public System.Action<PlacementObjectComponent>OnPlacementAddedAction;
-        public System.Action<PlacementObjectComponent>OnPlacementRemovedAction;
+        public System.Action<PlacementObjectComponent> OnPlacementAddedAction;
+        public System.Action<PlacementObjectComponent> OnPlacementRemovedAction;
         
         public System.Action<PlacementObjectComponent> HitCapacityAction;
         public System.Action<PlacementObjectComponent> ExitedCapacityAction;
@@ -112,13 +112,14 @@
         /// <param name="placement"></param>
         /// <param name="pos"></param>
         /// <returns></returns>
-        public bool OverrideCanAccept(PlacementObjectComponent placement, Vector3 pos)
+        public bool OverrideCanAccept(PlacementObjectComponent placement, Vector3 pos, Transform instance)
         {
             if (placement == null) return false;
             if (_socketCollider == null) return false;
             if(_socketCollider.bounds.Contains(pos))
             {
-                return CanAccept(placement);
+                if (!CanAccept(placement)) return false;
+                return CommitPlacement(placement, instance);
             }
             return false;
         }
@@ -140,23 +141,24 @@
 
             return false;
         }
-        public void CommitPlacement(PlacementObjectComponent placement, Transform instance)
+        private bool CommitPlacement(PlacementObjectComponent placement, Transform instance)
         {
             if (placement == null || instance == null)
-                return;
+                return false;
 
             if (!CanAccept(placement))
-                return;
+                return false;
 
             switch (_buildMode)
             {
                 case PlacementBuildMode.Stacking:
                     CommitStacking(placement, instance);
-                    break;
+                    return true;
                 case PlacementBuildMode.Ignore:
                     CommitIgnore(placement, instance);
-                    break;
+                    return true;
             }
+            return false;
         }
         public void SetHoverState(bool hovered)
         {
@@ -287,7 +289,7 @@
                 
             }
         }
-        public void RemovePlacement(PlacementObjectComponent placement,Transform instance)
+        private void RemovePlacement(PlacementObjectComponent placement,Transform instance)
         {
             if (placement == null)
                 return;
@@ -302,15 +304,10 @@
                 _usedCapacity -= GetPlacementSize(placement,instance, _capacityMode);
                 _usedCapacity = Mathf.Max(0f, _usedCapacity);
                 Debug.Log($"Registered a Removed Object: {placement.name}, used capacity now {_usedCapacity}/{_capacity}");
-                if (instance != null)
+                if (placement != null)
                 {
-                    var PC= instance.gameObject.GetComponent<PlacementObjectComponent>();
-                    if (PC!=null)
-                    {
-                        //RemovePlacementEvent?.Invoke(PC);
-                        OnPlacementRemovedAction?.Invoke(PC);
-                    }
-                }  
+                    OnPlacementRemovedAction?.Invoke(placement);
+                }
             }
         }
 
@@ -331,5 +328,29 @@
             Gizmos.DrawLine(start, usedEnd);
         }
 
+        void IFPPlacementSocket.OnPlacementInSocket(FP_PlacementSocketComponent socket, PlacementObjectComponent obj, Transform rootObj)
+        {
+            CommitPlacement(obj, rootObj);
+        }
+
+        void IFPPlacementSocket.OnPlacementRemoved(FP_PlacementSocketComponent socket, PlacementObjectComponent obj, Transform rootObj)
+        {
+            RemovePlacement(obj, rootObj);
+        }
+
+        void IFPPlacementSocket.OnPlacementOutOfBounds(Vector3 pos, Quaternion rot)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        void IFPPlacementSocket.OnPickupStarted(Vector3 pos)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        void IFPPlacementSocket.OnGeneralPlacement(Vector3 pos, Quaternion rot)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

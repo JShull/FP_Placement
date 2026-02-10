@@ -11,6 +11,7 @@
         [SerializeField] protected bool drawDebug = false;
         [SerializeField] private PlacementObject _activePlacement;
         [SerializeField] private PlacementObjectComponent _activeComponent;
+        [SerializeField] private PlacementObjectComponent _clickedComponent;
         private FP_PlacementSocketComponent _activeSocket;
 
         [SerializeField] private Vector3 _startPos;
@@ -22,7 +23,7 @@
         [SerializeField] private float boxCastDist = 2f;
         [SerializeField] private LayerMask surfaceMask;
         [SerializeField] private float surfaceCastDistance = 2f;
-
+        [SerializeField] private bool _dragStarted;
         [SerializeField] private Transform _currentSurface;
         [SerializeField] private Plane _currentSurfacePlane;
         [Header("Private Parameters")]
@@ -46,6 +47,7 @@
 
         [Header("Clicky Placement Events")]
         [SerializeField] protected PlacementInteractionEvent doubleClickEvent;
+        
         [SerializeField] protected PlacementInteractionEvent singleClickEvent;
         [SerializeField] protected PlacementInteractionEvent dragEndSocketSuccessEvent;
         [SerializeField] protected PlacementInteractionEvent dragEndSocketFailedEvent;
@@ -65,18 +67,20 @@
             Vector2 screenPos = _pointerPosition.action.ReadValue<Vector2>();
             Ray ray = targetCamera.ScreenPointToRay(screenPos);
             // --- Begin drag ---
-            if (_startedThisFrame)
+            if (_dragOccurred&&!_dragStarted)
             {
                 BeginDrag(ray);
+                _dragStarted = true;
             }
             // --- Update drag ---
-            if (_isDown && _activePlacement != null)
+            if (_isDown && _dragStarted && _activePlacement != null)
             {
                 UpdateDrag(ray);
             }
             // --- End drag ---
-            if (_releasedThisFrame)
+            if (_releasedThisFrame && _dragStarted)
             {
+                Debug.Log($"End Drag?");
                 EndDrag();
             }
             // reset per-frame flags (important!)
@@ -100,18 +104,24 @@
                 if (hit.collider.TryGetComponent(out PlacementObjectComponent poc))
                 {
                     if (poc.Locked) return;
+                    if (!_dragOccurred) return;
 
                     _activeComponent = poc;
                     _activePlacement = poc.PlacementData;
                     _startPos = poc.RootPlacement.position;
                     _startRot = poc.RootPlacement.rotation;
                     _dragTarget = poc.RootPlacement;
-                    
-                    // current socket check and remove it if we have one
-                    if (_activeComponent.CurrentSocket != null)
+                    if(poc.gameObject.TryGetComponent(out IFPPlacementSocket placementInt))
                     {
-                        _activeComponent.CurrentSocket.RemovePlacement(poc,poc.RootPlacement);
-                        _activeComponent.OnPlacementRemoved(_activeComponent.CurrentSocket);
+                        placementInt.OnPickupStarted(_startPos);
+                    }
+                    if (poc.CurrentSocket != null)
+                    {
+                        //remove interface details
+                        if(_activeComponent.CurrentSocket.gameObject.TryGetComponent(out IFPPlacementSocket socketInt))
+                        {
+                            socketInt.OnPlacementRemoved(_activeComponent.CurrentSocket,poc,poc.RootPlacement);
+                        }
                     }
                     // plane work
                     // Where did we hit the object?
@@ -385,11 +395,15 @@
                 return;
             if (_activeSocket != null)
             {
-                _activeSocket.CommitPlacement(
-                    _activeComponent,
-                    _activeComponent.transform
-                );
-                _activeComponent.OnPlacementInSocket(_activeSocket);
+                if(_activeSocket.gameObject.TryGetComponent(out IFPPlacementSocket socketInt))
+                {
+                    socketInt.OnPlacementInSocket(_activeSocket,_activeComponent, _activeComponent.RootPlacement);
+                }
+                
+                if(_activeComponent.gameObject.TryGetComponent(out IFPPlacementSocket placementInt))
+                {
+                    placementInt.OnPlacementInSocket(_activeSocket,_activeComponent,_activeComponent.RootPlacement);
+                }
                 dragEndSocketSuccessEvent?.Invoke(_activeComponent, _activeSocket);
             }
             else
@@ -400,8 +414,10 @@
                 if (!IsWithinBounds(dropPos))
                 {
                     // Out of bounds → return home
-                    _activeComponent.OnPlacementOutOfBounds(_startPos, _startRot);
-                    //_activeComponent.transform.SetPositionAndRotation(_startPos, _startRot);
+                    if(_activeComponent.gameObject.TryGetComponent(out IFPPlacementSocket placementInt))
+                    {
+                        placementInt.OnPlacementOutOfBounds(_startPos, _startRot);
+                    }
                 }
                 else
                 {
@@ -411,6 +427,10 @@
                         Debug.Log("[Placement] Dropped on surface (no socket). Keeping position.");
                     }
                     dragEndMovedLocationEvent?.Invoke(_activeComponent, null);
+                    if (_activeComponent.gameObject.TryGetComponent(out IFPPlacementSocket placementInt))
+                    {
+                        placementInt.OnGeneralPlacement(_startPos, _startRot);
+                    }
                 }
                 dragEndSocketFailedEvent?.Invoke(_activeComponent, null);
             }
@@ -418,12 +438,15 @@
             {
                 _previousHoverSocket.SetHoverState(false);
             }
+            Debug.Log($"End Drag Complete?");
             _activePlacement = null;
             _activeComponent = null;
             _activeSocket = null;
             _hoverSocket = null;
             _dragTarget = null;
             _previousHoverSocket = null;
+            _dragStarted = false;
+            _dragOccurred = false;
             _dragLocalOffset = Vector3.zero;
         }
         protected bool IsWithinBounds(Vector3 position)
@@ -450,11 +473,60 @@
         /// <param name="worldPos"></param>
         protected override void OnPrimaryDoubleClick(Vector3 worldPos)
         {
-            doubleClickEvent?.Invoke(_activeComponent, _activeSocket);
+            //general event
+            //Debug.Log($"Double Click Event Invoked on {_clickedComponent?.name} at Socket: {_activeSocket?.name}");
+            var otherClickedComponent = FindClickComponent(worldPos);
+            if (_clickedComponent != null&&otherClickedComponent!=null)
+            {
+                if (otherClickedComponent == _clickedComponent)
+                {
+                    doubleClickEvent?.Invoke(_clickedComponent, _activeSocket);
+                    if (_clickedComponent.TryGetComponent(out IFPInteractionClicks clickAction))
+                    {
+                        clickAction.OnDoubleClickAction();
+                    }
+                }
+            }
+            _clickedComponent = null;
         }
         protected override void OnPrimaryClick(Vector3 worldPos)
         {
-            singleClickEvent?.Invoke(_activeComponent,_activeSocket);
+            _clickedComponent = FindClickComponent(worldPos);
+            if (_clickedComponent == null) return;
+
+            singleClickEvent?.Invoke(_clickedComponent, _activeSocket);
+            if(_clickedComponent.TryGetComponent(out IFPInteractionClicks clickAction))
+            {
+                clickAction.OnSingleClickAction();
+            }
+        }
+        protected PlacementObjectComponent FindClickComponent(Vector3 worldPosRayEnd)
+        {
+            Ray newRay = new Ray(targetCamera.transform.position, (worldPosRayEnd - targetCamera.transform.position).normalized);
+            var allHits = Physics.RaycastAll(newRay, maxRayDistance, placementMask);
+            if (allHits == null || allHits.Length == 0) return null;
+            for (int i = 0; i < allHits.Length; i++)
+            {
+                var hit = allHits[i];
+                if (hit.collider.TryGetComponent(out PlacementObjectComponent poc))
+                {
+                    if (poc.Locked)
+                    {
+
+                    }
+                    else
+                    {
+                        return poc;
+                    }
+                    
+                }
+            }
+            return null;
+        }
+        protected override void ForceRelease()
+        {
+            base.ForceRelease();
+            _dragStarted = false;
         }
     }
 }

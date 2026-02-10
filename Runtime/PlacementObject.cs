@@ -55,9 +55,16 @@ namespace FuzzPhyte.Placement
     }
     public interface IFPPlacementSocket
     {
-        public void OnPlacementInSocket(FP_PlacementSocketComponent socket);
-        public void OnPlacementRemoved(FP_PlacementSocketComponent socket);
+        public void OnPlacementInSocket(FP_PlacementSocketComponent socket, PlacementObjectComponent obj, Transform rootObj);
+        public void OnPlacementRemoved(FP_PlacementSocketComponent socket, PlacementObjectComponent obj, Transform rootObj);
         public void OnPlacementOutOfBounds(Vector3 pos,Quaternion rot);
+        public void OnPickupStarted(Vector3 pos);
+        public void OnGeneralPlacement(Vector3 pos, Quaternion rot);
+    }
+    public interface IFPInteractionClicks
+    {
+        public void OnDoubleClickAction();
+        public void OnSingleClickAction();
     }
     [Serializable]
     public class FPSurfaceDragData

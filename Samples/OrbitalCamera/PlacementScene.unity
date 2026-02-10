@@ -119,6 +119,136 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &82715792
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 82715793}
+  - component: {fileID: 82715794}
+  m_Layer: 0
+  m_Name: OnPickupMotionController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &82715793
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 82715792}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 778522226}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &82715794
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 82715792}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be01858888113cd48b410058fd174826, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.fuzzphyte.utility::FuzzPhyte.Utility.FP_MotionStackController
+  motionBlocks:
+  - Motions:
+    - motion: {fileID: 657714275}
+      overrideCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.19291697
+          value: -0.50823534
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.33333334
+          outWeight: 0.33333334
+        - serializedVersion: 3
+          time: 0.5
+          value: 0.5
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.11622554
+          outWeight: 0.15074801
+        - serializedVersion: 3
+          time: 0.7271118
+          value: -0.37848663
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.22899961
+          outWeight: 0.33333334
+        - serializedVersion: 3
+          time: 1
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      overrideDuration: 0.25
+      overrideParameterData: {x: 0, y: 0.25, z: -0.25}
+    - motion: {fileID: 657714274}
+      overrideCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      overrideDuration: 0.25
+      overrideParameterData: {x: 0.1, y: 0.05, z: 0.05}
+  resetAllOnStart: 0
+  resetAllOnComplete: 0
+  setupAllOnStart: 1
 --- !u!1 &110441337
 GameObject:
   m_ObjectHideFlags: 0
@@ -178,6 +308,24 @@ MonoBehaviour:
   - {fileID: 371481194}
   currentSocket: {fileID: 0}
   previousSocket: {fileID: 0}
+  OnPickedUpEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPlacedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSocketPlacedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSocketRemovedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnDoubleClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSingleClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!65 &110441340
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -495,6 +643,24 @@ MonoBehaviour:
   - {fileID: 2043032647}
   currentSocket: {fileID: 0}
   previousSocket: {fileID: 0}
+  OnPickedUpEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPlacedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSocketPlacedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSocketRemovedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnDoubleClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSingleClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!65 &131638779
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -745,10 +911,17 @@ MonoBehaviour:
   _isDown: 0
   _inputLocked: 1
   doubleClickThreshold: 0.25
+  dragStartThresholdPixels: 5
+  _pressStartPos: {x: 0, y: 0}
+  dragSuppressTime: 0.05
+  _dragEligible: 0
+  _dragOccurred: 0
+  _releasedThisFrame: 0
   maxRayDistance: 40
   drawDebug: 1
   _activePlacement: {fileID: 0}
   _activeComponent: {fileID: 0}
+  _previousComponent: {fileID: 0}
   _startPos: {x: 0, y: 0, z: 0}
   _startRot: {x: 0, y: 0, z: 0, w: 0}
   boxCastDist: 2
@@ -756,6 +929,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1048577
   surfaceCastDistance: 2
+  _dragStarted: 0
   _currentSurface: {fileID: 0}
   _dragRayDistance: 0
   _dragLocalOffset: {x: 0, y: 0, z: 0}
@@ -820,12 +994,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 196810080}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 778522226}
+  m_Father: {fileID: 257735335}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &196810082
 MonoBehaviour:
@@ -983,6 +1157,43 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1362955346}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &257735334
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 257735335}
+  m_Layer: 0
+  m_Name: Sides
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &257735335
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 257735334}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1261972747}
+  - {fileID: 892043231}
+  - {fileID: 1726506615}
+  - {fileID: 312954486}
+  - {fileID: 1168603465}
+  - {fileID: 196810081}
+  m_Father: {fileID: 778522226}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &312954485
 GameObject:
   m_ObjectHideFlags: 0
@@ -1008,12 +1219,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 312954485}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0.5, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 778522226}
+  m_Father: {fileID: 257735335}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &312954487
 MonoBehaviour:
@@ -1089,6 +1300,24 @@ MonoBehaviour:
   - {fileID: 1268026433}
   currentSocket: {fileID: 0}
   previousSocket: {fileID: 0}
+  OnPickedUpEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPlacedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSocketPlacedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSocketRemovedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnDoubleClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSingleClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!65 &314879432
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1384,6 +1613,24 @@ MonoBehaviour:
   - {fileID: 1815986999}
   currentSocket: {fileID: 0}
   previousSocket: {fileID: 0}
+  OnPickedUpEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPlacedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSocketPlacedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSocketRemovedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnDoubleClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSingleClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!65 &330925467
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1918,6 +2165,24 @@ MonoBehaviour:
   - {fileID: 1277177435}
   currentSocket: {fileID: 0}
   previousSocket: {fileID: 0}
+  OnPickedUpEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPlacedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSocketPlacedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSocketRemovedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnDoubleClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSingleClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!65 &560500627
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2335,6 +2600,275 @@ Transform:
   m_Children: []
   m_Father: {fileID: 131638782}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &657714270
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 657714271}
+  - component: {fileID: 657714273}
+  - component: {fileID: 657714272}
+  - component: {fileID: 657714275}
+  - component: {fileID: 657714274}
+  - component: {fileID: 657714276}
+  m_Layer: 0
+  m_Name: Visual
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &657714271
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 657714270}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 778522226}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!23 &657714272
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 657714270}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 1127785702}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &657714273
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 657714270}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &657714274
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 657714270}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 285f9394d36cca94fb82c20b3bba52f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.fuzzphyte.utility::FuzzPhyte.Utility.FP_ShakeMotion
+  targetObject: {fileID: 657714271}
+  onStartMotion:
+    m_PersistentCalls:
+      m_Calls: []
+  onEndMotion:
+    m_PersistentCalls:
+      m_Calls: []
+  lerpDuration: 0.25
+  loop: 0
+  PlayOnStart: 0
+  playOnSetup: 0
+  shakeAmplitude: {x: 0.1, y: 0.05, z: 0.05}
+  shakeCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  frequency: 25
+  originalPosition: {x: 0, y: 0, z: 0}
+--- !u!114 &657714275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 657714270}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffd5f977e9e214b489653fced1df10f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.fuzzphyte.utility::FuzzPhyte.Utility.FP_SquishMotion
+  targetObject: {fileID: 657714271}
+  onStartMotion:
+    m_PersistentCalls:
+      m_Calls: []
+  onEndMotion:
+    m_PersistentCalls:
+      m_Calls: []
+  lerpDuration: 0.25
+  loop: 0
+  PlayOnStart: 0
+  playOnSetup: 0
+  squishAmount: {x: 0, y: 0.25, z: -0.25}
+  squishCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.19291697
+      value: -0.50823534
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.5
+      value: 0.5
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.11622554
+      outWeight: 0.15074801
+    - serializedVersion: 3
+      time: 0.7271118
+      value: -0.37848663
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.22899961
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &657714276
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 657714270}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e04f052c283de96449b497ec88bb2060, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.fuzzphyte.utility::FuzzPhyte.Utility.FPColorPulse
+  RootItem: {fileID: 778522221}
+  AllMeshes: []
+  LerpCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 1.2527982
+      outSlope: 1.2527982
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.16970776
+    - serializedVersion: 3
+      time: 0.3303901
+      value: 0.45351514
+      inSlope: 1.3513824
+      outSlope: 1.3513824
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.14118986
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  buildOnEnable: 1
+  useOnDisable: 0
+  FlashColor: {r: 1, g: 0.74316394, b: 0.32549024, a: 1}
+  FlashTime: 1
 --- !u!1 &662069296
 GameObject:
   m_ObjectHideFlags: 0
@@ -2382,6 +2916,109 @@ Transform:
   m_Children: []
   m_Father: {fileID: 110441343}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &689924206
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 689924207}
+  - component: {fileID: 689924208}
+  m_Layer: 0
+  m_Name: OnSocketMotionController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &689924207
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 689924206}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 778522226}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &689924208
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 689924206}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be01858888113cd48b410058fd174826, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.fuzzphyte.utility::FuzzPhyte.Utility.FP_MotionStackController
+  motionBlocks:
+  - Motions:
+    - motion: {fileID: 657714275}
+      overrideCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.19837962
+          value: -0.69451463
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.33333334
+          outWeight: 0.33333334
+        - serializedVersion: 3
+          time: 0.49816895
+          value: 0.26049042
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.11622554
+          outWeight: 0.15074801
+        - serializedVersion: 3
+          time: 0.7562866
+          value: -0.6788101
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.22899961
+          outWeight: 0.33333334
+        - serializedVersion: 3
+          time: 1
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      overrideDuration: 0.4
+      overrideParameterData: {x: 0, y: 0.5, z: 0}
+  resetAllOnStart: 0
+  resetAllOnComplete: 1
+  setupAllOnStart: 0
 --- !u!1 &703535845
 GameObject:
   m_ObjectHideFlags: 0
@@ -2550,11 +3187,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 778522226}
-  - component: {fileID: 778522225}
-  - component: {fileID: 778522224}
+  - component: {fileID: 778522227}
   - component: {fileID: 778522223}
   - component: {fileID: 778522222}
-  - component: {fileID: 778522227}
   m_Layer: 0
   m_Name: TestMovement_1
   m_TagString: Untagged
@@ -2586,6 +3221,72 @@ MonoBehaviour:
   - {fileID: 196810082}
   currentSocket: {fileID: 0}
   previousSocket: {fileID: 0}
+  OnPickedUpEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 82715794}
+        m_TargetAssemblyTypeName: FuzzPhyte.Utility.FP_MotionStackController, com.fuzzphyte.utility
+        m_MethodName: PlaySequence
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnPlacedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSocketPlacedEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 689924208}
+        m_TargetAssemblyTypeName: FuzzPhyte.Utility.FP_MotionStackController, com.fuzzphyte.utility
+        m_MethodName: PlaySequence
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnSocketRemovedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnDoubleClickEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 657714276}
+        m_TargetAssemblyTypeName: FuzzPhyte.Utility.FPColorPulse, com.fuzzphyte.utility
+        m_MethodName: ActivateFlash
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnSingleClickEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!65 &778522223
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2607,63 +3308,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!23 &778522224
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 778522221}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &778522225
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 778522221}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!4 &778522226
 Transform:
   m_ObjectHideFlags: 0
@@ -2677,12 +3321,10 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1261972747}
-  - {fileID: 892043231}
-  - {fileID: 1726506615}
-  - {fileID: 312954486}
-  - {fileID: 1168603465}
-  - {fileID: 196810081}
+  - {fileID: 82715793}
+  - {fileID: 257735335}
+  - {fileID: 657714271}
+  - {fileID: 689924207}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &778522227
@@ -3064,12 +3706,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 892043230}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: -0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 778522226}
+  m_Father: {fileID: 257735335}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &892043232
 MonoBehaviour:
@@ -3520,7 +4162,7 @@ MonoBehaviour:
   SocketLocation: {fileID: 971534507}
   _buildMode: 0
   _capacityMode: 2
-  _socketCollider: {fileID: 0}
+  _socketCollider: {fileID: 971534511}
   _allowedCategories:
   - {fileID: 11400000, guid: 6ee5026a73952464a8decfd8127be466, type: 2}
   _localStackAxis: {x: 1, y: 0, z: 0}
@@ -3829,6 +4471,24 @@ MonoBehaviour:
   - {fileID: 487549662}
   currentSocket: {fileID: 0}
   previousSocket: {fileID: 0}
+  OnPickedUpEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPlacedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSocketPlacedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSocketRemovedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnDoubleClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSingleClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!65 &1014756605
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4034,6 +4694,24 @@ MonoBehaviour:
   - {fileID: 473174791}
   currentSocket: {fileID: 0}
   previousSocket: {fileID: 0}
+  OnPickedUpEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPlacedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSocketPlacedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSocketRemovedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnDoubleClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSingleClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!65 &1047686533
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4314,6 +4992,146 @@ MonoBehaviour:
   - {fileID: 1415971106}
   currentSocket: {fileID: 0}
   previousSocket: {fileID: 0}
+  OnPickedUpEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPlacedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSocketPlacedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSocketRemovedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnDoubleClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSingleClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!21 &1127785702
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Object (Instance)
+  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap:
+    RenderType: Opaque
+  disabledShaderPasses:
+  - MOTIONVECTORS
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailAlbedoMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailNormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OcclusionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ParallaxMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SpecGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AddPrecomputedVelocity: 0
+    - _AlphaClip: 0
+    - _AlphaToMask: 0
+    - _Blend: 0
+    - _BlendModePreserveSpecular: 1
+    - _BumpScale: 1
+    - _ClearCoatMask: 0
+    - _ClearCoatSmoothness: 0
+    - _Cull: 2
+    - _Cutoff: 0.5
+    - _DetailAlbedoMapScale: 1
+    - _DetailNormalMapScale: 1
+    - _DstBlend: 0
+    - _DstBlendAlpha: 0
+    - _EnvironmentReflections: 1
+    - _GlossMapScale: 0
+    - _Glossiness: 0
+    - _GlossyReflections: 0
+    - _Metallic: 0
+    - _OcclusionStrength: 1
+    - _Parallax: 0.005
+    - _QueueOffset: 0
+    - _ReceiveShadows: 1
+    - _Smoothness: 0.5
+    - _SmoothnessTextureChannel: 0
+    - _SpecularHighlights: 1
+    - _SrcBlend: 1
+    - _SrcBlendAlpha: 1
+    - _Surface: 0
+    - _WorkflowMode: 1
+    - _XRMotionVectorsPass: 1
+    - _ZWrite: 1
+    m_Colors:
+    - _BaseColor: {r: 0.94270635, g: 0.5518868, b: 1, a: 1}
+    - _Color: {r: 0.94270635, g: 0.5518868, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!1 &1166790523
 GameObject:
   m_ObjectHideFlags: 0
@@ -4451,12 +5269,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1168603464}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 778522226}
+  m_Father: {fileID: 257735335}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1168603466
 MonoBehaviour:
@@ -4704,12 +5522,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1261972746}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 778522226}
+  m_Father: {fileID: 257735335}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1261972748
 MonoBehaviour:
@@ -4879,6 +5697,24 @@ MonoBehaviour:
   - {fileID: 1206454486}
   currentSocket: {fileID: 0}
   previousSocket: {fileID: 0}
+  OnPickedUpEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPlacedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSocketPlacedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSocketRemovedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnDoubleClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSingleClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!65 &1362955343
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5676,12 +6512,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1726506614}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0.5, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 778522226}
+  m_Father: {fileID: 257735335}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1726506616
 MonoBehaviour:

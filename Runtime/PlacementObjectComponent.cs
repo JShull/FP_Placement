@@ -2,9 +2,9 @@ namespace FuzzPhyte.Placement.Interaction
 {
     using System.Collections.Generic;
     using UnityEngine;
-
+    using UnityEngine.Events;
     [DisallowMultipleComponent]
-    public class PlacementObjectComponent : MonoBehaviour, IFPPlacementSocket
+    public class PlacementObjectComponent : MonoBehaviour, IFPPlacementSocket, IFPInteractionClicks
     {
         public PlacementObject PlacementData;
         public Transform RootPlacement;
@@ -17,6 +17,14 @@ namespace FuzzPhyte.Placement.Interaction
         public FP_PlacementSocketComponent CurrentSocket { get => currentSocket;}
         [SerializeField] protected FP_PlacementSocketComponent currentSocket;
         [SerializeField] protected FP_PlacementSocketComponent previousSocket;
+        [Space]
+        [Header("Unity Events")]
+        public UnityEvent OnPickedUpEvent;
+        public UnityEvent OnPlacedEvent;
+        public UnityEvent OnSocketPlacedEvent;
+        public UnityEvent OnSocketRemovedEvent;
+        public UnityEvent OnDoubleClickEvent;
+        public UnityEvent OnSingleClickEvent;
         public FP_PlacementSide GetSide(FPObjectSideType type)
         {
             return Sides.Find(s => s.SideType == type);
@@ -93,7 +101,7 @@ namespace FuzzPhyte.Placement.Interaction
             }
         }
 
-        public void OnPlacementInSocket(FP_PlacementSocketComponent socket)
+        public void OnPlacementInSocket(FP_PlacementSocketComponent socket, PlacementObjectComponent obj, Transform rootObj)
         {
             if (currentSocket == null)
             {
@@ -102,14 +110,26 @@ namespace FuzzPhyte.Placement.Interaction
                 {
                     previousSocket = socket;
                 }
+                Debug.Log($"On Placement In Socket");
+                OnSocketPlacedEvent?.Invoke();
             }
         }
-
-        public void OnPlacementRemoved(FP_PlacementSocketComponent socket)
+        public void OnGeneralPlacement(Vector3 pos, Quaternion rot)
         {
-            if(currentSocket == socket)
+            OnPlacedEvent?.Invoke();
+            if(currentSocket != null)
+            {
+                previousSocket = currentSocket;
+                currentSocket = null;
+            }
+        }
+        public void OnPlacementRemoved(FP_PlacementSocketComponent socket, PlacementObjectComponent obj,Transform rootObj )
+        {
+            Debug.Log($"On Placement Removed");
+            if (currentSocket == socket)
             {
                 currentSocket = null;
+                OnSocketRemovedEvent?.Invoke();
             }
         }
         public void OnPlacementOutOfBounds(Vector3 pos, Quaternion rot)
@@ -119,11 +139,26 @@ namespace FuzzPhyte.Placement.Interaction
             if (previousSocket != null)
             {
                 //did we go back to this socket?
-                if (previousSocket.OverrideCanAccept(this,pos))
+                if (previousSocket.OverrideCanAccept(this,pos, RootPlacement))
                 {
-                    Debug.Log($"Manually moving back into a socket situation");
+                    OnSocketPlacedEvent?.Invoke();
                 }
             }
+        }
+        public void OnPickupStarted(Vector3 pos)
+        {
+            Debug.LogWarning($"Pickup started for {this.name} starting location {pos}");
+            OnPickedUpEvent?.Invoke();
+        }
+
+        public void OnDoubleClickAction()
+        {
+            OnDoubleClickEvent?.Invoke();
+        }
+
+        public void OnSingleClickAction()
+        {
+            OnSingleClickEvent?.Invoke();
         }
     }
 }
