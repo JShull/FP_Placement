@@ -905,7 +905,7 @@ MonoBehaviour:
   targetCamera: {fileID: 3109658353191055684}
   placementMask:
     serializedVersion: 2
-    m_Bits: 2097153
+    m_Bits: 2621441
   _requireRegion: 1
   _inputRegion: {fileID: 11400000, guid: fee5935ff2e345d479aa74cf757a3953, type: 2}
   _requireApplicationFocus: 1
@@ -916,29 +916,40 @@ MonoBehaviour:
   _pressStartPos: {x: 0, y: 0}
   dragSuppressTime: 0.05
   _dragEligible: 0
+  drawDebug: 1
   maxRayDistance: 40
-  drawDebug: 0
   _activePlacement: {fileID: 0}
   _activeComponent: {fileID: 0}
   _clickedComponent: {fileID: 0}
+  _activeSocket: {fileID: 0}
   _startPos: {x: 0, y: 0, z: 0}
   _startRot: {x: 0, y: 0, z: 0, w: 0}
   surfaceMask:
     serializedVersion: 2
-    m_Bits: 1048577
-  surfaceCastDistance: 2
+    m_Bits: 1572865
+  surfaceCastDistance: 10
+  lowestGroundPointRef: {fileID: 1101320087}
   _currentSurface: {fileID: 0}
+  surfaceCastVertialOffsetScalar: 1.25
   _dragRayDistance: 0
   _dragLocalOffset: {x: 0, y: 0, z: 0}
   _dragTarget: {fileID: 0}
+  _hoverSocket: {fileID: 0}
+  _previousHoverSocket: {fileID: 0}
+  newHover: {fileID: 0}
   useSocketMagnet: 1
   magnetRange: 2
   magnetStrength: 5000
   magnetSnapDistance: 0.15
   enforceBounds: 1
-  boundsCenter: {x: 0, y: 0, z: 0}
-  boundsSize: {x: 20, y: 20, z: 20}
+  boundsCenter: {x: 0, y: 5, z: 0}
+  boundsSize: {x: 25, y: 15, z: 25}
   fpDrawer: {fileID: 170869367}
+  useCursorSurfaceAssist: 1
+  perspectiveSurface:
+    serializedVersion: 2
+    m_Bits: 1048577
+  cursorAssistMaxDistance: 50
   doubleClickEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -4237,7 +4248,7 @@ GameObject:
   - component: {fileID: 971534508}
   - component: {fileID: 971534511}
   - component: {fileID: 971534510}
-  m_Layer: 0
+  m_Layer: 19
   m_Name: SocketTest
   m_TagString: Untagged
   m_Icon: {fileID: 0}

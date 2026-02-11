@@ -6,9 +6,10 @@
     [Serializable] public class PlacementInteractionEvent : UnityEvent<PlacementObjectComponent,FP_PlacementSocketComponent> { }
     public class FP_PlacementInteractionBehaviour : PlacementBaseInput
     {
+        [Space]
         [Header("Placement")]
-        [SerializeField] private float maxRayDistance = 100f;
         [SerializeField] protected bool drawDebug = false;
+        [SerializeField] private float maxRayDistance = 100f;
         [SerializeField] private PlacementObject _activePlacement;
         [SerializeField] private PlacementObjectComponent _activeComponent;
         [SerializeField] private PlacementObjectComponent _clickedComponent;
@@ -19,9 +20,14 @@
         [Space]
         [Header("Drag Surface Parameters")]
         [SerializeField] private LayerMask surfaceMask;
-        [SerializeField] private float surfaceCastDistance = 2f;
+        [Tooltip("Make sure this is large enough if you decide to stack objects vertically, consider dynamically changing this based on some true ground location")]
+        [SerializeField] private float surfaceCastDistance = 10f;
+        [Tooltip("Not needed, but if we have it we will update our Surface Cast Distance to make sure we can reach it vertically")]
+        [SerializeField] private Transform lowestGroundPointRef;
         [SerializeField] private Transform _currentSurface;
         [SerializeField] private Plane _currentSurfacePlane;
+        [Tooltip("We will use the height of the object were dragging * this offset to adjust vertical placement of box cast")]
+        [SerializeField] private float surfaceCastVertialOffsetScalar = 1.1f;
         [Header("Private Parameters")]
         [SerializeField] private float _dragRayDistance;
         [SerializeField] private Vector3 _dragLocalOffset;
@@ -46,6 +52,13 @@
         [SerializeField] private Vector3 boundsCenter = Vector3.zero;
         [SerializeField] private Vector3 boundsSize = new Vector3(10f, 5f, 10f);
         public FuzzPhyte.Utility.FP_UtilityDraw fpDrawer;
+        [Space]
+        [Header("Perspective Placement Assist")]
+        [SerializeField] private bool useCursorSurfaceAssist = true;
+        [SerializeField] private LayerMask perspectiveSurface;
+        [SerializeField] private float cursorAssistMaxDistance = 50f;
+        private Vector3 _cursorXZAnchor;
+        private bool _hasCursorAnchor;
 
         [Header("Clicky Placement Events")]
         [SerializeField] protected PlacementInteractionEvent doubleClickEvent;
@@ -132,9 +145,17 @@
             {
                 Debug.DrawRay(ray.origin, ray.direction * maxRayDistance, Color.orange, 0.5f);
             }
-            ResolveSurfaceBelow();
+            ResolveSurfaceFromCursor(ray);
+
+            ResolveSurfacesAboveBelow();
+
             // Free Drag Target Point Work
             Vector3 targetPoint = GetSurfaceProjectedPoint(ray);
+            if (_hasCursorAnchor)
+            {
+                targetPoint.x = _cursorXZAnchor.x;
+                targetPoint.z = _cursorXZAnchor.z;
+            }
             targetPoint = ApplySurfaceHeightCorrection(targetPoint);
             _dragTarget.position = targetPoint;
             
@@ -236,32 +257,35 @@
             }
         }
         #region Drag Details
-        protected void ResolveSurfaceBelow()
+        protected void ResolveSurfacesAboveBelow()
         {
-            //var sides = _activeComponent.Sides.ToArray();
             FP_PlacementSide bottom = _activeComponent.GetBottomSide;
             if (bottom == null)
                 return;
-
-            Vector3 origin = bottom.transform.position + Vector3.up;
+            //going to just go up double the distance we need to cast down so we can get stacked items
+            float verticalOffsetY = surfaceCastDistance *surfaceCastVertialOffsetScalar;
+            
+            Vector3 origin = bottom.transform.position + (verticalOffsetY*Vector3.up);
             Vector3 halfExtents = new Vector3(
                 bottom.SurfaceSize.x * 0.5f,
                 0.05f,
                 bottom.SurfaceSize.y * 0.5f
             );
-
+            
             RaycastHit[] hits = Physics.BoxCastAll(
                 origin,
                 halfExtents,
                 Vector3.down,
                 bottom.transform.rotation,
-                surfaceCastDistance,
+                verticalOffsetY*2f,
                 surfaceMask
             );
-            if(drawDebug && fpDrawer != null)
+            
+            if (drawDebug && fpDrawer != null)
             {
                 fpDrawer.DrawBox(origin, Quaternion.identity, halfExtents*2f, Color.green, 1f);
-                fpDrawer.DrawBox(origin + Vector3.down * surfaceCastDistance, Quaternion.identity, halfExtents * 2f, Color.green, 1f);
+                fpDrawer.DrawBox(origin + Vector3.down * verticalOffsetY*2f, Quaternion.identity, halfExtents * 2f, Color.green, 1f);
+                //Debug.Log($"BoxCast from {origin} down {verticalOffsetY*2f} found {hits.Length} hits");
             }
             if (hits == null || hits.Length == 0)
                 return;
@@ -287,6 +311,10 @@
                             bestHit = hit;
                             highestPt = Placement.GetTopSide.transform.position.y;
                             hitPlacement = Placement;
+                            if (drawDebug)
+                            {
+                                Debug.Log($"New Best Hit: {Placement.name} at height {highestPt}");
+                            }
                         }
                     }
                 }
@@ -306,6 +334,34 @@
             {
                 _currentSurface = bestHit.collider.transform;
                 _currentSurfacePlane = new Plane(bestHit.normal, bestHit.point);
+            }
+        }
+
+        /// <summary>
+        /// Updates cursor XZ anchor point if surface assist is enabled
+        /// </summary>
+        /// <param name="ray"></param>
+        protected void ResolveSurfaceFromCursor(Ray ray)
+        {
+            _hasCursorAnchor = false;
+
+            if (!useCursorSurfaceAssist)
+                return;
+
+            if (Physics.Raycast(ray, out RaycastHit hit, cursorAssistMaxDistance, perspectiveSurface))
+            {
+                // Ignore self && other 
+                if (_activeComponent != null &&
+                    hit.collider.transform.IsChildOf(_activeComponent.transform))
+                    return;
+                // Store intended XZ target
+                _cursorXZAnchor = hit.point;
+                _hasCursorAnchor = true;
+
+                if (drawDebug)
+                {
+                    Debug.DrawLine(ray.origin, hit.point, Color.magenta, 0.5f);
+                }
             }
         }
 
@@ -338,67 +394,7 @@
             targetPoint.y += extentHieghtYOffset;
             return targetPoint;
         }
-        [System.Obsolete("Not needed to be isolated")]
-        protected void ApplySocketMagnetism()
-        {
-            if (!useSocketMagnet)
-            {
-                // not using magnetism, just snap to socket
-                if (_hoverSocket == null || _activeComponent == null) return;
-
-                Transform target = _activeComponent.RootPlacement;
-
-                target.SetPositionAndRotation(
-                    _hoverSocket.transform.position,
-                    _hoverSocket.transform.rotation
-                );
-                return;
-            }
-
-            if(_hoverSocket == null || _dragTarget == null)
-            {
-                return;
-            }
-            // baseline position from free drag
-            Vector3 surfacePos = _dragTarget.position;
-            Quaternion surfaceRot = _dragTarget.rotation;
-
-            // Socket Target
-
-            Vector3 socketPos = _hoverSocket.transform.position;
-            Quaternion socketRot = _hoverSocket.transform.rotation;
-
-            // Distance to socket
-            float dist = Vector3.Distance(surfacePos, socketPos);
-
-            if (dist > magnetRange)
-            {
-                return;
-            }
-
-            //normalized pull factor (0 far, 1 close)
-            float t = 1f - (dist/magnetRange);
-
-            //smooth easing
-            t = t * t;
-
-            // Blend Position
-
-            Vector3 blendPos = Vector3.Lerp(surfacePos,socketPos,t);
-
-            //blend rotation? 
-            //Quaternion blendedRot = Quaternion.Slerp(surfaceRot,socketRot,t);
-
-            _dragTarget.position = Vector3.Lerp(surfacePos,blendPos,Time.deltaTime*magnetStrength);
-            //_dragTarget.rotation = Quaternion.Slerp(surfaceRot,blendedRot,Time.deltaTime*magnetStrength);
-
-            // really close snap it in
-            if (dist < magnetSnapDistance)
-            {
-                _dragTarget.SetPositionAndRotation(socketPos,socketRot);
-            }
-
-        }
+        
         #endregion
         protected override void OnDragEnded()
         {
@@ -451,6 +447,8 @@
             {
                 _previousHoverSocket.SetHoverState(false);
             }
+            //check to see if we need to update our surface cast distance for next drag
+            UpdateBoxCastSurfaceHeight();
             Debug.Log($"End Drag Complete?");
             _activePlacement = null;
             _activeComponent = null;
@@ -480,6 +478,37 @@
         }
 
         #endregion
+        /// <summary>
+        /// Changes the Surface Cast Distance based on reference points and the last known location of the active component
+        /// </summary>
+        private void UpdateBoxCastSurfaceHeight()
+        {
+            if(_activeComponent==null || lowestGroundPointRef==null)
+            {
+                return;
+            }
+            if (lowestGroundPointRef != null)
+            {
+                if (_activeComponent.RootPlacement.position.y > lowestGroundPointRef.position.y)
+                {
+                    float neededDistance = _activeComponent.RootPlacement.position.y - lowestGroundPointRef.position.y + 1f;
+                    if (neededDistance > surfaceCastDistance)
+                    {
+                        surfaceCastDistance = neededDistance;
+                    }
+                }
+                else
+                {
+                    float neededDistance = 1 + (lowestGroundPointRef.position.y - _activeComponent.RootPlacement.position.y);
+                    if (neededDistance > surfaceCastDistance)
+                    {
+                        surfaceCastDistance = neededDistance;
+                    }
+                }
+                /// ensure we are 3 times the height of the object we are dragging and positive.
+                surfaceCastDistance = Mathf.Max(surfaceCastDistance, _activeComponent.ReturnHeightValue * surfaceCastVertialOffsetScalar*2f);
+            }
+        }
         /// <summary>
         /// What we want to do via Double Click
         /// </summary>

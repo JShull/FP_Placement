@@ -12,6 +12,8 @@ namespace FuzzPhyte.Placement.Interaction
         public List<FP_PlacementSide> Sides = new List<FP_PlacementSide>();
         protected FP_PlacementSide bottomSide;
         protected FP_PlacementSide topSide;
+        protected float heightValue = 1f;
+        public float ReturnHeightValue => heightValue;
         public FP_PlacementSide GetBottomSide => bottomSide;
         public FP_PlacementSide GetTopSide => topSide;
         public FP_PlacementSocketComponent CurrentSocket { get => currentSocket;}
@@ -46,6 +48,10 @@ namespace FuzzPhyte.Placement.Interaction
                 {
                     topSide = side;
                 }
+            }
+            if(topSide!=null&& bottomSide != null)
+            {
+                heightValue = Vector3.Distance(topSide.transform.position, bottomSide.transform.position);
             }
         }
         protected void OnDrawGizmosSelected()
