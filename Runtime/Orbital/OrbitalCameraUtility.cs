@@ -85,6 +85,15 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         UV0,
         VertexColors
     }
+    [Serializable]
+    public struct PlaneBoundaryDetails
+    {
+        public bool restrictPlane;
+        public Transform planeReference;
+        public Vector3 planeNormal;
+        public float planeOffset;
+        public Vector3 calculatedPoint;
+    }
     /// <summary>
     /// Struct to keep track of mesh view status for runtime mesh viewer
     /// </summary>
@@ -362,28 +371,23 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             public float Distance;
         }
 
-        private PlaneConstraint[] _planeConstraints =
-        {
-            new PlaneConstraint
-            {
-                Enabled = false,
-                Normal = Vector3.up,
-                Distance = 0f
-            },
-            new PlaneConstraint
-            {
-                Enabled = false,
-                Normal = Vector3.up,
-                Distance = 0f
-            }
-        };
+        private PlaneConstraint[] _planeConstraints;
 
-        public FP_OrbitalCameraController(Camera camera, FP_OrbitalCameraSettings settings)
+        public FP_OrbitalCameraController(Camera camera, FP_OrbitalCameraSettings settings, PlaneBoundaryDetails[] constraints)
         {
             _camera = camera ? camera : throw new ArgumentNullException(nameof(camera));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _settings.Clamp();
-
+            _planeConstraints = new PlaneConstraint[constraints.Length];
+            for(int i=0; i<constraints.Length; i++)
+            {
+                _planeConstraints[i] = new PlaneConstraint()
+                {
+                    Enabled = constraints[i].restrictPlane,
+                    Normal = constraints[i].planeNormal,
+                    Distance = 0
+                };
+            }
             _camera.fieldOfView = _settings.DefaultFov;
             _pivot = _pivotTarget = _camera.transform.position;
             _rotation = _rotationTarget = _camera.transform.rotation;
@@ -400,9 +404,9 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         /// <param name="enabled"></param>
         /// <param name="planeNormal"></param>
         /// <param name="pointOnPlane"></param>
-        public void SetPlaneConstraint(bool enabled,Vector3 planeNormal,Vector3 pointOnPlane)
+        public void SetPlaneConstraint(bool enabled,Vector3 planeNormal,Vector3 pointOnPlane, int index=0)
         {
-            SetPlaneConstraintInternal(0, enabled, planeNormal, pointOnPlane);
+            SetPlaneConstraintInternal(index, enabled, planeNormal, pointOnPlane);
         }
 
         public void SetSecondaryPlaneConstraint(bool enabled, Vector3 planeNormal, Vector3 pointOnPlane)

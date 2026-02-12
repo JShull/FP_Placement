@@ -53,7 +53,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             // 3) Drive orbital camera
             // check if we are in a restricted orbit or not
-            if (_orbital.RestrictBelowPlane)
+            if (_orbital.CameraRestricted)
             {
                 switch (hit)
                 {

@@ -2207,6 +2207,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1047686536}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &412735828
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 412735829}
+  m_Layer: 0
+  m_Name: WallBlock
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &412735829
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 412735828}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.11173, y: -2.06036, z: 0.2008}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &473174790
 GameObject:
   m_ObjectHideFlags: 0
@@ -15543,6 +15574,7 @@ GameObject:
   - component: {fileID: 2561608702258323365}
   - component: {fileID: 2075582355882169560}
   - component: {fileID: 9180150123038754989}
+  - component: {fileID: 9180150123038754990}
   m_Layer: 0
   m_Name: OrbitalCamSystem
   m_TagString: Untagged
@@ -16895,17 +16927,20 @@ MonoBehaviour:
   localOffCenterCache: {x: 0, y: 0, z: 0}
   TargetBounds: {fileID: 8147790334684841453}
   _rotationEventThresholdDegrees: 0.05
-  RestrictBelowPlane: 1
-  MovePlaneBasedOnBounds: 1
-  _belowPlaneReference: {fileID: 0}
-  BelowPlaneNormal: {x: 0, y: 1, z: 0}
-  BelowPlaneOffset: 0
-  RestrictSecondaryPlane: 0
-  _secondaryPlaneReference: {fileID: 0}
-  SecondaryPlaneNormal: {x: 0, y: 1, z: 0}
-  SecondaryPlaneOffset: 0
-  _debugPlanes: {fileID: 0}
-  planeSize: 10
+  MovePlaneBasedOnBounds: 0
+  PlaneBoundaryDetails:
+  - restrictPlane: 1
+    planeReference: {fileID: 1101320087}
+    planeNormal: {x: 0, y: 1, z: 0}
+    planeOffset: 0
+    calculatedPoint: {x: 0, y: 0, z: 0}
+  - restrictPlane: 1
+    planeReference: {fileID: 412735829}
+    planeNormal: {x: 0, y: 0, z: -1}
+    planeOffset: 0
+    calculatedPoint: {x: 0, y: 0, z: 0}
+  _debugPlanes: {fileID: 9180150123038754990}
+  planeSize: 6
 --- !u!1 &2562872869440060094
 GameObject:
   m_ObjectHideFlags: 0
@@ -38794,6 +38829,18 @@ MonoBehaviour:
   _fill: {r: 0, g: 1, b: 1, a: 0.15}
   _outline: {r: 0, g: 1, b: 1, a: 0.9}
   _outlineThickness: 2
+--- !u!114 &9180150123038754990
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2211585932326008512}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c89c7b184b30d4a0ba2c73c787c36c02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: com.fuzzphyte.utility::FuzzPhyte.Utility.FP_UtilityDraw
 --- !u!1 &9192130768491634103
 GameObject:
   m_ObjectHideFlags: 0
@@ -39003,3 +39050,4 @@ SceneRoots:
   - {fileID: 1748416907}
   - {fileID: 315682332}
   - {fileID: 971534507}
+  - {fileID: 412735829}
