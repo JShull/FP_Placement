@@ -5,6 +5,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
     using System.Linq;
     using System.Collections;
     using UnityEngine;
+    using UnityEngine.Events;
     [DisallowMultipleComponent]
     public sealed class FP_ModelCycleController : MonoBehaviour
     {
@@ -40,6 +41,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
         public event Action<int, FP_ModelDisplayBinding> OnActiveModelChanged;
         public event Action<int, FP_ModelDisplayBinding, FPMeshViewStatus> OnActiveVisualActionChanged;
+        public UnityEvent OnDelayedAwakeFinish;
 
         private void Awake()
         {
@@ -55,6 +57,8 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 SurfaceMode = MeshSurfaceDebugMode.None,
                 ShowRenderer = true
             };
+            yield return new WaitForEndOfFrame();
+            OnDelayedAwakeFinish?.Invoke();
         }
         #region Public Accessors
         public void SetModels(FP_ModelDisplayBinding[] models, int startIndex = 0)
