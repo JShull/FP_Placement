@@ -61,11 +61,11 @@
         private bool _hasCursorAnchor;
 
         [Header("Clicky Placement Events")]
-        [SerializeField] protected PlacementInteractionEvent doubleClickEvent;
-        [SerializeField] protected PlacementInteractionEvent singleClickEvent;
-        [SerializeField] protected PlacementInteractionEvent dragEndSocketSuccessEvent;
-        [SerializeField] protected PlacementInteractionEvent dragEndSocketFailedEvent;
-        [SerializeField] protected PlacementInteractionEvent dragEndMovedLocationEvent;
+        [SerializeField] public PlacementInteractionEvent doubleClickEvent;
+        [SerializeField] public PlacementInteractionEvent singleClickEvent;
+        [SerializeField] public PlacementInteractionEvent dragEndSocketSuccessEvent;
+        [SerializeField] public PlacementInteractionEvent dragEndSocketFailedEvent;
+        [SerializeField] public PlacementInteractionEvent dragEndMovedLocationEvent;
         public override void OnEnable()
         {
             base.OnEnable();
