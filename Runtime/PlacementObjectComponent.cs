@@ -8,6 +8,8 @@ namespace FuzzPhyte.Placement.Interaction
     {
         public PlacementObject PlacementData;
         public Transform RootPlacement;
+        [SerializeField] private bool drawGizmos = true;
+        [SerializeField] private bool drawGizmosOnSelectedOnly = true;
         public bool Locked = false;
         public List<FP_PlacementSide> Sides = new List<FP_PlacementSide>();
         protected FP_PlacementSide bottomSide;
@@ -56,6 +58,8 @@ namespace FuzzPhyte.Placement.Interaction
         }
         protected void OnDrawGizmosSelected()
         {
+            if (!drawGizmos) return;
+            
             if (PlacementData == null) return;
 
             if (PlacementData.BuildMode == PlacementBuildMode.Stacking)
@@ -66,8 +70,19 @@ namespace FuzzPhyte.Placement.Interaction
             {
                 DrawLayoutGizmos();
             }
-
-            
+        }
+        protected void OnDrawGizmos()
+        {
+            if (!drawGizmos || drawGizmosOnSelectedOnly) return;
+            if (PlacementData == null) return;
+            if (PlacementData.BuildMode == PlacementBuildMode.Stacking)
+            {
+                DrawStackGizmos();
+            }
+            else
+            {
+                DrawLayoutGizmos();
+            }
         }
         protected void DrawStackGizmos()
         {
