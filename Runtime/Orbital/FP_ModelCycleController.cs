@@ -11,7 +11,8 @@ namespace FuzzPhyte.Placement.OrbitalCamera
     {
         [Header("Model Set (bindings)")]
         [SerializeField] private FP_ModelDisplayBinding[] _models;
-
+        [Tooltip("This is the 'home' model")]
+        [SerializeField] private FP_ModelDisplayBinding _standardModel;
         [Header("Placement")]
         [Tooltip("Where the active model should be positioned (center of bounds).")]
         [SerializeField] private Transform _displayPivot;
@@ -137,6 +138,16 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             _activeIndex = clamped;
             ApplyActiveModel(force: false);
+        }
+        /// <summary>
+        /// Function to Set the model by a default editor model
+        /// </summary>
+        public void SetDefaultModel()
+        {
+            if(_standardModel != null)
+            {
+                SetModelByDisplayBinding(_standardModel);
+            }
         }
         public void HideAll()
         {
