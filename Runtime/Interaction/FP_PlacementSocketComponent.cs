@@ -17,7 +17,8 @@
         [Tooltip("Optional category filter. If empty, all are allowed.")]
         
         [SerializeField] private List<PlacementCategory> _allowedCategories = new();
-        
+        public List<PlacementCategory> AllowedCategories => _allowedCategories;
+
         [Header("Stacking / Volume Settings")]
         [SerializeField] private Vector3 _localStackAxis = Vector3.right;
         [SerializeField] private float _capacity = 1.0f;
