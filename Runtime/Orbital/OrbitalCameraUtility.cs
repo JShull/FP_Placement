@@ -93,6 +93,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         public Vector3 planeNormal;
         public float planeOffset;
         public Vector3 calculatedPoint;
+        public FP_OrbitalView planeView;
     }
     /// <summary>
     /// Struct to keep track of mesh view status for runtime mesh viewer

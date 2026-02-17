@@ -44,6 +44,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
        // public float SecondaryPlaneOffset = 0f;
         [Header("Plane Debugging")]
         [SerializeField] FP_UtilityDraw _debugPlanes;
+        [SerializeField] bool drawDebugPlanesGizmos = false;
         [SerializeField] float planeSize = 5;
         /// <summary>
         /// Fired after the camera transform has been applied (LateUpdate).
@@ -200,12 +201,32 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 }
                 if (_debugPlanes != null)
                 {
-                    var rot = Quaternion.LookRotation(Vector3.forward, curPlane.planeNormal);
+                    //var rot = Quaternion.LookRotation(Vector3.forward, curPlane.planeNormal);
+                    var rot = Quaternion.FromToRotation(Vector3.up, curPlane.planeNormal);
+
                     _debugPlanes.DrawPlane(curPlane.calculatedPoint, rot, new Vector2(planeSize, planeSize), Color.yellow, 1f);
                 }
             }
             restrictedCamera = restricted;
             
+        }
+        private void OnDrawGizmosSelected()
+        {
+            if (!drawDebugPlanesGizmos) return;
+            for (int i = 0; i < PlaneBoundaryDetails.Count; i++)
+            {
+                var curPlane = PlaneBoundaryDetails[i];
+                
+                curPlane.calculatedPoint = ReturnPlanePoint(curPlane.planeReference.position, curPlane.planeNormal, curPlane.planeOffset, curPlane.planeReference);
+                
+                if (_debugPlanes != null)
+                {
+                    //var rot = Quaternion.LookRotation(Vector3.forward, curPlane.planeNormal);
+                    var rot = Quaternion.FromToRotation(Vector3.up, curPlane.planeNormal);
+
+                    _debugPlanes.DrawPlane(curPlane.calculatedPoint, rot, new Vector2(planeSize, planeSize), Color.yellow, 1f);
+                }
+            }
         }
 
 

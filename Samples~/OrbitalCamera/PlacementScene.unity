@@ -298,6 +298,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.Interaction.PlacementObjectComponent
   PlacementData: {fileID: 11400000, guid: 29ba4bd5bb1e58547956c1f4a326c5ab, type: 2}
   RootPlacement: {fileID: 110441343}
+  drawGizmos: 1
+  drawGizmosOnSelectedOnly: 1
   Locked: 0
   Sides:
   - {fileID: 1794683335}
@@ -455,6 +457,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 1
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: -1, z: 0}
 --- !u!4 &113131552
@@ -633,6 +636,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.Interaction.PlacementObjectComponent
   PlacementData: {fileID: 11400000, guid: 29ba4bd5bb1e58547956c1f4a326c5ab, type: 2}
   RootPlacement: {fileID: 131638782}
+  drawGizmos: 1
+  drawGizmosOnSelectedOnly: 1
   Locked: 0
   Sides:
   - {fileID: 1917721144}
@@ -790,6 +795,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 3
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 1, y: 0, z: 0}
 --- !u!4 &148346026
@@ -837,6 +843,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 1
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: -1, z: 0}
 --- !u!4 &168113691
@@ -1022,6 +1029,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 5
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 0, z: 1}
 --- !u!1 &209916444
@@ -1054,6 +1062,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 4
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 0, z: -1}
 --- !u!4 &209916446
@@ -1101,6 +1110,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 3
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 1, y: 0, z: 0}
 --- !u!4 &237761912
@@ -1148,6 +1158,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 0
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 1, z: 0}
 --- !u!4 &248425077
@@ -1434,6 +1445,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 3
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 1, y: 0, z: 0}
 --- !u!1 &314879429
@@ -1485,6 +1497,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.Interaction.PlacementObjectComponent
   PlacementData: {fileID: 11400000, guid: 29ba4bd5bb1e58547956c1f4a326c5ab, type: 2}
   RootPlacement: {fileID: 314879435}
+  drawGizmos: 1
+  drawGizmosOnSelectedOnly: 1
   Locked: 0
   Sides:
   - {fileID: 1209439199}
@@ -1732,6 +1746,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 1
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: -1, z: 0}
 --- !u!4 &330666407
@@ -1798,6 +1813,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.Interaction.PlacementObjectComponent
   PlacementData: {fileID: 11400000, guid: 29ba4bd5bb1e58547956c1f4a326c5ab, type: 2}
   RootPlacement: {fileID: 330925470}
+  drawGizmos: 1
+  drawGizmosOnSelectedOnly: 1
   Locked: 0
   Sides:
   - {fileID: 1012228303}
@@ -1955,6 +1972,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 4
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 0, z: -1}
 --- !u!4 &360744521
@@ -2002,6 +2020,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 5
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 0, z: 1}
 --- !u!4 &371481195
@@ -2049,6 +2068,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 4
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 0, z: -1}
 --- !u!4 &383986481
@@ -2096,6 +2116,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 4
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 0, z: -1}
 --- !u!4 &391059041
@@ -2143,6 +2164,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 0
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 1, z: 0}
 --- !u!4 &396188722
@@ -2190,6 +2212,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 3
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 1, y: 0, z: 0}
 --- !u!4 &396208484
@@ -2268,6 +2291,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 5
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 0, z: 1}
 --- !u!4 &473174792
@@ -2315,6 +2339,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 5
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 0, z: 1}
 --- !u!4 &487549663
@@ -2381,6 +2406,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.Interaction.PlacementObjectComponent
   PlacementData: {fileID: 11400000, guid: 29ba4bd5bb1e58547956c1f4a326c5ab, type: 2}
   RootPlacement: {fileID: 560500630}
+  drawGizmos: 1
+  drawGizmosOnSelectedOnly: 1
   Locked: 0
   Sides:
   - {fileID: 1889022096}
@@ -2809,6 +2836,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 4
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 0, z: -1}
 --- !u!4 &628949782
@@ -3134,6 +3162,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 2
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: -1, y: 0, z: 0}
 --- !u!4 &662069298
@@ -3396,6 +3425,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 0
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 1, z: 0}
 --- !u!4 &740925000
@@ -3446,6 +3476,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.Interaction.PlacementObjectComponent
   PlacementData: {fileID: 11400000, guid: 29ba4bd5bb1e58547956c1f4a326c5ab, type: 2}
   RootPlacement: {fileID: 778522226}
+  drawGizmos: 1
+  drawGizmosOnSelectedOnly: 1
   Locked: 0
   Sides:
   - {fileID: 1261972748}
@@ -3607,6 +3639,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 2
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: -1, y: 0, z: 0}
 --- !u!4 &850554086
@@ -3962,6 +3995,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 1
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: -1, z: 0}
 --- !u!1 &905897458
@@ -3994,6 +4028,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 4
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 0, z: -1}
 --- !u!4 &905897460
@@ -4041,6 +4076,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 3
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 1, y: 0, z: 0}
 --- !u!4 &905916903
@@ -4088,6 +4124,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 4
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 0, z: -1}
 --- !u!4 &908799006
@@ -4247,6 +4284,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 1
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: -1, z: 0}
 --- !u!4 &942569647
@@ -4584,6 +4622,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 2
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: -1, y: 0, z: 0}
 --- !u!4 &984533104
@@ -4631,6 +4670,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 0
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 1, z: 0}
 --- !u!4 &1012228304
@@ -4697,6 +4737,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.Interaction.PlacementObjectComponent
   PlacementData: {fileID: 11400000, guid: 29ba4bd5bb1e58547956c1f4a326c5ab, type: 2}
   RootPlacement: {fileID: 1014756608}
+  drawGizmos: 1
+  drawGizmosOnSelectedOnly: 1
   Locked: 0
   Sides:
   - {fileID: 740924999}
@@ -4854,6 +4896,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 3
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 1, y: 0, z: 0}
 --- !u!4 &1034831693
@@ -4920,6 +4963,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.Interaction.PlacementObjectComponent
   PlacementData: {fileID: 11400000, guid: 29ba4bd5bb1e58547956c1f4a326c5ab, type: 2}
   RootPlacement: {fileID: 1047686536}
+  drawGizmos: 1
+  drawGizmosOnSelectedOnly: 1
   Locked: 0
   Sides:
   - {fileID: 396188721}
@@ -5077,6 +5122,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 1
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: -1, z: 0}
 --- !u!4 &1063701358
@@ -5223,6 +5269,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.Interaction.PlacementObjectComponent
   PlacementData: {fileID: 11400000, guid: 499cbf2f4dbd3434ab46f763c84f590b, type: 2}
   RootPlacement: {fileID: 1101320087}
+  drawGizmos: 1
+  drawGizmosOnSelectedOnly: 1
   Locked: 1
   Sides:
   - {fileID: 1415971106}
@@ -5525,6 +5573,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 4
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 0, z: -1}
 --- !u!1 &1206454485
@@ -5557,6 +5606,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 5
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 0, z: 1}
 --- !u!4 &1206454487
@@ -5604,6 +5654,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 0
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 1, z: 0}
 --- !u!4 &1209439200
@@ -5778,6 +5829,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 0
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 1, z: 0}
 --- !u!1 &1268026432
@@ -5810,6 +5862,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 5
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 0, z: 1}
 --- !u!4 &1268026434
@@ -5857,6 +5910,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 5
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 0, z: 1}
 --- !u!4 &1277177436
@@ -5923,6 +5977,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.Interaction.PlacementObjectComponent
   PlacementData: {fileID: 11400000, guid: 29ba4bd5bb1e58547956c1f4a326c5ab, type: 2}
   RootPlacement: {fileID: 1362955346}
+  drawGizmos: 1
+  drawGizmosOnSelectedOnly: 1
   Locked: 0
   Sides:
   - {fileID: 248425076}
@@ -6080,6 +6136,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 2
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: -1, y: 0, z: 0}
 --- !u!4 &1365324912
@@ -6127,6 +6184,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 3
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 1, y: 0, z: 0}
 --- !u!4 &1384215928
@@ -6174,6 +6232,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 1
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: -1, z: 0}
 --- !u!4 &1405577481
@@ -6221,6 +6280,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 0
+  drawGizmos: 0
   SurfaceSize: {x: 1000, y: 1000}
   Normal: {x: 0, y: 1, z: 0}
 --- !u!4 &1415971107
@@ -6268,6 +6328,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 3
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 1, y: 0, z: 0}
 --- !u!4 &1464036757
@@ -6315,6 +6376,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 3
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 1, y: 0, z: 0}
 --- !u!4 &1470892793
@@ -6362,6 +6424,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 2
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: -1, y: 0, z: 0}
 --- !u!4 &1586608162
@@ -6409,6 +6472,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 1
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: -1, z: 0}
 --- !u!4 &1634349456
@@ -6706,6 +6770,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 2
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: -1, y: 0, z: 0}
 --- !u!4 &1704738920
@@ -6768,6 +6833,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 2
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: -1, y: 0, z: 0}
 --- !u!1 &1748416904
@@ -6903,6 +6969,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 0
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 1, z: 0}
 --- !u!4 &1794683336
@@ -7040,6 +7107,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 5
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 0, z: 1}
 --- !u!4 &1815987000
@@ -7087,6 +7155,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 2
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: -1, y: 0, z: 0}
 --- !u!4 &1858741028
@@ -7165,6 +7234,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 0
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 1, z: 0}
 --- !u!4 &1889022097
@@ -7350,6 +7420,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 0
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 1, z: 0}
 --- !u!4 &1917721145
@@ -7397,6 +7468,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 2
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: -1, y: 0, z: 0}
 --- !u!4 &2001384905
@@ -7444,6 +7516,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 4
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 0, z: -1}
 --- !u!4 &2034245269
@@ -7491,6 +7564,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 5
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: 0, z: 1}
 --- !u!4 &2043032648
@@ -7650,6 +7724,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.fuzzphyte.placement::FuzzPhyte.Placement.FP_PlacementSide
   SideType: 1
+  drawGizmos: 0
   SurfaceSize: {x: 1, y: 1}
   Normal: {x: 0, y: -1, z: 0}
 --- !u!4 &2133706264
@@ -12647,6 +12722,9 @@ MonoBehaviour:
   _gridPlaneXY: {fileID: 3027134098867179737}
   _measurementController: {fileID: 8493018082305680223}
   _meshViewer: {fileID: 2737773777929349016}
+  OnDelayedAwakeFinish:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!23 &1320578456737631165
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -16934,12 +17012,15 @@ MonoBehaviour:
     planeNormal: {x: 0, y: 1, z: 0}
     planeOffset: 0
     calculatedPoint: {x: 0, y: 0, z: 0}
+    planeView: 0
   - restrictPlane: 1
     planeReference: {fileID: 412735829}
     planeNormal: {x: 0, y: 0, z: -1}
     planeOffset: 0
     calculatedPoint: {x: 0, y: 0, z: 0}
+    planeView: 2
   _debugPlanes: {fileID: 9180150123038754990}
+  drawDebugPlanesGizmos: 0
   planeSize: 6
 --- !u!1 &2562872869440060094
 GameObject:
