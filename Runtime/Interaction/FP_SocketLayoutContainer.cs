@@ -42,9 +42,9 @@ namespace FuzzPhyte.Placement.Interaction
         }
         private void OnEnable()
         {
-             if (socket != null)
+            if (socket != null)
             {
-                 socket.OnPlacementAddedAction+=OnPlacementAdded;
+                socket.OnPlacementAddedAction+=OnPlacementAdded;
                 socket.OnPlacementRemovedAction+=OnPlacementRemoved;
             }
         }
