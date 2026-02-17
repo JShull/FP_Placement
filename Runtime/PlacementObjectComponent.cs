@@ -64,11 +64,11 @@ namespace FuzzPhyte.Placement.Interaction
 
             if (PlacementData.BuildMode == PlacementBuildMode.Stacking)
             {
-                DrawStackGizmos();
+                DrawStackGizmos(Color.orange);
             }
             else
             {
-                DrawLayoutGizmos();
+                DrawLayoutGizmos(Color.orange);
             }
         }
         protected void OnDrawGizmos()
@@ -77,16 +77,16 @@ namespace FuzzPhyte.Placement.Interaction
             if (PlacementData == null) return;
             if (PlacementData.BuildMode == PlacementBuildMode.Stacking)
             {
-                DrawStackGizmos();
+                DrawStackGizmos(Color.cyan);
             }
             else
             {
-                DrawLayoutGizmos();
+                DrawLayoutGizmos(Color.cyan);
             }
         }
-        protected void DrawStackGizmos()
+        protected void DrawStackGizmos(Color gizmoColor)
         {
-            Gizmos.color = Color.yellow;
+            Gizmos.color = gizmoColor;
             Vector3 center = transform.position + PlacementData.StackCenterOffset;
 
             switch (PlacementData.Shape)
@@ -106,9 +106,9 @@ namespace FuzzPhyte.Placement.Interaction
                     break;
             }
         }
-        protected void DrawLayoutGizmos()
+        protected void DrawLayoutGizmos(Color gizmoColorMain)
         {
-            Gizmos.color = Color.cyan;
+            Gizmos.color = gizmoColorMain;
 
             if (PlacementData.LayoutSurface == LayoutSurfaceType.SphereSurface)
             {
