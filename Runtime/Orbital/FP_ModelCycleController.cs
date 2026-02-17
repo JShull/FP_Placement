@@ -146,6 +146,20 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 if (_models[i] != null) _models[i].gameObject.SetActive(false);
             }
         }
+        /// <summary>
+        /// Hide the model based on some data-drive logic on the model
+        /// </summary>
+        public void HideByData()
+        {
+            if (_models == null) return;
+            for (int i = 0; i < _models.Length; i++)
+            {
+                if (_models[i] != null)
+                {
+                    _models[i].gameObject.SetActive(_models[i].DisplayVisualOnStart);
+                }
+            }
+        }
         public void ShowAll()
         {
             if (_models == null) return;

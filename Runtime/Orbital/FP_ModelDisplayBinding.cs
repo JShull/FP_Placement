@@ -7,7 +7,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
     public sealed class FP_ModelDisplayBinding : MonoBehaviour
     {
         [SerializeField] private FP_ModelDisplayData _data;
-
+        public bool DisplayVisualOnStart = true;
         public FP_ModelDisplayData Data => _data;
         // cache of all renderers under this model root
         public List<Renderer> AllRenderers = new List<Renderer>();
