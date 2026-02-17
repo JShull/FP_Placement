@@ -215,7 +215,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
                 if (_showAllModels)
                 {
-                    go.gameObject.SetActive(true);
+                    go.gameObject.SetActive(go.DisplayVisualOnStart);
                 }
                 else
                 {
@@ -231,6 +231,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
             /// assign active model and update location / position etc.
             var active = _models[_activeIndex];
+            Debug.Log($"Active model: {active.gameObject.name} at index {_activeIndex}");
             if (active != null && _displayPivot != null)
             {
                 if (_snapToPivot)
