@@ -178,6 +178,14 @@ namespace FuzzPhyte.Placement.Interaction
         {
             Clickable = value;
         }
+        /// <summary>
+        /// Set from Event
+        /// </summary>
+        /// <param name="value"></param>
+        public void SetLocked(bool value)
+        {
+            Locked = value;
+        }
         public virtual void OnDoubleClickAction()
         {
             OnDoubleClickEvent?.Invoke();
