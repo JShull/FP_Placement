@@ -11,6 +11,7 @@ namespace FuzzPhyte.Placement.Interaction
         [SerializeField] private bool drawGizmos = true;
         [SerializeField] private bool drawGizmosOnSelectedOnly = true;
         public bool Locked = false;
+        public bool Clickable = true;
         public List<FP_PlacementSide> Sides = new List<FP_PlacementSide>();
         protected FP_PlacementSide bottomSide;
         protected FP_PlacementSide topSide;

@@ -552,6 +552,11 @@
                 var hit = allHits[i];
                 if (hit.collider.TryGetComponent(out PlacementObjectComponent poc))
                 {
+                    if (poc.Clickable)
+                    {
+                        return poc;
+                    }
+                    /*
                     if (poc.Locked)
                     {
 
@@ -560,6 +565,7 @@
                     {
                         return poc;
                     }
+                    */
                     
                 }
             }
