@@ -273,9 +273,14 @@ namespace FuzzPhyte.Placement.OrbitalCamera
                 {
                     UpdateGridPattern(_gridPlaneXY, measureDetails);
                 }
-                
+
                 // get label UI ref
-                var measurementLabelUI = _measurementController.gameObject.GetComponent<FP_MeasurementLabelUI>();
+                FP_MeasurementLabelUI measurementLabelUI = null;
+                if (_measurementController != null)
+                {
+                    measurementLabelUI = _measurementController.gameObject.GetComponent<FP_MeasurementLabelUI>();
+                }
+               
                 //set/update measurement tool if we have one
                 if (_measurementController != null && measureDetails!=null&& measurementLabelUI!=null)
                 {
