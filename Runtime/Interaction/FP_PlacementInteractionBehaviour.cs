@@ -104,7 +104,7 @@
                 
                 if (hit.collider.TryGetComponent(out PlacementObjectComponent poc))
                 {
-                    if (poc.Locked) return;
+                    if (poc.Locked) continue;
 
                     _activeComponent = poc;
                     _activePlacement = poc.PlacementData;
