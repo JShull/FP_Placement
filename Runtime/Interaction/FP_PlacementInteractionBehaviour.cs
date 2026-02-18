@@ -3,7 +3,7 @@
     using UnityEngine;
     using System;
     using UnityEngine.Events;
-    [Serializable] public class PlacementInteractionEvent : UnityEvent<PlacementObjectComponent,FP_PlacementSocketComponent> { }
+    [Serializable] public class PlacementInteractionEvent : UnityEvent<PlacementObjectComponent,FP_PlacementSocketComponent, Vector3> { }
     public class FP_PlacementInteractionBehaviour : PlacementBaseInput
     {
         [Space]
@@ -80,8 +80,6 @@
             if (_activePlacement == null) return;
             Ray ray = targetCamera.ScreenPointToRay(_pointerPosition.action.ReadValue<Vector2>());
             UpdateDrag(ray);
-            
-            
         }
         #region Drag Related Logic
         protected override void OnDragStarted()
@@ -157,8 +155,9 @@
                 targetPoint.z = _cursorXZAnchor.z;
             }
             targetPoint = ApplySurfaceHeightCorrection(targetPoint);
+            _lastWorldPos = targetPoint;
             _dragTarget.position = targetPoint;
-            
+           
             // Socket Hover Work
             newHover = null;
             var hits = Physics.RaycastAll(ray, maxRayDistance, placementMask);
@@ -413,7 +412,7 @@
                 {
                     placementInt.OnPlacementInSocket(_activeSocket,_activeComponent,_activeComponent.RootPlacement);
                 }
-                dragEndSocketSuccessEvent?.Invoke(_activeComponent, _activeSocket);
+                dragEndSocketSuccessEvent?.Invoke(_activeComponent, _activeSocket,_lastPos);
             }
             else
             {
@@ -435,13 +434,13 @@
                     {
                         Debug.Log("[Placement] Dropped on surface (no socket). Keeping position.");
                     }
-                    dragEndMovedLocationEvent?.Invoke(_activeComponent, null);
+                    dragEndMovedLocationEvent?.Invoke(_activeComponent, null,_lastWorldPos);
                     if (_activeComponent.gameObject.TryGetComponent(out IFPPlacementSocket placementInt))
                     {
                         placementInt.OnGeneralPlacement(_startPos, _startRot);
                     }
                 }
-                dragEndSocketFailedEvent?.Invoke(_activeComponent, null);
+                dragEndSocketFailedEvent?.Invoke(_activeComponent, null,_lastWorldPos);
             }
             if(_previousHoverSocket != null)
             {
@@ -517,12 +516,13 @@
         {
             //general event
             //Debug.Log($"Double Click Event Invoked on {_clickedComponent?.name} at Socket: {_activeSocket?.name}");
+            _lastWorldPos = worldPos;
             var otherClickedComponent = FindClickComponent(worldPos);
             if (_clickedComponent != null&&otherClickedComponent!=null)
             {
                 if (otherClickedComponent == _clickedComponent)
                 {
-                    doubleClickEvent?.Invoke(_clickedComponent, _activeSocket);
+                    doubleClickEvent?.Invoke(_clickedComponent, _activeSocket, worldPos);
                     if (_clickedComponent.TryGetComponent(out IFPInteractionClicks clickAction))
                     {
                         clickAction.OnDoubleClickAction();
@@ -533,10 +533,11 @@
         }
         protected override void OnPrimaryClick(Vector3 worldPos)
         {
+            _lastWorldPos = worldPos;
             _clickedComponent = FindClickComponent(worldPos);
             if (_clickedComponent == null) return;
 
-            singleClickEvent?.Invoke(_clickedComponent, _activeSocket);
+            singleClickEvent?.Invoke(_clickedComponent, _activeSocket, worldPos);
             if(_clickedComponent.TryGetComponent(out IFPInteractionClicks clickAction))
             {
                 clickAction.OnSingleClickAction();
@@ -556,17 +557,6 @@
                     {
                         return poc;
                     }
-                    /*
-                    if (poc.Locked)
-                    {
-
-                    }
-                    else
-                    {
-                        return poc;
-                    }
-                    */
-                    
                 }
             }
             return null;

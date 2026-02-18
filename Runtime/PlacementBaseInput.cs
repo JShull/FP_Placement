@@ -44,6 +44,7 @@ namespace FuzzPhyte.Placement
         protected int _clickCount = 0;
 
         protected Vector2 _lastPos;
+        protected Vector3 _lastWorldPos;
 
         [SerializeField] Coroutine _clickResolutionRoutine;
         public virtual void OnEnable()
