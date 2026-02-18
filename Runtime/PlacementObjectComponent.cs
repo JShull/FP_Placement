@@ -170,6 +170,14 @@ namespace FuzzPhyte.Placement.Interaction
         {
             OnPickedUpEvent?.Invoke();
         }
+        /// <summary>
+        /// Set from Event
+        /// </summary>
+        /// <param name="value"></param>
+        public void SetClickable(bool value)
+        {
+            Clickable = value;
+        }
         public virtual void OnDoubleClickAction()
         {
             OnDoubleClickEvent?.Invoke();
