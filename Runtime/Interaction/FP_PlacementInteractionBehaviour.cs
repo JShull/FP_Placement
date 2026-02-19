@@ -518,17 +518,26 @@
             //Debug.Log($"Double Click Event Invoked on {_clickedComponent?.name} at Socket: {_activeSocket?.name}");
             _lastWorldPos = worldPos;
             var otherClickedComponent = FindClickComponent(worldPos);
-            if (_clickedComponent != null&&otherClickedComponent!=null)
+            if(otherClickedComponent== null)
             {
-                if (otherClickedComponent == _clickedComponent)
+                _clickedComponent = null;
+                return;
+            }
+            //check for a single click first and if that's null treat this as single
+            if(_clickedComponent == null)
+            {
+                _clickedComponent = otherClickedComponent;
+            }
+            
+            if (otherClickedComponent == _clickedComponent)
+            {
+                doubleClickEvent?.Invoke(_clickedComponent, _activeSocket, worldPos);
+                if (_clickedComponent.TryGetComponent(out IFPInteractionClicks clickAction))
                 {
-                    doubleClickEvent?.Invoke(_clickedComponent, _activeSocket, worldPos);
-                    if (_clickedComponent.TryGetComponent(out IFPInteractionClicks clickAction))
-                    {
-                        clickAction.OnDoubleClickAction();
-                    }
+                    clickAction.OnDoubleClickAction();
                 }
             }
+            
             _clickedComponent = null;
         }
         protected override void OnPrimaryClick(Vector3 worldPos)
