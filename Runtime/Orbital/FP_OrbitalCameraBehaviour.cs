@@ -213,7 +213,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         }
         private void OnDrawGizmosSelected()
         {
-           
+            if (!drawDebugOnSelectOnly) return;
             if (!drawDebugPlanesGizmos) return;
             for (int i = 0; i < PlaneBoundaryDetails.Count; i++)
             {
