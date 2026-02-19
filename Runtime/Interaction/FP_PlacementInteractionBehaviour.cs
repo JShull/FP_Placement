@@ -61,6 +61,8 @@
         private bool _hasCursorAnchor;
 
         [Header("Clicky Placement Events")]
+        [Tooltip("Always accepts double click regardless of single click info")]
+        public bool UseDoubleClickAuthoritative = true;
         [SerializeField] public PlacementInteractionEvent doubleClickEvent;
         [SerializeField] public PlacementInteractionEvent singleClickEvent;
         [SerializeField] public PlacementInteractionEvent dragEndSocketSuccessEvent;
@@ -515,7 +517,7 @@
         protected override void OnPrimaryDoubleClick(Vector3 worldPos)
         {
             //general event
-            //Debug.Log($"Double Click Event Invoked on {_clickedComponent?.name} at Socket: {_activeSocket?.name}");
+            // treat double click as full authority
             _lastWorldPos = worldPos;
             var otherClickedComponent = FindClickComponent(worldPos);
             if(otherClickedComponent== null)
@@ -528,17 +530,28 @@
             {
                 _clickedComponent = otherClickedComponent;
             }
-            
-            if (otherClickedComponent == _clickedComponent)
+            if (UseDoubleClickAuthoritative)
             {
-                doubleClickEvent?.Invoke(_clickedComponent, _activeSocket, worldPos);
-                if (_clickedComponent.TryGetComponent(out IFPInteractionClicks clickAction))
-                {
-                    clickAction.OnDoubleClickAction();
-                }
+                InternalDoubleClick();
+            }
+            else if(otherClickedComponent == _clickedComponent)
+            {
+                InternalDoubleClick();
             }
             
+            
             _clickedComponent = null;
+        }
+        /// <summary>
+        /// Make sure to set _clickedComponent, _activeSocket, and _lastWorldPos prior to call
+        /// </summary>
+        protected virtual void InternalDoubleClick()
+        {
+            doubleClickEvent?.Invoke(_clickedComponent, _activeSocket, _lastWorldPos);
+            if (_clickedComponent.TryGetComponent(out IFPInteractionClicks clickAction))
+            {
+                clickAction.OnDoubleClickAction();
+            }
         }
         protected override void OnPrimaryClick(Vector3 worldPos)
         {
