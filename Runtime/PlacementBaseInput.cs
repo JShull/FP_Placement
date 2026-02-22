@@ -34,6 +34,11 @@ namespace FuzzPhyte.Placement
         [SerializeField] protected float doubleClickThreshold = 0.25f;
         [SerializeField] protected float dragStartThresholdPixels = 8f;
         [SerializeField] protected Vector2 _pressStartPos;
+        [SerializeField] protected bool _useDistanceBasedClick = true;
+        [Tooltip("To measure the delta from _pressStart to determine if we clicked or we are potentially doing something else ")]
+        
+        [SerializeField] protected Vector2 _endPressPos;
+
         [Space]
         [Header("Drag Timing")]
         [SerializeField] protected float dragSuppressTime = 0.12f; //seconds
@@ -154,6 +159,7 @@ namespace FuzzPhyte.Placement
         protected virtual void OnPrimaryUp(InputAction.CallbackContext ctx)
         {
             _isDown = false;
+            _endPressPos = _pointerPosition.action.ReadValue<Vector2>();
             if (_state == InputState.Pressing)
             {
                 _state = InputState.AwaitingSecondClick;
@@ -179,8 +185,18 @@ namespace FuzzPhyte.Placement
             yield return new WaitForSeconds(doubleClickThreshold);
             if(_state == InputState.AwaitingSecondClick)
             {
-                OnPrimaryClick(worldPos);
-                _state = InputState.Idle;
+                if (_useDistanceBasedClick&& Vector2.Distance(_pressStartPos, _endPressPos) <= dragStartThresholdPixels)
+                {
+                    OnPrimaryClick(worldPos);
+                }
+                else
+                {
+                                      
+                    OnPrimaryClick(worldPos);
+                }
+
+
+                    _state = InputState.Idle;
             }
             _clickResolutionRoutine = null;
         }
