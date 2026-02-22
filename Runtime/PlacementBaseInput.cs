@@ -185,18 +185,19 @@ namespace FuzzPhyte.Placement
             yield return new WaitForSeconds(doubleClickThreshold);
             if(_state == InputState.AwaitingSecondClick)
             {
-                if (_useDistanceBasedClick&& Vector2.Distance(_pressStartPos, _endPressPos) <= dragStartThresholdPixels)
+                if (_useDistanceBasedClick)
                 {
-                    OnPrimaryClick(worldPos);
+                    if(Vector2.Distance(_pressStartPos, _endPressPos) <= dragStartThresholdPixels)
+                    {
+                        OnPrimaryClick(worldPos);
+                    }
                 }
                 else
                 {
                                       
                     OnPrimaryClick(worldPos);
                 }
-
-
-                    _state = InputState.Idle;
+                _state = InputState.Idle;
             }
             _clickResolutionRoutine = null;
         }
