@@ -514,6 +514,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             for(int i = 0; i < _inputRegion.Region.Length; i++)
             {
                 var region = _inputRegion.Region[i];
+                Debug.Log($"Mouse01: {screenPoint.x}, {screenPoint.y} and Width/height = {Screen.width} / {Screen.height}");
                 bool inRegion = region.ContainsScreenPoint(screenPoint, new Vector2(Screen.width, Screen.height));
                 if(inRegion) return true;
             }
