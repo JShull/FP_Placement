@@ -567,6 +567,7 @@
             {
                 clickAction.OnSingleClickAction();
             }
+            _clickedComponent = null;
         }
         protected PlacementObjectComponent FindClickComponent(Vector3 worldPosRayEnd)
         {
@@ -589,26 +590,7 @@
                 }
             }
             return null;
-            /*
-            Dictionary<PlacementObjectComponent,RaycastHit> potentialItems = new Dictionary<PlacementObjectComponent, RaycastHit>();
-            for (int i = 0; i < allHits.Length; i++)
-            {
-                var hit = allHits[i];
-                if (hit.collider.TryGetComponent(out PlacementObjectComponent poc))
-                {
-                    if (poc.Clickable)
-                    {
-                        potentialItems.Add(poc,hit);
-                        //return poc;
-                    }
-                }
-            }
-            //return the potential hit item with the closest distance from ray origin?
-            if (potentialItems.Count == 0) return null;
-            var closest = potentialItems.OrderBy(kvp => kvp.Value.distance).First();
-            return closest.Key;
-            */
-
+            
         }
         protected override void ForceRelease()
         {
