@@ -577,6 +577,19 @@
                 Debug.DrawRay(newRay.origin, newRay.direction * maxRayDistance, Color.red, 2f);
             }
             if (allHits == null || allHits.Length == 0) return null;
+            Array.Sort(allHits, (a, b) => a.distance.CompareTo(b.distance));
+
+            for (int i = 0; i < allHits.Length; i++)
+            {
+                var hit = allHits[i];
+
+                if (hit.collider.TryGetComponent(out PlacementObjectComponent poc) && poc.Clickable)
+                {
+                    return poc;
+                }
+            }
+            return null;
+            /*
             Dictionary<PlacementObjectComponent,RaycastHit> potentialItems = new Dictionary<PlacementObjectComponent, RaycastHit>();
             for (int i = 0; i < allHits.Length; i++)
             {
@@ -594,7 +607,8 @@
             if (potentialItems.Count == 0) return null;
             var closest = potentialItems.OrderBy(kvp => kvp.Value.distance).First();
             return closest.Key;
-            
+            */
+
         }
         protected override void ForceRelease()
         {
