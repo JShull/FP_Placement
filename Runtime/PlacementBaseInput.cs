@@ -120,7 +120,9 @@ namespace FuzzPhyte.Placement
         {
             if (!CanProcessInput()) return;
             if (_pointerPosition?.action == null) return;
+           
             _pressStartPos = _pointerPosition.action.ReadValue<Vector2>();
+            if (!IsInRegion(_pressStartPos)) return;
             _isDown = true;
 
             if (_state == InputState.AwaitingSecondClick)
