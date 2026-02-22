@@ -3,6 +3,9 @@
     using UnityEngine;
     using System;
     using UnityEngine.Events;
+    using System.Collections.Generic;
+    using System.Linq;
+
     [Serializable] public class PlacementInteractionEvent : UnityEvent<PlacementObjectComponent,FP_PlacementSocketComponent, Vector3> { }
     public class FP_PlacementInteractionBehaviour : PlacementBaseInput
     {
@@ -569,7 +572,12 @@
         {
             Ray newRay = new Ray(targetCamera.transform.position, (worldPosRayEnd - targetCamera.transform.position).normalized);
             var allHits = Physics.RaycastAll(newRay, maxRayDistance, placementMask);
+            if (drawDebug)
+            {
+                Debug.DrawRay(newRay.origin, newRay.direction * maxRayDistance, Color.red, 2f);
+            }
             if (allHits == null || allHits.Length == 0) return null;
+            Dictionary<PlacementObjectComponent,RaycastHit> potentialItems = new Dictionary<PlacementObjectComponent, RaycastHit>();
             for (int i = 0; i < allHits.Length; i++)
             {
                 var hit = allHits[i];
@@ -577,11 +585,16 @@
                 {
                     if (poc.Clickable)
                     {
-                        return poc;
+                        potentialItems.Add(poc,hit);
+                        //return poc;
                     }
                 }
             }
-            return null;
+            //return the potential hit item with the closest distance from ray origin?
+            if (potentialItems.Count == 0) return null;
+            var closest = potentialItems.OrderBy(kvp => kvp.Value.distance).First();
+            return closest.Key;
+            
         }
         protected override void ForceRelease()
         {
