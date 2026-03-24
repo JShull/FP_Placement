@@ -19,7 +19,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         private void Reset()
         {
             _cycle = GetComponent<FP_ModelCycleController>();
-            _meshViewer = FindFirstObjectByType<FPRuntimeMeshViewer>();
+            _meshViewer = FindAnyObjectByType<FPRuntimeMeshViewer>();
         }
 
         private void OnEnable()

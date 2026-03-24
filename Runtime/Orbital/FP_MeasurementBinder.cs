@@ -15,7 +15,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         private void Reset()
         {
             _tool = GetComponent<FP_MeasurementToolController>();
-            _raycaster = FindFirstObjectByType<FP_MeasurementUIRaycaster>();
+            _raycaster = FindAnyObjectByType<FP_MeasurementUIRaycaster>();
         }
 
         private void OnEnable()

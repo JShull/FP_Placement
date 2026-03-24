@@ -43,13 +43,13 @@
 
         private void Reset()
         {
-            if (_labelUI == null) _labelUI = FindFirstObjectByType<FP_MeasurementLabelUI>();
+            if (_labelUI == null) _labelUI = FindAnyObjectByType<FP_MeasurementLabelUI>();
         }
 
         private void Awake()
         {
             if (_labelUI == null)
-                _labelUI = FindFirstObjectByType<FP_MeasurementLabelUI>();
+                _labelUI = FindAnyObjectByType<FP_MeasurementLabelUI>();
         }
 
         private void OnEnable()
