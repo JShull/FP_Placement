@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-03-24
+
+### 0.3.1 Changed
+
+- [@JShull](https://github.com/jshull).
+  - Unity 6.4 compatibility updates for obsolete API replacements
+    - Replaced `FindFirstObjectByType` with `FindAnyObjectByType` in orbital measurement binding
+    - Replaced `FindFirstObjectByType` with `FindAnyObjectByType` in measurement label binding
+    - Replaced `FindFirstObjectByType` with `FindAnyObjectByType` in mesh debug sync binding
+
 ## [0.3.0] - 2026-02-10
 
 ### 0.3.0 Added
