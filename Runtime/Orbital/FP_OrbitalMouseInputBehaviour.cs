@@ -133,6 +133,10 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         {
             _orbital.RecenterToTargetBounds(false);
         }
+        public void ReplaceScreenRegion(FP_ScreenRegionAsset newRegion)
+        {
+            _inputRegion = newRegion;
+        }
         #endregion
         private void Reset()
         {

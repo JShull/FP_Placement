@@ -68,6 +68,32 @@ namespace FuzzPhyte.Placement.OrbitalCamera
             _activeIndex = Mathf.Clamp(startIndex, 0, Mathf.Max(0, Count - 1));
             ApplyActiveModel(force: true);
         }
+        public void SetSingleModel(GameObject model)
+        {
+            if(model.GetComponent<FP_ModelDisplayBinding>() != null)
+            {
+                var modelDisplay = model.GetComponent<FP_ModelDisplayBinding>();
+                SetSingleModel(modelDisplay);
+            }
+            else
+            {
+                Debug.LogError($"Missing a FP_ModelDisplayBinding on Root - checking children");
+                var modelDislpay = model.GetComponentInChildren<FP_ModelDisplayBinding>();
+                SetSingleModel(modelDislpay);
+            }
+        }
+        public void SetSingleModel(FP_ModelDisplayBinding singleModel)
+        {
+            if(singleModel == null)
+            {
+                Debug.LogWarning($"Incoming FP_ModelDisplayBinding was null!");
+                return;
+            }
+            _models = new FP_ModelDisplayBinding[1];
+            _models[0] = singleModel;
+            _activeIndex = 0;
+            ApplyActiveModel(force: true);
+        }
         public void Next()
         {
             if (Count == 0) return;
