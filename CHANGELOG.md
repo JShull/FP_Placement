@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Corrected `FP_ModelDisplayBinding` so local bounds overrides are transformed only when enabled.
+- Standardized orbital model focusing on final world-space bounds without double-applying the model bounds center.
+- Added Edit Mode regression coverage for override and renderer-derived world bounds.
+
 ## [0.3.1] - 2026-03-24
 
 ### 0.3.1 Changed

@@ -123,23 +123,38 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         /// </summary>
         public void ResetCameraMaxDistance()
         {
+            if (_controller == null || TargetBounds == null) return;
+
             float checkMaxDistance = 0;
             checkMaxDistance = TargetBounds.bounds.size.magnitude * 1.1f;
             _controller.ZoomToFitBounds(checkMaxDistance);
             _controller.FitToBoundsForCurrentProjection();
         }
-        public void SetBounds(Bounds b, Vector3 localBoundsOffCenter,Transform optionalFrame = null)
+        /// <summary>
+        /// Focuses the orbital controller on final world-space bounds.
+        /// </summary>
+        public void FocusBounds(Bounds worldBounds, Transform optionalFrame = null, bool fit = true)
         {
-            //update TargetBounds Info
-            TargetBounds.size = b.size;
-            //TargetBounds.extents = b.extents;
-            TargetBounds.center = b.center;
-            localOffCenterCache= localBoundsOffCenter;
-            var newCenter= _controller.SetTargetBounds(b, localBoundsOffCenter,optionalFrame);
+            if (_controller == null) return;
+
+            localOffCenterCache = Vector3.zero;
+            SyncTargetBoundsCollider(worldBounds);
+
+            var newCenter = _controller.SetTargetBounds(worldBounds, Vector3.zero, optionalFrame);
             if (MovePlaneBasedOnBounds)
             {
                 UpdateRestrictBelowPlaneFromBounds(newCenter);
             }
+
+            if (!fit) return;
+
+            _controller.ZoomToFitBounds(worldBounds.size.magnitude * 1.1f);
+            _controller.FitToBoundsForCurrentProjection();
+        }
+        public void SetBounds(Bounds b, Vector3 localBoundsOffCenter,Transform optionalFrame = null)
+        {
+            b.center += localBoundsOffCenter;
+            FocusBounds(b, optionalFrame, false);
         }
            
         public void Snap(FP_OrbitalView view, FP_ProjectionMode mode) =>
@@ -148,6 +163,35 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         /// <summary>Called by your app layer (touch, mouse, etc.).</summary>
         public void FeedInput(in FP_OrbitalInput input) => _queuedInput = input;
         #endregion
+
+        private void SyncTargetBoundsCollider(Bounds worldBounds)
+        {
+            if (TargetBounds == null) return;
+
+            Transform frame = TargetBounds.transform;
+            Vector3 c = worldBounds.center;
+            Vector3 e = worldBounds.extents;
+            Vector3[] corners =
+            {
+                c + new Vector3( e.x,  e.y,  e.z),
+                c + new Vector3( e.x,  e.y, -e.z),
+                c + new Vector3( e.x, -e.y,  e.z),
+                c + new Vector3( e.x, -e.y, -e.z),
+                c + new Vector3(-e.x,  e.y,  e.z),
+                c + new Vector3(-e.x,  e.y, -e.z),
+                c + new Vector3(-e.x, -e.y,  e.z),
+                c + new Vector3(-e.x, -e.y, -e.z)
+            };
+
+            Bounds localBounds = new Bounds(frame.InverseTransformPoint(corners[0]), Vector3.zero);
+            for (int i = 1; i < corners.Length; i++)
+            {
+                localBounds.Encapsulate(frame.InverseTransformPoint(corners[i]));
+            }
+
+            TargetBounds.center = localBounds.center;
+            TargetBounds.size = localBounds.size;
+        }
         /// <summary>
         /// Given the center position we use the extents of the debug bounding box to make adjustments
         /// </summary>

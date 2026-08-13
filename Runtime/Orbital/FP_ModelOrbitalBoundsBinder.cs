@@ -29,24 +29,7 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         {
             if (_orbital == null || binding == null) return;
 
-            Bounds wb = new Bounds();
-            if (binding.Data.UseLocalBoundsOverride)
-            {
-                wb = binding.GetLocalBounds();
-            }
-            else
-            {
-                wb = binding.GetWorldBounds();
-            }
-                
-            // call SetBounds syncs controller and data
-            _orbital.SetBounds(wb,binding.Data.BoundsCenter);
-            //set my debug "box collider" already done in .SetBounds
-            
-            //JOHN --> still need to now resize my camera based on this information (max/min zoom relative)
-            _orbital.ResetCameraMaxDistance();
-            //JOHN --> Check if we set the Visual Information here or..
-
+            _orbital.FocusBounds(binding.GetWorldBounds(), binding.transform, true);
         }
     }
 }

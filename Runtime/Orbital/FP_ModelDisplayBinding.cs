@@ -16,11 +16,9 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         /// </summary>
         public Bounds GetWorldBounds()
         {
-            if (_data != null && !_data.UseLocalBoundsOverride)
+            if (_data != null && _data.UseLocalBoundsOverride)
             {
-                // Local override converted to world using root transform
-                var b = new Bounds(_data.BoundsCenter, _data.BoundsSize);
-                return TransformLocalBoundsToWorld(b, transform);
+                return TransformLocalBoundsToWorld(_data.GetLocalBounds(), transform);
             }
 
             // Fallback: compute renderer bounds
@@ -39,12 +37,12 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         }
         public Bounds GetLocalBounds()
         {
-            Bounds wb = new Bounds();
             if (_data != null && _data.UseLocalBoundsOverride)
             {
-                wb= _data.GetLocalBounds();
+                return _data.GetLocalBounds();
             }
-            return wb;
+
+            return new Bounds();
         }
         public void ApplyPresentationDefaults(Transform displayPivot)
         {
