@@ -23,6 +23,8 @@ namespace FuzzPhyte.Placement.OrbitalCamera
 
         [Tooltip("If true, resets local rotation of active model at pivot.")]
         [SerializeField] private bool _resetRotationOnShow = true;
+        [Tooltip("If true, will add a box collider at generation via GameObject")]
+        [SerializeField] private bool _addBoxColliderOnGameObject = true;
 
         [Header("State")]
         [SerializeField] private int _activeIndex;
@@ -70,16 +72,34 @@ namespace FuzzPhyte.Placement.OrbitalCamera
         }
         public void SetSingleModel(GameObject model)
         {
-            if(model.GetComponent<FP_ModelDisplayBinding>() != null)
+            var modelDisplay = model.GetComponent<FP_ModelDisplayBinding>();
+            if (modelDisplay != null)
             {
-                var modelDisplay = model.GetComponent<FP_ModelDisplayBinding>();
                 SetSingleModel(modelDisplay);
             }
             else
             {
                 Debug.LogError($"Missing a FP_ModelDisplayBinding on Root - checking children");
-                var modelDislpay = model.GetComponentInChildren<FP_ModelDisplayBinding>();
-                SetSingleModel(modelDislpay);
+                var modelDisplayChildren = model.GetComponentInChildren<FP_ModelDisplayBinding>();
+                SetSingleModel(modelDisplayChildren);
+            }
+
+            if (_addBoxColliderOnGameObject)
+            {
+                if (!model.GetComponent<BoxCollider>())
+                {
+                    var bXBounds = model.AddComponent<BoxCollider>();
+                    bXBounds.size = modelDisplay.Data.BoundsSize;
+                    bXBounds.center = modelDisplay.Data.BoundsCenter;
+                    bXBounds.enabled = true;
+                }
+                else
+                {
+                    var bXBounds = model.GetComponent<BoxCollider>();
+                    bXBounds.size = modelDisplay.Data.BoundsSize;
+                    bXBounds.center = modelDisplay.Data.BoundsCenter;
+                    bXBounds.enabled = true;
+                }
             }
         }
         public void SetSingleModel(FP_ModelDisplayBinding singleModel)

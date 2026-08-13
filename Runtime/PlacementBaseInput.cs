@@ -5,7 +5,7 @@ namespace FuzzPhyte.Placement
     using UnityEngine.InputSystem;
     using UnityEngine.InputSystem.EnhancedTouch;
     using System.Collections;
-    
+
     public abstract class PlacementBaseInput : MonoBehaviour
     {
         [Header("Input")]
@@ -120,6 +120,12 @@ namespace FuzzPhyte.Placement
                 ForceRelease();
             }
         }
+        public virtual void UpdateInputRegion(FP_ScreenRegionAsset newRegion)
+        {
+            if(newRegion == null) return;
+            _inputRegion = newRegion;
+        }
+        
         #endregion
         protected virtual void OnPrimaryDown(InputAction.CallbackContext ctx)
         {

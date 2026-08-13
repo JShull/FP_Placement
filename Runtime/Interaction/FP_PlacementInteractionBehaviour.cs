@@ -3,9 +3,7 @@
     using UnityEngine;
     using System;
     using UnityEngine.Events;
-    using System.Collections.Generic;
-    using System.Linq;
-
+    using FuzzPhyte.Utility;
     [Serializable] public class PlacementInteractionEvent : UnityEvent<PlacementObjectComponent,FP_PlacementSocketComponent, Vector3> { }
     public class FP_PlacementInteractionBehaviour : PlacementBaseInput
     {
@@ -71,6 +69,10 @@
         [SerializeField] public PlacementInteractionEvent dragEndSocketSuccessEvent;
         [SerializeField] public PlacementInteractionEvent dragEndSocketFailedEvent;
         [SerializeField] public PlacementInteractionEvent dragEndMovedLocationEvent;
+
+        [Space]
+        [Header("Generic Placement Data")]
+        public PlacementObject GenericPlacementData;
         public override void OnEnable()
         {
             base.OnEnable();
@@ -85,6 +87,54 @@
             if (_activePlacement == null) return;
             Ray ray = targetCamera.ScreenPointToRay(_pointerPosition.action.ReadValue<Vector2>());
             UpdateDrag(ray);
+        }
+        /// <summary>
+        /// Called from various events
+        /// </summary>
+        /// <param name="newPlacementItem"></param>
+        public virtual void AddGenericPlacementData(GameObject newPlacementItem)
+        {
+            if (newPlacementItem == null) return;
+            if (!newPlacementItem.GetComponent<PlacementObjectComponent>())
+            {
+                var placementComponent = newPlacementItem.AddComponent<PlacementObjectComponent>();
+                placementComponent.PlacementData = GenericPlacementData;
+                placementComponent.RootPlacement = newPlacementItem.transform;
+                placementComponent.Clickable = true;
+                placementComponent.Locked = true;
+                //debug only
+                if (placementComponent.OnDoubleClickEvent == null)
+                {
+                    placementComponent.OnDoubleClickEvent = new UnityEvent();
+                }
+                if(placementComponent.OnSingleClickEvent == null)
+                {
+                    placementComponent.OnSingleClickEvent = new UnityEvent();
+                }
+                var fpEvent = newPlacementItem.GetComponent<FP_PassedEvent>();
+                if (fpEvent!=null)
+                {
+                    placementComponent.OnDoubleClickEvent.AddListener(fpEvent.PassMyEvent);
+                }
+            }
+        }
+        public virtual void RemoveGenericPlacementData(GameObject newPlacementItem)
+        {
+            if (newPlacementItem == null) return;
+            var placementComponent = newPlacementItem.GetComponent<PlacementObjectComponent>();
+            if (placementComponent!=null)
+            {
+                placementComponent.OnDoubleClickEvent.RemoveListener(DebugDoubleClick);
+                placementComponent.OnSingleClickEvent.RemoveListener(DebugSingleClick);
+            }
+        }
+        protected void DebugSingleClick()
+        {
+            Debug.LogWarning($"Single Click!");
+        }
+        protected void DebugDoubleClick()
+        {
+            Debug.LogWarning($"Double Click!?");
         }
         #region Drag Related Logic
         protected override void OnDragStarted()
